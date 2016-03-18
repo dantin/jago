@@ -11,10 +11,8 @@ If you need to create .jar file simple go to Eclipse Menu -> File -> Export -> J
 
 - Command Line (Simply run)
 
-```
-javac Go.java
-java Go
-```
+    javac Go.java
+    java Go
 
 It will show warning but you can ignore it!
 
@@ -30,4 +28,14 @@ I cannot find the source code from his website and I got it somewhere. I think i
 
 [Download](https://www.google.co.th/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=0ahUKEwiI0Jyrl4PLAhWhIqYKHZy-CrIQFggaMAA&url=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fjagoclient%2F&usg=AFQjCNGeCRIUGogsbtW5yo6-hAjo_C0n0w&sig2=Ail70V0t2r2Ghx0tDVrAHg&bvm=bv.114733917,d.dGY)
 
+### Original source code
 
+[download](https://sourceforge.net/projects/jagoclient/files/jagoclient/6.2/)
+
+### How to play
+
+运行jago以后, 选择Actions菜单下的Play Go, 将会出现对话框, 在Go Protocol Server栏中请输入
+
+    目录名\gnugo.exe --quiet --mode gmp
+
+然后再点击Play按钮即可。 
