@@ -12,44 +12,47 @@ import rene.util.sort.Sorter;
 import rene.viewer.Lister;
 import rene.viewer.SystemLister;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.PrintWriter;
 
 class EditButtons extends CloseDialog {
-    TextField Labels[], Texts[];
+    JTextField Labels[], Texts[];
 
     public EditButtons(Frame f) {
         super(f, Global.resourceString("Edit_Buttons"), true);
         setLayout(new BorderLayout());
-        Panel center = new MyPanel();
-        Labels = new TextField[3];
-        Texts = new TextField[3];
+        MyPanel center = new MyPanel();
+        Labels = new JTextField[3];
+        Texts = new JTextField[3];
         center.setLayout(new GridLayout(0, 2));
         for (int i = 0; i < 3; i++) {
-            Labels[i] = new FormTextField(
-                    Global.getParameter("who.button" + (i + 1) + ".label", ""));
+            Labels[i] = new FormTextField(Global.getParameter("who.button"
+                    + (i + 1) + ".label", ""));
             center.add(Labels[i]);
-            Texts[i] = new FormTextField(
-                    Global.getParameter("who.button" + (i + 1) + ".text", ""));
+            Texts[i] = new FormTextField(Global.getParameter("who.button"
+                    + (i + 1) + ".text", ""));
             center.add(Texts[i]);
         }
         add("Center", new Panel3D(center));
-        Panel south = new MyPanel();
+        MyPanel south = new MyPanel();
         south.add(new ButtonAction(this, Global.resourceString("OK"), "OK"));
-        south.add(new ButtonAction(this, Global.resourceString("Cancel"), "Close"));
+        south.add(new ButtonAction(this, Global.resourceString("Cancel"),
+                "Close"));
         add("South", new Panel3D(south));
         Global.setpacked(this, "editbuttons", 300, 300, f);
         validate();
         setVisible(true);
     }
 
+    @Override
     public void doAction(String o) {
         if (o.equals("OK")) {
             for (int i = 0; i < 3; i++) {
                 Global.setParameter("who.button" + (i + 1) + ".label",
                         Labels[i].getText());
-                Global.setParameter("who.button" + (i + 1) + ".text",
-                        Texts[i].getText());
+                Global.setParameter("who.button" + (i + 1) + ".text", Texts[i]
+                        .getText());
             }
             setVisible(false);
             dispose();
@@ -57,12 +60,13 @@ class EditButtons extends CloseDialog {
     }
 }
 
+
 /**
- * Displays a frame with the player list. The list may be sorted by rank or name.
+ * Displays a frame with the player list. The list may be sorted by rank or
+ * name.
  */
 
-public class WhoFrame extends CloseFrame
-        implements CloseListener {
+public class WhoFrame extends CloseFrame implements CloseListener {
     IgsStream In;
     PrintWriter Out;
     Lister T;
@@ -72,16 +76,19 @@ public class WhoFrame extends CloseFrame
     boolean SortName;
     boolean Closed = false;
     String Range;
-    TextField WhoRange;
+    JTextField WhoRange;
+
     CheckboxMenuItem OmitX, OmitQ, Looking, FriendsOnly;
 
     /**
-     * @param cf    the ConnectionFrame, which calls this WhoFrame (used as CloseListener)
+     * @param cf    the ConnectionFrame, which calls this WhoFrame (used as
+     *              CloseListener)
      * @param out   the output stream to the IGS server.
      * @param in    the input stream from the IGS server.
      * @param range a range string to be used in the IGS who command.
      */
-    public WhoFrame(ConnectionFrame cf, PrintWriter out, IgsStream in, String range) {
+    public WhoFrame(ConnectionFrame cf, PrintWriter out, IgsStream in,
+                    String range) {
         super(Global.resourceString("_Who_"));
         cf.addCloseListener(this);
         Range = range;
@@ -89,50 +96,60 @@ public class WhoFrame extends CloseFrame
         Out = out;
         MenuBar m = new MenuBar();
         Menu sort = new MyMenu(Global.resourceString("Options"));
-        sort.add(new MenuItemAction(this, Global.resourceString("Sort_by_Name")));
-        sort.add(new MenuItemAction(this, Global.resourceString("Sort_by_Rank")));
+        sort
+                .add(new MenuItemAction(this, Global.resourceString("Sort_by_Name")));
+        sort
+                .add(new MenuItemAction(this, Global.resourceString("Sort_by_Rank")));
         sort.addSeparator();
         m.add(sort);
-        sort.add(OmitX = new CheckboxMenuItemAction(this, Global.resourceString("Omit_X")));
+        sort.add(OmitX = new CheckboxMenuItemAction(this, Global
+                .resourceString("Omit_X")));
         OmitX.setState(Global.getParameter("omitx", true));
-        sort.add(OmitQ = new CheckboxMenuItemAction(this, Global.resourceString("Omit_Q")));
+        sort.add(OmitQ = new CheckboxMenuItemAction(this, Global
+                .resourceString("Omit_Q")));
         OmitQ.setState(Global.getParameter("omitq", false));
-        sort.add(Looking = new CheckboxMenuItemAction(this, Global.resourceString("__only")));
+        sort.add(Looking = new CheckboxMenuItemAction(this, Global
+                .resourceString("__only")));
         Looking.setState(false);
-        sort.add(FriendsOnly = new CheckboxMenuItemAction(this, Global.resourceString("Friends_only")));
+        sort.add(FriendsOnly = new CheckboxMenuItemAction(this, Global
+                .resourceString("Friends_only")));
         FriendsOnly.setState(false);
         Menu actions = new MyMenu(Global.resourceString("Button_Actions"));
         addmenu(actions, Global.resourceString("Tell"), "Tell");
         actions.addSeparator();
         addmenu(actions, Global.resourceString("Add_Friend"), "Add_Friend");
-        addmenu(actions, Global.resourceString("Remove_Friend"), "Remove_Friend");
+        addmenu(actions, Global.resourceString("Remove_Friend"),
+                "Remove_Friend");
         addmenu(actions, Global.resourceString("Mark_Player"), "Mark");
         addmenu(actions, Global.resourceString("Unmark_Player"), "Unmark");
         actions.addSeparator();
         addmenu(actions, Global.resourceString("Match"), "Match");
         addmenu(actions, Global.resourceString("Stats"), "Stats");
-        addmenu(actions, Global.getParameter("who.button1.label",
-                Global.resourceString("Suggest")), "Button1");
-        addmenu(actions, Global.getParameter("who.button2.label",
-                Global.resourceString("Results")), "Button2");
-        addmenu(actions, Global.getParameter("who.button3.label",
-                Global.resourceString("Stored")), "Button3");
+        addmenu(actions, Global.getParameter("who.button1.label", Global
+                .resourceString("Suggest")), "Button1");
+        addmenu(actions, Global.getParameter("who.button2.label", Global
+                .resourceString("Results")), "Button2");
+        addmenu(actions, Global.getParameter("who.button3.label", Global
+                .resourceString("Stored")), "Button3");
         actions.addSeparator();
-        actions.add(new MenuItemAction(this, Global.resourceString("Edit_Buttons")));
+        actions.add(new MenuItemAction(this, Global
+                .resourceString("Edit_Buttons")));
         m.add(actions);
         Menu help = new MyMenu(Global.resourceString("Help"));
-        help.add(new MenuItemAction(this, Global.resourceString("About_this_Window")));
+        help.add(new MenuItemAction(this, Global
+                .resourceString("About_this_Window")));
         m.add(help);
         setMenuBar(m);
         setLayout(new BorderLayout());
-        T = Global.getParameter("systemlister", false) ? new SystemLister() : new Lister();
+        T = Global.getParameter("systemlister", false) ? new SystemLister()
+                : new Lister();
         T.setFont(Global.Monospaced);
-        T.setBackground(Global.gray);
         T.setText(Global.resourceString("Loading"));
         add("Center", T);
-        Panel p = new MyPanel();
+        MyPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Refresh")));
-        p.add(WhoRange = new HistoryTextField(this, Global.resourceString("WhoRange"), 5));
+        p.add(WhoRange = new HistoryTextField(this, Global
+                .resourceString("WhoRange"), 5));
         WhoRange.setText(Range);
         p.add(new ButtonAction(this, Global.resourceString("Close")));
         p.add(new ButtonAction(this, Global.resourceString("Toggle_Looking")));
@@ -152,30 +169,24 @@ public class WhoFrame extends CloseFrame
         addpop(pop, Global.resourceString("Mark_Player"), "Mark");
         addpop(pop, Global.resourceString("Unmark_Player"), "Unmark");
         pop.addSeparator();
-        addpop(pop, Global.getParameter("who.button1.label",
-                Global.resourceString("Suggest")), "Button1");
-        Global.setParameter("who.button1.label",
-                Global.getParameter("who.button1.label",
-                        Global.resourceString("Suggest")));
-        Global.setParameter("who.button1.text",
-                Global.getParameter("who.button1.text",
-                        Global.resourceString("suggest %%")));
-        addpop(pop, Global.getParameter("who.button2.label",
-                Global.resourceString("Results")), "Button2");
-        Global.setParameter("who.button2.label",
-                Global.getParameter("who.button2.label",
-                        Global.resourceString("Results")));
-        Global.setParameter("who.button2.text",
-                Global.getParameter("who.button2.text",
-                        Global.resourceString("results %%")));
-        addpop(pop, Global.getParameter("who.button3.label",
-                Global.resourceString("Stored")), "Button3");
-        Global.setParameter("who.button3.label",
-                Global.getParameter("who.button3.label",
-                        Global.resourceString("Stored")));
-        Global.setParameter("who.button3.text",
-                Global.getParameter("who.button3.text",
-                        Global.resourceString("stored %%")));
+        addpop(pop, Global.getParameter("who.button1.label", Global
+                .resourceString("Suggest")), "Button1");
+        Global.setParameter("who.button1.label", Global.getParameter(
+                "who.button1.label", Global.resourceString("Suggest")));
+        Global.setParameter("who.button1.text", Global.getParameter(
+                "who.button1.text", Global.resourceString("suggest %%")));
+        addpop(pop, Global.getParameter("who.button2.label", Global
+                .resourceString("Results")), "Button2");
+        Global.setParameter("who.button2.label", Global.getParameter(
+                "who.button2.label", Global.resourceString("Results")));
+        Global.setParameter("who.button2.text", Global.getParameter(
+                "who.button2.text", Global.resourceString("results %%")));
+        addpop(pop, Global.getParameter("who.button3.label", Global
+                .resourceString("Stored")), "Button3");
+        Global.setParameter("who.button3.label", Global.getParameter(
+                "who.button3.label", Global.resourceString("Stored")));
+        Global.setParameter("who.button3.text", Global.getParameter(
+                "who.button3.text", Global.resourceString("stored %%")));
         if (T instanceof Lister) T.setPopupMenu(pop);
     }
 
@@ -189,6 +200,7 @@ public class WhoFrame extends CloseFrame
         pop.add(mi);
     }
 
+    @Override
     public void doAction(String o) {
         if (Global.resourceString("Refresh").equals(o)) {
             refresh();
@@ -211,7 +223,8 @@ public class WhoFrame extends CloseFrame
             String user = " " + getuser();
             int n = friends.indexOf(user);
             if (friends.indexOf(user) < 0) return;
-            friends = friends.substring(0, n) + friends.substring(n + user.length());
+            friends = friends.substring(0, n)
+                    + friends.substring(n + user.length());
             Global.setParameter("friends", friends);
             allsended();
         } else if ("Mark".equals(o)) {
@@ -225,7 +238,8 @@ public class WhoFrame extends CloseFrame
             String user = " " + getuser();
             int n = friends.indexOf(user);
             if (friends.indexOf(user) < 0) return;
-            friends = friends.substring(0, n) + friends.substring(n + user.length());
+            friends = friends.substring(0, n)
+                    + friends.substring(n + user.length());
             Global.setParameter("marked", friends);
             allsended();
         } else if ("Stats".equals(o)) {
@@ -233,16 +247,17 @@ public class WhoFrame extends CloseFrame
             CF.out("stats " + getuser());
         } else if ("Button1".equals(o)) {
             if (getuser().equals("")) return;
-            CF.out(replace(Global.getParameter("who.button1.text",
-                    "suggest %%")));
+            CF.out(replace(Global
+                    .getParameter("who.button1.text", "suggest %%")));
         } else if ("Button2".equals(o)) {
             if (getuser().equals("")) return;
-            CF.out(replace(Global.getParameter("who.button2.text",
-                    "results %%")));
+            CF.out(replace(Global
+                    .getParameter("who.button2.text", "results %%")));
         } else if ("Button3".equals(o)) {
             if (getuser().equals("")) return;
-            CF.out(replace(Global.getParameter("who.button3.text",
-                    "stored %%")));
+            CF
+                    .out(replace(Global.getParameter("who.button3.text",
+                            "stored %%")));
         } else if (Global.resourceString("Sort_by_Name").equals(o)) {
             SortName = true;
             allsended();
@@ -268,10 +283,12 @@ public class WhoFrame extends CloseFrame
         String begin = "";
         if (pos > 0) begin = replacement.substring(0, pos);
         String end = "";
-        if (pos + 2 < replacement.length()) end = replacement.substring(pos + 2);
+        if (pos + 2 < replacement.length())
+            end = replacement.substring(pos + 2);
         return begin + getuser() + end;
     }
 
+    @Override
     public void itemAction(String o, boolean f) {
         if (o.equals(Global.resourceString("__only"))) {
             Global.setParameter("looking", f);
@@ -296,9 +313,10 @@ public class WhoFrame extends CloseFrame
     }
 
     /**
-     * When this dialog cloeses it will unchain itself from the
-     * distributor, which created it.
+     * When this dialog cloeses it will unchain itself from the distributor,
+     * which created it.
      */
+    @Override
     synchronized public boolean close() {
         if (GD != null) GD.unchain();
         GD = null;
@@ -311,10 +329,9 @@ public class WhoFrame extends CloseFrame
     }
 
     /**
-     * Will send a new who command to the IGS server. To receive
-     * the IGS output it will create a who distributor, which will
-     * register with the IGSStream and send input to this who
-     * frame.
+     * Will send a new who command to the IGS server. To receive the IGS output
+     * it will create a who distributor, which will register with the IGSStream
+     * and send input to this who frame.
      */
     synchronized public void refresh() {
         L = new ListClass();
@@ -326,9 +343,8 @@ public class WhoFrame extends CloseFrame
     }
 
     /**
-     * The distributor told me that all players have been receved.
-     * Now unchain the distributor, parse and sort the output and
-     * display.
+     * The distributor told me that all players have been receved. Now unchain
+     * the distributor, parse and sort the output and display.
      */
     synchronized void allsended() {
         if (GD != null) GD.unchain();
@@ -349,17 +365,15 @@ public class WhoFrame extends CloseFrame
             }
             Sorter.sort(v);
             T.setText("");
-            T.appendLine0(Global.resourceString("_Info_______Name_______Idle___Rank"));
+            T.appendLine0(Global
+                    .resourceString("_Info_______Name_______Idle___Rank"));
             Color FC = Color.green.darker(), CM = Color.red.darker();
             for (i = 0; i < n; i++) {
-                if (!(
-                        (Looking.getState() && !v[i].looking()) ||
-                                (OmitX.getState() && v[i].silent()) ||
-                                (OmitQ.getState() && v[i].quiet()) ||
-                                (FriendsOnly.getState() && !v[i].friend())
-                ))
-                    T.appendLine0(v[i].who(), v[i].friend() ?
-                            FC : (v[i].marked() ? CM : Color.black));
+                if (!(Looking.getState() && !v[i].looking()
+                        || OmitX.getState() && v[i].silent() || OmitQ.getState()
+                        && v[i].quiet() || FriendsOnly.getState() && !v[i].friend()))
+                    T.appendLine0(v[i].who(), v[i].friend() ? FC : v[i].marked() ? CM
+                            : Color.black);
             }
             T.doUpdate(false);
         } else {
@@ -396,4 +410,3 @@ public class WhoFrame extends CloseFrame
     }
 
 }
-

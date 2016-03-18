@@ -11,9 +11,10 @@ class FunctionKey extends GrayTextField {
     }
 }
 
+
 /**
- * A dialog, which lets the user edit all function keys.
- * Contains an array of 10 text fields.
+ * A dialog, which lets the user edit all function keys. Contains an array of 10
+ * text fields.
  * <p>
  * The function keys are stored as global parameters.
  */
@@ -22,7 +23,7 @@ public class FunctionKeyEdit extends CloseDialog {
 
     public FunctionKeyEdit() {
         super(Global.frame(), Global.resourceString("Function_Keys"), false);
-        Panel p = new MyPanel();
+        MyPanel p = new MyPanel();
         p.setLayout(new GridLayout(0, 2));
         FK = new FunctionKey[10];
         for (int i = 0; i < 10; i++) {
@@ -30,7 +31,7 @@ public class FunctionKeyEdit extends CloseDialog {
             p.add(FK[i] = new FunctionKey(i + 1));
         }
         add("Center", new Panel3D(p));
-        Panel bp = new MyPanel();
+        MyPanel bp = new MyPanel();
         bp.add(new ButtonAction(this, Global.resourceString("Close")));
         add("South", new Panel3D(bp));
         Global.setpacked(this, "functionkeys", 300, 400);
@@ -38,6 +39,7 @@ public class FunctionKeyEdit extends CloseDialog {
         show();
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "functionkeys");
         for (int i = 0; i < 10; i++)
@@ -46,4 +48,3 @@ public class FunctionKeyEdit extends CloseDialog {
         dispose();
     }
 }
-

@@ -1,5 +1,6 @@
 package jagoclient.board;
 
+
 // ************** Field **************
 
 /**

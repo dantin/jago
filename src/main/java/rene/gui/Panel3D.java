@@ -6,7 +6,8 @@ import java.awt.*;
  * Panel3D extends the Panel class with a 3D look.
  */
 
-public class Panel3D extends Panel {
+public class Panel3D extends Panel
+        implements LayoutManager {
     Component C;
 
     /**
@@ -15,49 +16,66 @@ public class Panel3D extends Panel {
      */
     public Panel3D(Component c) {
         C = c;
+        setLayout(this);
         add(C);
         setBackground(C.getBackground());
     }
 
     public Panel3D(Component c, Color background) {
         C = c;
+        setLayout(this);
         add(C);
         setBackground(background);
     }
 
-    /**
-     * An empty 3D panel.
-     */
-    public Panel3D() {
+    public void paint(Graphics g) {
+        g.setColor(getBackground());
+        if (getSize().width > 0 && getSize().height > 0)
+            g.fill3DRect(0, 0, getSize().width, getSize().height, true);
+        // C.repaint(); // probably not necessary, but Mac OSX bug ?!?
+    }
+
+    public void addLayoutComponent(String arg0, Component arg1) {
+        C = arg1;
+    }
+
+    public void removeLayoutComponent(Component arg0) {
         C = null;
     }
 
-    public void paint(Graphics g) {
-        g.setColor(getBackground());
-        g.fill3DRect(0, 0, getSize().width, getSize().height, true);
+    public Dimension preferredLayoutSize(Container arg0) {
+        if (C != null) return new Dimension(
+                C.getPreferredSize().width + 10, C.getPreferredSize().height + 10);
+        return new Dimension(10, 10);
     }
 
-    public void update(Graphics g) {
-        paint(g);
-    }
-
-    public void doLayout() {
-        if (C != null) {
-            C.setLocation(5, 5);
-            C.setSize(getSize().width - 10, getSize().height - 10);
-            C.doLayout();
-            Graphics g = getGraphics();
-            if (g != null) paint(g);
-        } else super.doLayout();
+    public Dimension minimumLayoutSize(Container arg0) {
+        if (C != null) return new Dimension(
+                C.getMinimumSize().width + 10, C.getMinimumSize().height + 10);
+        return new Dimension(10, 10);
     }
 
     public Dimension getPreferredSize() {
-        Dimension d = C.getPreferredSize();
-        return new Dimension(d.width + 10, d.height + 10);
+        if (C != null) return new Dimension(
+                C.getPreferredSize().width + 10, C.getPreferredSize().height + 10);
+        return new Dimension(10, 10);
     }
 
     public Dimension getMinimumSize() {
-        Dimension d = C.getMinimumSize();
-        return new Dimension(d.width + 10, d.height + 10);
+        return getPreferredSize();
+    }
+
+    public void layoutContainer(Container arg0) {
+        if (C == null) return;
+        C.setLocation(5, 5);
+        C.setSize(getSize().width - 10, getSize().height - 10);
+    }
+
+    public static void main(String args[]) {
+        CloseFrame f = new CloseFrame("Test");
+        f.add("Center", new Panel3D(new MyPanel()));
+        f.setSize(400, 400);
+        f.setLocation(100, 100);
+        f.setVisible(true);
     }
 }

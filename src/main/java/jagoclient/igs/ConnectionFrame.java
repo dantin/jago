@@ -16,6 +16,7 @@ import rene.util.list.ListElement;
 import rene.viewer.SystemViewer;
 import rene.viewer.Viewer;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -25,37 +26,44 @@ import java.net.Socket;
 
 class CloseConnectionQuestion extends Question {
     public CloseConnectionQuestion(ConnectionFrame g) {
-        super(g, Global.resourceString("This_will_close_your_connection_"), Global.resourceString("Close"), g, true);
+        super(g, Global.resourceString("This_will_close_your_connection_"),
+                Global.resourceString("Close"), g, true);
         show();
     }
 }
+
 
 class GetWaitfor extends GetParameter {
     ConnectionFrame CF;
 
     public GetWaitfor(ConnectionFrame cf) {
-        super(cf, Global.resourceString("Wait_for_"), Global.resourceString("Wait_for_Player"), cf, true);
+        super(cf, Global.resourceString("Wait_for_"), Global
+                .resourceString("Wait_for_Player"), cf, true);
         CF = cf;
         set(CF.Waitfor);
         show();
     }
 
+    @Override
     public boolean tell(Object o, String s) {
         CF.Waitfor = s;
         return true;
     }
 }
 
+
 class GetReply extends GetParameter {
     ConnectionFrame CF;
 
     public GetReply(ConnectionFrame cf) {
-        super(cf, Global.resourceString("Automatic_Reply_"), Global.resourceString("Auto_Reply"), cf, true);
+        super(cf, Global.resourceString("Automatic_Reply_"), Global
+                .resourceString("Auto_Reply"), cf, true);
         CF = cf;
         set(CF.Reply);
         show();
     }
 
+    @Override
     public boolean tell(Object o, String s) {
         CF.Reply = s;
         Global.setParameter("autoreply", s);
@@ -63,7 +71,8 @@ class GetReply extends GetParameter {
     }
 }
 
-class RefreshWriter extends PrintWriter implements Runnable {
+
+class RefreshWriter extends PrintWriter {
     Thread T;
     boolean NeedsRefresh;
     boolean Stop = false;
@@ -71,11 +80,18 @@ class RefreshWriter extends PrintWriter implements Runnable {
     public RefreshWriter(OutputStreamWriter out, boolean flag) {
         super(out, flag);
         if (Global.getParameter("refresh", true)) {
-            T = new Thread(this);
+            Dump.println("Refresh Thread started.");
+            T = new Thread() {
+                @Override
+                public void run() {
+                    runAYT();
+                }
+            };
             T.start();
         }
     }
 
+    @Override
     public void print(String s) {
         super.print(s);
         Dump.println("Out ---> " + s);
@@ -88,34 +104,37 @@ class RefreshWriter extends PrintWriter implements Runnable {
         NeedsRefresh = false;
     }
 
+    @Override
     public void close() {
         super.close();
+        NeedsRefresh = false;
         Stop = true;
     }
 
-    public void run() {
+    public void runAYT() {
         while (!Stop) {
             NeedsRefresh = true;
             try {
-                T.sleep(300000);
+                Thread.sleep(300000);
             } catch (Exception e) {
             }
             if (Stop) break;
             if (NeedsRefresh) {
                 println("ayt");
+                // write(254);
+                Dump.println("ayt sent!");
             }
         }
     }
 }
 
+
 /**
- * This frame contains a menu, a text area for the server output,
- * a text area to send commands to the server and buttons to call
- * who, games etc.
+ * This frame contains a menu, a text area for the server output, a text area to
+ * send commands to the server and buttons to call who, games etc.
  */
 
-public class ConnectionFrame extends CloseFrame
-        implements KeyListener {
+public class ConnectionFrame extends CloseFrame implements KeyListener {
     GridBagLayout girdbag;
     Viewer Output;
     HistoryTextField Input;
@@ -130,11 +149,11 @@ public class ConnectionFrame extends CloseFrame
     IgsStream In;
     ReceiveThread RT;
     String Dir;
-    TextField Game;
+    JTextField Game;
     CheckboxMenuItem CheckInfo, CheckMessages, CheckErrors, ReducedOutput,
             AutoReply;
     public int MoveStyle = Connection.MOVE;
-    TextField WhoRange; // Kyu/Dan range for the who command.
+    JTextField WhoRange; // Kyu/Dan range for the who command.
     String Waitfor; // Pop a a message, when this player connects.
     ListClass OL; // List of Output-Listeners
     String Reply;
@@ -159,33 +178,45 @@ public class ConnectionFrame extends CloseFrame
         file.add(new MenuItemAction(this, Global.resourceString("Close")));
         Menu options = new MyMenu(Global.resourceString("Options"));
         M.add(options);
-        options.add(AutoReply = new CheckboxMenuItemAction(this, Global.resourceString("Auto_Reply")));
+        options.add(AutoReply = new CheckboxMenuItemAction(this, Global
+                .resourceString("Auto_Reply")));
         AutoReply.setState(false);
-        options.add(new MenuItemAction(this, Global.resourceString("Set_Reply")));
-        Reply = Global.getParameter("autoreply", "I am busy! Please, try later.");
+        options
+                .add(new MenuItemAction(this, Global.resourceString("Set_Reply")));
+        Reply = Global.getParameter("autoreply",
+                "I am busy! Please, try later.");
         options.addSeparator();
-        options.add(CheckInfo = new CheckboxMenuItemAction(this, Global.resourceString("Show_Information")));
+        options.add(CheckInfo = new CheckboxMenuItemAction(this, Global
+                .resourceString("Show_Information")));
         CheckInfo.setState(Global.getParameter("showinformation", false));
-        options.add(CheckMessages = new CheckboxMenuItemAction(this, Global.resourceString("Show_Messages")));
+        options.add(CheckMessages = new CheckboxMenuItemAction(this, Global
+                .resourceString("Show_Messages")));
         CheckMessages.setState(Global.getParameter("showmessages", true));
-        options.add(CheckErrors = new CheckboxMenuItemAction(this, Global.resourceString("Show_Errors")));
+        options.add(CheckErrors = new CheckboxMenuItemAction(this, Global
+                .resourceString("Show_Errors")));
         CheckErrors.setState(Global.getParameter("showerrors", false));
-        options.add(ReducedOutput = new CheckboxMenuItemAction(this, Global.resourceString("Reduced_Output")));
+        options.add(ReducedOutput = new CheckboxMenuItemAction(this, Global
+                .resourceString("Reduced_Output")));
         ReducedOutput.setState(Global.getParameter("reducedoutput", true));
-        options.add(new MenuItemAction(this, Global.resourceString("Wait_for_Player")));
+        options.add(new MenuItemAction(this, Global
+                .resourceString("Wait_for_Player")));
         Menu help = new MyMenu(Global.resourceString("Help"));
-        help.add(new MenuItemAction(this, Global.resourceString("Terminal_Window")));
-        help.add(new MenuItemAction(this, Global.resourceString("Server_Help")));
+        help.add(new MenuItemAction(this, Global
+                .resourceString("Terminal_Window")));
+        help
+                .add(new MenuItemAction(this, Global.resourceString("Server_Help")));
         help.add(new MenuItemAction(this, Global.resourceString("Channels")));
-        help.add(new MenuItemAction(this, Global.resourceString("Observing_Playing")));
+        help.add(new MenuItemAction(this, Global
+                .resourceString("Observing_Playing")));
         help.add(new MenuItemAction(this, Global.resourceString("Teaching")));
         M.setHelpMenu(help);
-        Panel center = new MyPanel();
+        MyPanel center = new MyPanel();
         center.setLayout(new BorderLayout());
         // Text
-        Output = Global.getParameter("systemviewer", false) ? new SystemViewer() : new Viewer();
+        Output = Global.getParameter("systemviewer", false) ? new SystemViewer()
+                : new Viewer();
         Output.setFont(Global.Monospaced);
-        Output.setBackground(Global.gray);
+        // Output.setBackground(Global.gray);
         center.add("Center", Output);
         // Input
         Input = new HistoryTextField(this, "Input");
@@ -193,7 +224,7 @@ public class ConnectionFrame extends CloseFrame
         center.add("South", Input);
         add("Center", center);
         // Buttons:
-        Panel p = new MyPanel();
+        MyPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Who")));
         p.add(WhoRange = new HistoryTextField(this, "WhoRange", 5));
         WhoRange.setText(Global.getParameter("whorange", "20k-8d"));
@@ -217,20 +248,18 @@ public class ConnectionFrame extends CloseFrame
     }
 
     /**
-     * Tries to connect to the server using IgsStream.
-     * Upon success, it starts the ReceiveThread, which
-     * handles the login and then all input from the server,
-     * scanned by IgsStream.
+     * Tries to connect to the server using IgsStream. Upon success, it starts
+     * the ReceiveThread, which handles the login and then all input from the
+     * server, scanned by IgsStream.
      * <p>
-     * Then it starts some default distributors, shows itself and
-     * returns true.
+     * Then it starts some default distributors, shows itself and returns true.
      *
      * @returns success of failure
      * @see IgsStream
      * @see ReceiveThread
      */
-    public boolean connect(String server, int port, String user, String password,
-                           boolean proxy) {
+    public boolean connect(String server, int port, String user,
+                           String password, boolean proxy) {
         try {
             Server = new Socket(server, port);
             String encoding = Encoding;
@@ -239,37 +268,34 @@ public class ConnectionFrame extends CloseFrame
             }
             if (encoding.equals(""))
                 Out = new RefreshWriter(
-                        new OutputStreamWriter(
-                                Outstream = new DataOutputStream(Server.getOutputStream())),
-                        true);
-            else Out = new RefreshWriter(
-                    new OutputStreamWriter(
-                            Outstream = new DataOutputStream(Server.getOutputStream()), encoding),
-                    true);
+                        new OutputStreamWriter(Outstream = new DataOutputStream(
+                                Server.getOutputStream())), true);
+            else Out = new RefreshWriter(new OutputStreamWriter(
+                    Outstream = new DataOutputStream(Server.getOutputStream()),
+                    encoding), true);
         } catch (UnsupportedEncodingException e) {
             try {
                 Out = new RefreshWriter(
-                        new OutputStreamWriter(
-                                Outstream = new DataOutputStream(Server.getOutputStream())),
-                        true);
+                        new OutputStreamWriter(Outstream = new DataOutputStream(
+                                Server.getOutputStream())), true);
             } catch (Exception ex) {
                 return false;
             }
         } catch (IllegalArgumentException e) {
             try {
                 Out = new RefreshWriter(
-                        new OutputStreamWriter(
-                                Outstream = new DataOutputStream(Server.getOutputStream())),
-                        true);
+                        new OutputStreamWriter(Outstream = new DataOutputStream(
+                                Server.getOutputStream())), true);
             } catch (Exception ex) {
                 return false;
             }
         } catch (IOException e) {
             return false;
         }
-        try {	/*if (proxy) In=
-            new ProxyIgsStream(this,Server.getInputStream(),Out);
-			else */
+        try { /*
+         * if (proxy) In= new ProxyIgsStream(this,Server.getInputStream(),Out);
+		 * else
+		 */
             In = new IgsStream(this, Server.getInputStream(), Out);
         } catch (Exception e) {
             return false;
@@ -285,8 +311,8 @@ public class ConnectionFrame extends CloseFrame
         return true;
     }
 
-    public boolean connectvia(String server, int port, String user, String password,
-                              String relayserver, int relayport) {
+    public boolean connectvia(String server, int port, String user,
+                              String password, String relayserver, int relayport) {
         try {
             Server = new Socket(relayserver, relayport);
             String encoding = Encoding;
@@ -295,28 +321,24 @@ public class ConnectionFrame extends CloseFrame
             }
             if (encoding.equals(""))
                 Out = new RefreshWriter(
-                        new OutputStreamWriter(
-                                Outstream = new DataOutputStream(Server.getOutputStream())),
-                        true);
-            else Out = new RefreshWriter(
-                    new OutputStreamWriter(
-                            Outstream = new DataOutputStream(Server.getOutputStream()), encoding),
-                    true);
+                        new OutputStreamWriter(Outstream = new DataOutputStream(
+                                Server.getOutputStream())), true);
+            else Out = new RefreshWriter(new OutputStreamWriter(
+                    Outstream = new DataOutputStream(Server.getOutputStream()),
+                    encoding), true);
         } catch (UnsupportedEncodingException e) {
             try {
                 Out = new RefreshWriter(
-                        new OutputStreamWriter(
-                                Outstream = new DataOutputStream(Server.getOutputStream())),
-                        true);
+                        new OutputStreamWriter(Outstream = new DataOutputStream(
+                                Server.getOutputStream())), true);
             } catch (Exception ex) {
                 return false;
             }
         } catch (IllegalArgumentException e) {
             try {
                 Out = new RefreshWriter(
-                        new OutputStreamWriter(
-                                Outstream = new DataOutputStream(Server.getOutputStream())),
-                        true);
+                        new OutputStreamWriter(Outstream = new DataOutputStream(
+                                Server.getOutputStream())), true);
             } catch (Exception ex) {
                 return false;
             }
@@ -341,13 +363,15 @@ public class ConnectionFrame extends CloseFrame
         return true;
     }
 
+    @Override
     public void doAction(String o) {
         if (Global.resourceString("Close").equals(o)) {
             if (close()) doclose();
         } else if (Global.resourceString("Clear").equals(o)) {
             Output.setText("");
         } else if (Global.resourceString("Save").equals(o)) {
-            FileDialog fd = new FileDialog(this, Global.resourceString("Save_Game"), FileDialog.SAVE);
+            FileDialog fd = new FileDialog(this, Global
+                    .resourceString("Save_Game"), FileDialog.SAVE);
             if (!Dir.equals("")) fd.setDirectory(Dir);
             fd.setFile("*.txt");
             fd.show();
@@ -357,12 +381,11 @@ public class ConnectionFrame extends CloseFrame
             try {
                 PrintWriter fo;
                 if (Encoding.equals(""))
-                    fo =
-                            new PrintWriter(new OutputStreamWriter(
-                                    new FileOutputStream(fd.getDirectory() + fn)), true);
-                else fo =
-                        new PrintWriter(new OutputStreamWriter(
-                                new FileOutputStream(fd.getDirectory() + fn), Encoding), true);
+                    fo = new PrintWriter(new OutputStreamWriter(
+                            new FileOutputStream(fd.getDirectory() + fn)), true);
+                else fo = new PrintWriter(new OutputStreamWriter(
+                        new FileOutputStream(fd.getDirectory() + fn), Encoding),
+                        true);
                 Output.save(fo);
                 fo.close();
             } catch (IOException ex) {
@@ -381,7 +404,8 @@ public class ConnectionFrame extends CloseFrame
                 Who.show();
                 Who.refresh();
             } else {
-                if (WhoRange.getText().equals("")) command("who");
+                if (WhoRange.getText().equals(""))
+                    command("who");
                 else command("who " + WhoRange.getText());
             }
         } else if (Global.resourceString("Games").equals(o)) {
@@ -446,6 +470,7 @@ public class ConnectionFrame extends CloseFrame
         } else super.doAction(o);
     }
 
+    @Override
     public void itemAction(String o, boolean flag) {
         if (Global.resourceString("Show_Information").equals(o)) {
             Global.setParameter("showinformation", flag);
@@ -462,12 +487,12 @@ public class ConnectionFrame extends CloseFrame
         if (os.startsWith(" ")) {
             os = os.trim();
         } else append(os, Color.green.darker());
-        if (Global.getParameter("gameswindow", true) &&
-                os.toLowerCase().startsWith("games")) {
+        if (Global.getParameter("gameswindow", true)
+                && os.toLowerCase().startsWith("games")) {
             Input.setText("");
             doAction(Global.resourceString("Games"));
-        } else if (Global.getParameter("whowindow", true) &&
-                os.toLowerCase().startsWith("who")) {
+        } else if (Global.getParameter("whowindow", true)
+                && os.toLowerCase().startsWith("who")) {
             Input.setText("");
             if (os.length() > 4) {
                 os = os.substring(4).trim();
@@ -496,7 +521,8 @@ public class ConnectionFrame extends CloseFrame
                 doAction(Global.resourceString("Status"));
             } else append("Status needs a game number", Color.red);
         } else if (os.toLowerCase().startsWith("moves")) {
-            new Message(this, Global.resourceString("Do_not_enter_this_command_here_"));
+            new Message(this, Global
+                    .resourceString("Do_not_enter_this_command_here_"));
         } else {
             if (!Input.getText().startsWith(" ")) Input.remember(os);
             Out.println(os);
@@ -506,27 +532,37 @@ public class ConnectionFrame extends CloseFrame
 
     public void peek(int n) {
         if (In.gamewaiting(n)) {
-            new Message(this, Global.resourceString("There_is_already_a_board_for_this_game_"));
+            new Message(this, Global
+                    .resourceString("There_is_already_a_board_for_this_game_"));
             return;
         }
         IgsGoFrame gf = new IgsGoFrame(this, Global.resourceString("Peek_game"));
+        gf.setVisible(true);
+        gf.repaint();
         new Peeker(gf, In, Out, n);
     }
 
     public void status(int n) {
         IgsGoFrame gf = new IgsGoFrame(this, Global.resourceString("Peek_game"));
+        gf.setVisible(true);
+        gf.repaint();
         new Status(gf, In, Out, n);
     }
 
     public void observe(int n) {
         if (In.gamewaiting(n)) {
-            new Message(this, Global.resourceString("There_is_already_a_board_for_this_game_"));
+            new Message(this, Global
+                    .resourceString("There_is_already_a_board_for_this_game_"));
             return;
         }
-        IgsGoFrame gf = new IgsGoFrame(this, Global.resourceString("Observe_game"));
+        IgsGoFrame gf = new IgsGoFrame(this, Global
+                .resourceString("Observe_game"));
+        gf.setVisible(true);
+        gf.repaint();
         new GoObserver(gf, In, Out, n);
     }
 
+    @Override
     public void doclose() {
         Global.notewindow(this, "connection");
         hasClosed = true;
@@ -534,15 +570,18 @@ public class ConnectionFrame extends CloseFrame
         if (In != null) In.removeall();
         Out.println("quit");
         Out.close();
+        Dump.println("doclose() called in connection");
         new CloseConnection(Server, In.getInputStream());
         inform();
         super.doclose();
     }
 
+    @Override
     public boolean close() {
         if (RT.isAlive()) {
             if (Global.getParameter("confirmations", true)) {
-                return (new CloseConnectionQuestion(this)).result();
+                return new CloseConnectionQuestion(
+                        this).result();
             }
         }
         return true;
@@ -602,7 +641,8 @@ public class ConnectionFrame extends CloseFrame
     }
 
     String reply() {
-        if (AutoReply.getState()) return Reply;
+        if (AutoReply.getState())
+            return Reply;
         else return "";
     }
 
@@ -618,7 +658,9 @@ public class ConnectionFrame extends CloseFrame
         Input.setText(s);
     }
 
+    @Override
     public void windowOpened(WindowEvent e) {
         Input.requestFocus();
     }
+
 }

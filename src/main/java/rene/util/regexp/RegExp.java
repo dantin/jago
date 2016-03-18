@@ -1039,6 +1039,7 @@ public class RegExp {
     public String expand(String s) {
         try {
             StringBuffer B = new StringBuffer();
+            s = s.replace("\\t", "\t");
             StringTokenizer T = new StringTokenizer(s, "\\()", true);
             while (T.hasMoreTokens()) {
                 String a = T.nextToken();

@@ -370,9 +370,13 @@ public class SGFTree {
             } else if (tag.name().equals("White")) {
                 if (p != null) number = ((Node) p.content()).number();
                 Node n = new Node(number);
-                n.addaction(new Action("W", xmlToSgf(tree)));
-                n.number(n.number() + 1);
-                n.main(main);
+                try {
+                    n.addaction(new Action("W", xmlToSgf(tree)));
+                    n.number(n.number() + 1);
+                    n.main(main);
+                } catch (XmlReaderException ey) {
+                    n.addaction(new Action("C", "Pass"));
+                }
                 if (tag.hasParam("name")) {
                     n.addaction(new Action("N", tag.getValue("name")));
                 }
@@ -386,9 +390,13 @@ public class SGFTree {
             } else if (tag.name().equals("Black")) {
                 if (p != null) number = ((Node) p.content()).number();
                 Node n = new Node(number);
-                n.addaction(new Action("B", xmlToSgf(tree)));
-                n.number(n.number() + 1);
-                n.main(main);
+                try {
+                    n.addaction(new Action("B", xmlToSgf(tree)));
+                    n.number(n.number() + 1);
+                    n.main(main);
+                } catch (XmlReaderException ey) {
+                    n.addaction(new Action("C", "Pass"));
+                }
                 if (tag.hasParam("name")) {
                     n.addaction(new Action("N", tag.getValue("name")));
                 }
@@ -440,11 +448,17 @@ public class SGFTree {
             XmlTree t = (XmlTree) e.nextElement();
             tag = t.getTag();
             if (tag.name().equals("Black")) {
-                n.addaction(new Action("B", xmlToSgf(t)));
-                n.number(n.number() + 1);
+                try {
+                    n.addaction(new Action("B", xmlToSgf(t)));
+                    n.number(n.number() + 1);
+                } catch (XmlReaderException ey) {
+                }
             } else if (tag.name().equals("White")) {
-                n.addaction(new Action("W", xmlToSgf(t)));
-                n.number(n.number() + 1);
+                try {
+                    n.addaction(new Action("W", xmlToSgf(t)));
+                    n.number(n.number() + 1);
+                } catch (XmlReaderException ey) {
+                }
             } else if (tag.name().equals("AddBlack")) {
                 n.addaction(new Action("AB", xmlToSgf(t)));
             } else if (tag.name().equals("AddWhite")) {

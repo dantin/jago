@@ -4,14 +4,14 @@ import jagoclient.Dump;
 import jagoclient.Global;
 import rene.viewer.Viewer;
 
-import java.awt.*;
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
- * A thrad to expect input from a partner. The input is checked here
- * for commands (starting with @@).
+ * A thrad to expect input from a partner. The input is checked here for
+ * commands (starting with @@).
  */
 
 public class PartnerThread extends Thread {
@@ -19,10 +19,10 @@ public class PartnerThread extends Thread {
     PrintWriter Out;
     Viewer T;
     PartnerFrame PF;
-    TextField Input;
+    JTextField Input;
 
-    public PartnerThread(BufferedReader in, PrintWriter out,
-                         TextField input, Viewer t, PartnerFrame pf) {
+    public PartnerThread(BufferedReader in, PrintWriter out, JTextField input,
+                         Viewer t, PartnerFrame pf) {
         In = in;
         Out = out;
         T = t;
@@ -30,6 +30,7 @@ public class PartnerThread extends Thread {
         Input = input;
     }
 
+    @Override
     public void run() {
         try {
             while (true) {
@@ -39,7 +40,8 @@ public class PartnerThread extends Thread {
                 if (s.startsWith("@@busy")) {
                     T.append(Global.resourceString("____Server_is_busy____"));
                     return;
-                } else if (s.startsWith("@@")) PF.interpret(s);
+                } else if (s.startsWith("@@"))
+                    PF.interpret(s);
                 else {
                     T.append(s + "\n");
                     Input.requestFocus();
@@ -50,4 +52,3 @@ public class PartnerThread extends Thread {
         }
     }
 }
-

@@ -12,8 +12,7 @@ class SoundElement extends ListElement {
     public SoundElement(String name) {
         super(name);
         S = null;
-        if (Global.getJavaVersion() >= 1.3) S = new Sound13(name);
-        else S = new Sound11(name);
+        S = new Sound13(name);
     }
 
     public String name() {
@@ -41,7 +40,7 @@ public class SoundList implements Runnable {
         T = new Thread(this);
         T.start();
         try {
-            Thread.currentThread().sleep(0);
+            Thread.sleep(0);
         } catch (Exception e) {
         }
     }

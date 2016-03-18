@@ -7,8 +7,8 @@ import java.awt.*;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 
-class ColorScrollbar extends Panel
-        implements AdjustmentListener, DoActionListener {
+class ColorScrollbar extends Panel implements AdjustmentListener,
+        DoActionListener {
     public int Value;
     ColorEdit CE;
     Scrollbar SB;
@@ -18,7 +18,7 @@ class ColorScrollbar extends Panel
         CE = ce;
         setLayout(new GridLayout(1, 0));
         Value = value;
-        Panel p = new MyPanel();
+        MyPanel p = new MyPanel();
         p.setLayout(new GridLayout(1, 0));
         p.add(new MyLabel(s));
         p.add(L = new IntField(this, "L", Value, 4));
@@ -50,10 +50,10 @@ class ColorScrollbar extends Panel
     }
 }
 
+
 /**
- * A dialog to edit a color. The result is stored in the Global
- * parameters under the specified name string. Modality is
- * handled as in the Question dialog.
+ * A dialog to edit a color. The result is stored in the Global parameters under
+ * the specified name string. Modality is handled as in the Question dialog.
  *
  * @see jagoclient.Global
  * @see Question
@@ -63,20 +63,24 @@ public class ColorEdit extends CloseDialog {
     ColorScrollbar Red, Green, Blue;
     Label RedLabel, GreenLabel, BlueLabel;
     Color C;
-    Panel CP;
+    MyPanel CP;
     String Name;
 
-    public ColorEdit(Frame F, String s, int red, int green, int blue, boolean flag) {
+    public ColorEdit(Frame F, String s, int red, int green, int blue,
+                     boolean flag) {
         super(F, Global.resourceString("Edit_Color"), flag);
         Name = s;
         C = Global.getColor(s, red, green, blue);
-        Panel p = new MyPanel();
+        MyPanel p = new MyPanel();
         p.setLayout(new GridLayout(0, 1));
-        p.add(Red = new ColorScrollbar(this, Global.resourceString("Red"), C.getRed()));
-        p.add(Green = new ColorScrollbar(this, Global.resourceString("Green"), C.getGreen()));
-        p.add(Blue = new ColorScrollbar(this, Global.resourceString("Blue"), C.getBlue()));
+        p.add(Red = new ColorScrollbar(this, Global.resourceString("Red"), C
+                .getRed()));
+        p.add(Green = new ColorScrollbar(this, Global.resourceString("Green"),
+                C.getGreen()));
+        p.add(Blue = new ColorScrollbar(this, Global.resourceString("Blue"), C
+                .getBlue()));
         add("Center", new Panel3D(p));
-        Panel pb = new MyPanel();
+        MyPanel pb = new MyPanel();
         pb.add(new ButtonAction(this, Global.resourceString("OK")));
         pb.add(new ButtonAction(this, Global.resourceString("Cancel")));
         addbutton(pb);
@@ -89,13 +93,14 @@ public class ColorEdit extends CloseDialog {
         validate();
     }
 
-    public void addbutton(Panel p) {
+    public void addbutton(MyPanel p) {
     }
 
     public ColorEdit(Frame F, String s, Color C, boolean flag) {
         this(F, s, C.getRed(), C.getGreen(), C.getBlue(), flag);
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "coloredit");
         if (Global.resourceString("Cancel").equals(o)) {

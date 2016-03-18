@@ -6,8 +6,8 @@ import rene.util.sound.SoundList;
 public class JagoSound {
     static SoundList SL = new SoundList();
 
-    static synchronized public void play
-            (String file, String simplefile, boolean beep) {
+    static synchronized public void play(String file, String simplefile,
+                                         boolean beep) {
         if (Global.getParameter("nosound", true)) return;
         if (Global.getParameter("beep", true)) {
             if (beep) SoundList.beep();
@@ -18,8 +18,7 @@ public class JagoSound {
         if (SL.busy()) return;
         if (Global.getJavaVersion() >= 1.3)
             SL.play("/jagoclient/au/" + file + ".wav");
-        else
-            SL.play("/jagoclient/au/" + file + ".au");
+        else SL.play("/jagoclient/au/" + file + ".au");
     }
 
     static public void play(String file) {
@@ -27,4 +26,3 @@ public class JagoSound {
         play(file, "wip", false);
     }
 }
-

@@ -5,10 +5,11 @@ import rene.util.list.Tree;
 import rene.util.parser.StringParser;
 
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Vector;
 
 public class XmlTree extends Tree
-        implements Enumeration {
+        implements Enumeration<XmlTree>, Iterator<XmlTree>, Iterable<XmlTree> {
     public XmlTree(XmlTag t) {
         super(t);
     }
@@ -40,7 +41,7 @@ public class XmlTree extends Tree
 
     ListElement Current;
 
-    public Enumeration getContent() {
+    public Enumeration<XmlTree> getContent() {
         Current = children().first();
         return this;
     }
@@ -49,11 +50,15 @@ public class XmlTree extends Tree
         return Current != null;
     }
 
-    public Object nextElement() {
+    public XmlTree nextElement() {
         if (Current == null) return null;
         XmlTree c = (XmlTree) (Current.content());
         Current = Current.next();
         return c;
+    }
+
+    public boolean isTag(String s) {
+        return getTag().name().equals(s);
     }
 
     public String parseComment()
@@ -88,5 +93,24 @@ public class XmlTree extends Tree
                 throw new XmlReaderException("<" + tag.name() + "> not proper here.");
         }
         return s.toString();
+    }
+
+    public boolean hasNext() {
+        return Current != null;
+    }
+
+    public XmlTree next() {
+        if (Current == null) return null;
+        XmlTree c = (XmlTree) (Current.content());
+        Current = Current.next();
+        return c;
+    }
+
+    public void remove() {
+    }
+
+    public Iterator iterator() {
+        Current = children().first();
+        return this;
     }
 }

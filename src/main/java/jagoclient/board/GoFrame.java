@@ -11,6 +11,7 @@ import rene.util.FileName;
 import rene.util.xml.XmlReader;
 import rene.util.xml.XmlReaderException;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.event.KeyEvent;
@@ -24,15 +25,15 @@ import java.net.URL;
 
 class EditInformation extends CloseDialog {
     Node N;
-    TextField Black, White, BlackRank, WhiteRank, Date, Time,
-            Komi, Result, Handicap, GameName;
+    JTextField Black, White, BlackRank, WhiteRank, Date, Time, Komi, Result,
+            Handicap, GameName;
     GoFrame F;
 
     public EditInformation(GoFrame f, Node n) {
         super(f, Global.resourceString("Game_Information"), false);
         N = n;
         F = f;
-        Panel p = new MyPanel();
+        JPanel p = new MyPanel();
         p.setLayout(new GridLayout(0, 2));
         p.add(new MyLabel(Global.resourceString("Game_Name")));
         p.add(GameName = new FormTextField(n.getaction("GN")));
@@ -55,14 +56,15 @@ class EditInformation extends CloseDialog {
         p.add(new MyLabel(Global.resourceString("Handicap")));
         p.add(Handicap = new FormTextField(n.getaction("HA")));
         add("Center", p);
-        Panel pb = new MyPanel();
+        JPanel pb = new MyPanel();
         pb.add(new ButtonAction(this, Global.resourceString("OK")));
         pb.add(new ButtonAction(this, Global.resourceString("Cancel")));
         add("South", pb);
         Global.setpacked(this, "editinformation", 350, 450);
-        show();
+        setVisible(true);
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "editinformation");
         if (Global.resourceString("OK").equals(o)) {
@@ -84,6 +86,7 @@ class EditInformation extends CloseDialog {
     }
 }
 
+
 /**
  * A dialog to get the present encoding.
  */
@@ -92,21 +95,24 @@ class GetEncoding extends GetParameter {
     GoFrame GCF;
 
     public GetEncoding(GoFrame gcf) {
-        super(gcf, Global.resourceString("Encoding__empty__default_"),
-                Global.resourceString("Encoding"), gcf, true, "encoding");
+        super(gcf, Global.resourceString("Encoding__empty__default_"), Global
+                .resourceString("Encoding"), gcf, true, "encoding");
         if (!Global.isApplet())
-            set(Global.getParameter("encoding",
-                    System.getProperty("file.encoding")));
+            set(Global.getParameter("encoding", System
+                    .getProperty("file.encoding")));
         GCF = gcf;
-        show();
+        setVisible(true);
     }
 
+    @Override
     public boolean tell(Object o, String S) {
-        if (S.equals("")) Global.removeParameter("encoding");
+        if (S.equals(""))
+            Global.removeParameter("encoding");
         else Global.setParameter("encoding", S);
         return true;
     }
 }
+
 
 class GetSearchString extends CloseDialog {
     GoFrame GF;
@@ -118,7 +124,7 @@ class GetSearchString extends CloseDialog {
         if (Active) return;
         add("North", new MyLabel(Global.resourceString("Search_String")));
         add("Center", T = new TextFieldAction(this, "Input", 25));
-        Panel p = new MyPanel();
+        JPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Search")));
         p.add(new ButtonAction(this, Global.resourceString("Cancel")));
         add("South", p);
@@ -127,13 +133,13 @@ class GetSearchString extends CloseDialog {
         T.addKeyListener(this);
         T.setText(Global.getParameter("searchstring", "++"));
         GF = gf;
-        show();
+        setVisible(true);
         Active = true;
     }
 
+    @Override
     public void doAction(String s) {
-        if (s.equals(Global.resourceString("Search"))
-                || s.equals("Input")) {
+        if (s.equals(Global.resourceString("Search")) || s.equals("Input")) {
             Global.setParameter("searchstring", T.getText());
             GF.search();
         } else if (s.equals(Global.resourceString("Cancel"))) {
@@ -143,11 +149,13 @@ class GetSearchString extends CloseDialog {
         }
     }
 
+    @Override
     public void dispose() {
         Active = false;
         super.dispose();
     }
 }
+
 
 /**
  * Ask the user for permission to close the board frame.
@@ -158,12 +166,13 @@ class CloseQuestion extends Question {
     boolean Result = false;
 
     public CloseQuestion(GoFrame g) {
-        super(g, Global.resourceString("Really_trash_this_board_"),
-                Global.resourceString("Close_Board"), g, true);
+        super(g, Global.resourceString("Really_trash_this_board_"), Global
+                .resourceString("Close_Board"), g, true);
         GF = g;
-        show();
+        setVisible(true);
     }
 
+    @Override
     public void tell(Question q, Object o, boolean f) {
         q.setVisible(false);
         q.dispose();
@@ -171,15 +180,17 @@ class CloseQuestion extends Question {
     }
 }
 
+
 class SizeQuestion extends GetParameter
 // Ask the board size.
 {
     public SizeQuestion(GoFrame g) {
-        super(g, Global.resourceString("Size_between_5_and_29"),
-                Global.resourceString("Board_size"), g, true);
-        show();
+        super(g, Global.resourceString("Size_between_5_and_29"), Global
+                .resourceString("Board_size"), g, true);
+        setVisible(true);
     }
 
+    @Override
     public boolean tell(Object o, String s) {
         int n;
         try {
@@ -193,33 +204,35 @@ class SizeQuestion extends GetParameter
     }
 }
 
+
 /**
  * Ask the user for permission to close the board frame.
  */
 
 class TextMarkQuestion extends CloseDialog {
     GoFrame G;
-    TextField T;
+    JTextField T;
     Checkbox C;
 
     public TextMarkQuestion(GoFrame g, String t) {
         super(g, Global.resourceString("Text_Mark"), false);
         G = g;
         setLayout(new BorderLayout());
-        add("Center", new SimplePanel(
-                new MyLabel(Global.resourceString("String")), 1,
-                T = new TextFieldAction(this, t), 2));
+        add("Center", new SimplePanel(new MyLabel(Global
+                .resourceString("String")), 1, T = new TextFieldAction(this, t), 2));
         T.setText(t);
-        Panel ps = new MyPanel();
-        ps.add(C = new CheckboxAction(this, Global.resourceString("Auto_Advance")));
+        JPanel ps = new MyPanel();
+        ps.add(C = new CheckboxAction(this, Global
+                .resourceString("Auto_Advance")));
         C.setState(Global.getParameter("autoadvance", true));
         ps.add(new ButtonAction(this, Global.resourceString("Set")));
         ps.add(new ButtonAction(this, Global.resourceString("Close")));
         add("South", ps);
         Global.setpacked(this, "gettextmarkquestion", 300, 150);
-        show();
+        setVisible(true);
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "gettextmarkquestion");
         Global.setParameter("autoadvance", C.getState());
@@ -233,6 +246,7 @@ class TextMarkQuestion extends CloseDialog {
         }
     }
 
+    @Override
     public boolean close() {
         G.TMQ = null;
         return true;
@@ -258,26 +272,30 @@ class TextMarkQuestion extends CloseDialog {
     }
 }
 
+
 /**
  * // Get/Set the name of the current node
  */
 
 class NodeNameEdit extends GetParameter {
     public NodeNameEdit(GoFrame g, String s) {
-        super(g, Global.resourceString("Name"), Global.resourceString("Node_Name"), g, true);
+        super(g, Global.resourceString("Name"), Global
+                .resourceString("Node_Name"), g, true);
         set(s);
-        show();
+        setVisible(true);
     }
 
+    @Override
     public boolean tell(Object o, String s) {
         ((GoFrame) o).setname(s);
         return true;
     }
 }
 
+
 /**
- * Let the user edit the board colors (stones, shines and board).
- * Redraw the board, when done with OK.
+ * Let the user edit the board colors (stones, shines and board). Redraw the
+ * board, when done with OK.
  */
 
 class BoardColorEdit extends ColorEdit {
@@ -286,15 +304,16 @@ class BoardColorEdit extends ColorEdit {
     public BoardColorEdit(GoFrame F, String s, int red, int green, int blue) {
         super(F, s, red, green, blue, true);
         GF = F;
-        show();
+        setVisible(true);
     }
 
     public BoardColorEdit(GoFrame F, String s, Color c) {
         super(F, s, c.getRed(), c.getGreen(), c.getBlue(), true);
         GF = F;
-        show();
+        setVisible(true);
     }
 
+    @Override
     public void doAction(String o) {
         super.doAction(o);
         if (Global.resourceString("OK").equals(o)) {
@@ -303,9 +322,9 @@ class BoardColorEdit extends ColorEdit {
     }
 }
 
+
 /**
- * Let the user edit the board fong
- * Redraw the board, when done with OK.
+ * Let the user edit the board fong Redraw the board, when done with OK.
  */
 
 class BoardGetFontSize extends GetFontSize {
@@ -317,6 +336,7 @@ class BoardGetFontSize extends GetFontSize {
         GF = F;
     }
 
+    @Override
     public void doAction(String o) {
         super.doAction(o);
         if (Global.resourceString("OK").equals(o)) {
@@ -326,38 +346,40 @@ class BoardGetFontSize extends GetFontSize {
     }
 }
 
+
 /**
  * Display a dialog to edit game copyright and user.
  */
 
 class EditCopyright extends CloseDialog {
     TextArea Copyright;
-    TextField User;
+    JTextField User;
     Node N;
 
     public EditCopyright(GoFrame f, Node n) {
         super(f, Global.resourceString("Copyright_of_Game"), false);
-        Panel p1 = new MyPanel();
+        JPanel p1 = new MyPanel();
         N = n;
         p1.setLayout(new GridLayout(0, 2));
         p1.add(new MyLabel(Global.resourceString("User")));
         p1.add(User = new GrayTextField(n.getaction("US")));
         add("North", p1);
-        Panel p2 = new MyPanel();
+        JPanel p2 = new MyPanel();
         p2.setLayout(new BorderLayout());
         p2.add("North", new MyLabel(Global.resourceString("Copyright")));
-        p2.add("Center", Copyright = new TextArea("", 0, 0, TextArea.SCROLLBARS_VERTICAL_ONLY));
-        Copyright.setBackground(Global.gray);
+        p2.add("Center", Copyright = new TextArea("", 0, 0,
+                TextArea.SCROLLBARS_VERTICAL_ONLY));
         add("Center", p2);
-        Panel pb = new MyPanel();
+        JPanel pb = new MyPanel();
         pb.add(new ButtonAction(this, Global.resourceString("OK")));
         pb.add(new ButtonAction(this, Global.resourceString("Cancel")));
         add("South", pb);
         Global.setwindow(this, "editcopyright", 350, 400);
-        show();
+        setVisible(true);
         Copyright.setText(n.getaction("CP"));
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "editcopyright");
         if (Global.resourceString("OK").equals(o)) {
@@ -369,6 +391,7 @@ class EditCopyright extends CloseDialog {
     }
 }
 
+
 /**
  * Ask, if a complete subtree is to be deleted.
  */
@@ -377,16 +400,19 @@ class AskUndoQuestion extends Question {
     public boolean Result = false;
 
     public AskUndoQuestion(Frame f) {
-        super(f, Global.resourceString("Delete_all_subsequent_moves_"), Global.resourceString("Delete_Tree"), f, true);
-        show();
+        super(f, Global.resourceString("Delete_all_subsequent_moves_"), Global
+                .resourceString("Delete_Tree"), f, true);
+        setVisible(true);
     }
 
+    @Override
     public void tell(Question q, Object o, boolean f) {
         q.setVisible(false);
         q.dispose();
         Result = f;
     }
 }
+
 
 /**
  * Ask, if a node is to be inserted and the tree thus changed.
@@ -396,10 +422,12 @@ class AskInsertQuestion extends Question {
     public boolean Result = false;
 
     public AskInsertQuestion(Frame f) {
-        super(f, Global.resourceString("Change_Game_Tree_"), Global.resourceString("Change_Game_Tree"), f, true);
-        show();
+        super(f, Global.resourceString("Change_Game_Tree_"), Global
+                .resourceString("Change_Game_Tree"), f, true);
+        setVisible(true);
     }
 
+    @Override
     public void tell(Question q, Object o, boolean f) {
         q.setVisible(false);
         q.dispose();
@@ -407,25 +435,24 @@ class AskInsertQuestion extends Question {
     }
 }
 
+
 /**
- * The GoFrame class is a frame, which contains the board,
- * the comment window and the navigation buttons (at least).
+ * The GoFrame class is a frame, which contains the board, the comment window
+ * and the navigation buttons (at least).
  * <p>
- * This class implements BoardInterface. This is done to make clear
- * what routines are called from the board and to give the board a
- * beans appearance.
+ * This class implements BoardInterface. This is done to make clear what
+ * routines are called from the board and to give the board a beans appearance.
  * <p>
- * The layout is a  panel of class BoardCommentPanel, containing two panels
- * for the board (BoardPanel) and for the comments (plus the ExtraSendField
- * in ConnectedGoFrame). Below is a 3D panel for the buttons. The BoardCommentPanel
+ * The layout is a panel of class BoardCommentPanel, containing two panels for
+ * the board (BoardPanel) and for the comments (plus the ExtraSendField in
+ * ConnectedGoFrame). Below is a 3D panel for the buttons. The BoardCommentPanel
  * takes care of the layout for its components.
  * <p>
- * This class handles all actions in it, besides the mouse actions on the
- * board, which are handled by Board.
+ * This class handles all actions in it, besides the mouse actions on the board,
+ * which are handled by Board.
  * <p>
- * Note that the Board class modifies the appearance of buttons and
- * takes care of the comment window, the next move label and the board
- * position label.
+ * Note that the Board class modifies the appearance of buttons and takes care
+ * of the comment window, the next move label and the board position label.
  * <p>
  * Several private classes in GoFrame.java contain dialogs to enter game
  * information, copyright, text marks, etc.
@@ -439,19 +466,17 @@ class AskInsertQuestion extends Question {
 // board. For Partner of IGS games there is the ConnectedGoFrame child, which
 // uses another menu structure.
 // Furthermore, it has methods to handle lots of user actions.
-public class GoFrame extends CloseFrame
-        implements FilenameFilter, KeyListener, BoardInterface, ClipboardOwner,
-        IconBarListener {
-    TextArea T; // For comments
-    public Label L, Lm; // For board informations
+public class GoFrame extends CloseFrame implements FilenameFilter, KeyListener,
+        BoardInterface, ClipboardOwner, IconBarListener {
+    public OutputLabel L, Lm; // For board informations
     TextArea Comment; // For comments
     String Dir; // FileDialog directory
     public Board B; // The board itself
     // menu check items:
     CheckboxMenuItem SetBlack, SetWhite, Black, White, Mark, Letter, Hide,
             Square, Cross, Circle, Triangle, TextMark;
-    public Color BoardColor, BlackColor, BlackSparkleColor,
-            WhiteColor, WhiteSparkleColor, MarkerColor, LabelColor;
+    public Color BoardColor, BlackColor, BlackSparkleColor, WhiteColor,
+            WhiteSparkleColor, MarkerColor, LabelColor;
     CheckboxMenuItem Coordinates, UpperLeftCoordinates, LowerRightCoordinates;
     CheckboxMenuItem PureSGF, CommentSGF, DoSound, BeepOnly, TrueColor, Alias,
             TrueColorStones, SmallerStones, MenuLastNumber, MenuTarget, Shadows,
@@ -463,7 +488,7 @@ public class GoFrame extends CloseFrame
     boolean Show;
     TextMarkQuestion TMQ;
     IconBar IB;
-    Panel ButtonP;
+    JPanel ButtonP;
     String DefaultTitle = "";
     NavigationPanel Navigation;
 
@@ -476,7 +501,7 @@ public class GoFrame extends CloseFrame
         setcolors();
     }
 
-    void setcolors() {    // Take colors from Global parameters.
+    void setcolors() { // Take colors from Global parameters.
         BoardColor = Global.getColor("boardcolor", 170, 120, 70);
         BlackColor = Global.getColor("blackcolor", 30, 30, 30);
         BlackSparkleColor = Global.getColor("blacksparklecolor", 120, 120, 120);
@@ -510,191 +535,251 @@ public class GoFrame extends CloseFrame
         file.add(new MenuItemAction(this, Global.resourceString("New")));
         file.add(new MenuItemAction(this, Global.resourceString("Load")));
         file.add(new MenuItemAction(this, Global.resourceString("Save")));
-        file.add(new MenuItemAction(this, Global.resourceString("Save_Position")));
+        file.add(new MenuItemAction(this, Global
+                .resourceString("Save_Position")));
         file.addSeparator();
-        file.add(UseXML =
-                new CheckboxMenuItemAction(this, Global.resourceString("Use_XML")));
+        file.add(UseXML = new CheckboxMenuItemAction(this, Global
+                .resourceString("Use_XML")));
         UseXML.setState(Global.getParameter("xml", false));
-        file.add(UseSGF =
-                new CheckboxMenuItemAction(this, Global.resourceString("Use_SGF")));
+        file.add(UseSGF = new CheckboxMenuItemAction(this, Global
+                .resourceString("Use_SGF")));
         UseSGF.setState(!Global.getParameter("xml", false));
         file.addSeparator();
-        file.add(new MenuItemAction(this, Global.resourceString("Load_from_Clipboard")));
-        file.add(new MenuItemAction(this, Global.resourceString("Copy_to_Clipboard")));
+        file.add(new MenuItemAction(this, Global
+                .resourceString("Load_from_Clipboard")));
+        file.add(new MenuItemAction(this, Global
+                .resourceString("Copy_to_Clipboard")));
         file.addSeparator();
         file.add(new MenuItemAction(this, Global.resourceString("Mail")));
         file.add(new MenuItemAction(this, Global.resourceString("Ascii_Mail")));
         file.add(new MenuItemAction(this, Global.resourceString("Print")));
-        file.add(new MenuItemAction(this, Global.resourceString("Save_Bitmap")));
+        file
+                .add(new MenuItemAction(this, Global.resourceString("Save_Bitmap")));
         file.addSeparator();
         file.add(new MenuItemAction(this, Global.resourceString("Board_size")));
         file.addSeparator();
         file.add(new MenuItemAction(this, Global.resourceString("Add_Game")));
-        file.add(new MenuItemAction(this, Global.resourceString("Remove_Game")));
+        file
+                .add(new MenuItemAction(this, Global.resourceString("Remove_Game")));
         file.addSeparator();
         file.add(new MenuItemAction(this, Global.resourceString("Close")));
         Menu set = new MyMenu(Global.resourceString("Set"));
         M.add(set);
-        set.add(Mark = new CheckboxMenuItemAction(this, Global.resourceString("Mark")));
-        set.add(Letter = new CheckboxMenuItemAction(this, Global.resourceString("Letter")));
-        set.add(Hide = new CheckboxMenuItemAction(this, Global.resourceString("Delete")));
+        set.add(Mark = new CheckboxMenuItemAction(this, Global
+                .resourceString("Mark")));
+        set.add(Letter = new CheckboxMenuItemAction(this, Global
+                .resourceString("Letter")));
+        set.add(Hide = new CheckboxMenuItemAction(this, Global
+                .resourceString("Delete")));
         Menu mark = new MyMenu(Global.resourceString("Special_Mark"));
-        mark.add(Square = new CheckboxMenuItemAction(this, Global.resourceString("Square")));
-        mark.add(Circle = new CheckboxMenuItemAction(this, Global.resourceString("Circle")));
-        mark.add(Triangle = new CheckboxMenuItemAction(this, Global.resourceString("Triangle")));
-        mark.add(Cross = new CheckboxMenuItemAction(this, Global.resourceString("Cross")));
+        mark.add(Square = new CheckboxMenuItemAction(this, Global
+                .resourceString("Square")));
+        mark.add(Circle = new CheckboxMenuItemAction(this, Global
+                .resourceString("Circle")));
+        mark.add(Triangle = new CheckboxMenuItemAction(this, Global
+                .resourceString("Triangle")));
+        mark.add(Cross = new CheckboxMenuItemAction(this, Global
+                .resourceString("Cross")));
         mark.addSeparator();
-        mark.add(TextMark = new CheckboxMenuItemAction(this, Global.resourceString("Text")));
+        mark.add(TextMark = new CheckboxMenuItemAction(this, Global
+                .resourceString("Text")));
         set.add(mark);
         set.addSeparator();
-        set.add(new MenuItemAction(this, Global.resourceString("Resume_playing")));
+        set.add(new MenuItemAction(this, Global
+                .resourceString("Resume_playing")));
         set.addSeparator();
         set.add(new MenuItemAction(this, Global.resourceString("Pass")));
         set.addSeparator();
-        set.add(SetBlack = new CheckboxMenuItemAction(this, Global.resourceString("Set_Black")));
-        set.add(SetWhite = new CheckboxMenuItemAction(this, Global.resourceString("Set_White")));
+        set.add(SetBlack = new CheckboxMenuItemAction(this, Global
+                .resourceString("Set_Black")));
+        set.add(SetWhite = new CheckboxMenuItemAction(this, Global
+                .resourceString("Set_White")));
         set.addSeparator();
-        set.add(Black = new CheckboxMenuItemAction(this, Global.resourceString("Black_to_play")));
-        set.add(White = new CheckboxMenuItemAction(this, Global.resourceString("White_to_play")));
+        set.add(Black = new CheckboxMenuItemAction(this, Global
+                .resourceString("Black_to_play")));
+        set.add(White = new CheckboxMenuItemAction(this, Global
+                .resourceString("White_to_play")));
         set.addSeparator();
-        set.add(new MenuItemAction(this, Global.resourceString("Undo_Adding_Removing")));
-        set.add(new MenuItemAction(this, Global.resourceString("Clear_all_marks")));
+        set.add(new MenuItemAction(this, Global
+                .resourceString("Undo_Adding_Removing")));
+        set.add(new MenuItemAction(this, Global
+                .resourceString("Clear_all_marks")));
         Menu var = new MyMenu(Global.resourceString("Nodes"));
         var.add(new MenuItemAction(this, Global.resourceString("Insert_Node")));
-        var.add(new MenuItemAction(this, Global.resourceString("Insert_Variation")));
+        var.add(new MenuItemAction(this, Global
+                .resourceString("Insert_Variation")));
         var.addSeparator();
         var.add(new MenuItemAction(this, Global.resourceString("Next_Game")));
-        var.add(new MenuItemAction(this, Global.resourceString("Previous_Game")));
+        var
+                .add(new MenuItemAction(this, Global
+                        .resourceString("Previous_Game")));
         var.addSeparator();
         var.add(new MenuItemAction(this, Global.resourceString("Search")));
-        var.add(new MenuItemAction(this, Global.resourceString("Search_Again")));
+        var
+                .add(new MenuItemAction(this, Global.resourceString("Search_Again")));
         var.addSeparator();
         var.add(new MenuItemAction(this, Global.resourceString("Node_Name")));
-        var.add(new MenuItemAction(this, Global.resourceString("Goto_Next_Name")));
-        var.add(new MenuItemAction(this, Global.resourceString("Goto_Previous_Name")));
+        var.add(new MenuItemAction(this, Global
+                .resourceString("Goto_Next_Name")));
+        var.add(new MenuItemAction(this, Global
+                .resourceString("Goto_Previous_Name")));
         M.add(var);
         Menu score = new MyMenu(Global.resourceString("Finish_Game"));
         M.add(score);
-        score.add(new MenuItemAction(this, Global.resourceString("Remove_groups")));
+        score.add(new MenuItemAction(this, Global
+                .resourceString("Remove_groups")));
         score.add(new MenuItemAction(this, Global.resourceString("Score")));
         score.addSeparator();
-        score.add(new MenuItemAction(this, Global.resourceString("Game_Information")));
-        score.add(new MenuItemAction(this, Global.resourceString("Game_Copyright")));
+        score.add(new MenuItemAction(this, Global
+                .resourceString("Game_Information")));
+        score.add(new MenuItemAction(this, Global
+                .resourceString("Game_Copyright")));
         score.addSeparator();
-        score.add(new MenuItemAction(this, Global.resourceString("Prisoner_Count")));
+        score.add(new MenuItemAction(this, Global
+                .resourceString("Prisoner_Count")));
         Menu options = new MyMenu(Global.resourceString("Options"));
         Menu mc = new MyMenu(Global.resourceString("Coordinates"));
-        mc.add(Coordinates = new CheckboxMenuItemAction(this, Global.resourceString("On")));
+        mc.add(Coordinates = new CheckboxMenuItemAction(this, Global
+                .resourceString("On")));
         Coordinates.setState(Global.getParameter("coordinates", true));
-        mc.add(UpperLeftCoordinates = new CheckboxMenuItemAction(this, Global.resourceString("Upper_Left")));
-        UpperLeftCoordinates.setState(Global.getParameter("upperleftcoordinates", true));
-        mc.add(LowerRightCoordinates = new CheckboxMenuItemAction(this, Global.resourceString("Lower_Right")));
-        LowerRightCoordinates.setState(
-                Global.getParameter("lowerrightcoordinates", true));
+        mc.add(UpperLeftCoordinates = new CheckboxMenuItemAction(this, Global
+                .resourceString("Upper_Left")));
+        UpperLeftCoordinates.setState(Global.getParameter(
+                "upperleftcoordinates", true));
+        mc.add(LowerRightCoordinates = new CheckboxMenuItemAction(this, Global
+                .resourceString("Lower_Right")));
+        LowerRightCoordinates.setState(Global.getParameter(
+                "lowerrightcoordinates", true));
         options.add(mc);
         options.addSeparator();
         Menu colors = new MyMenu(Global.resourceString("Colors"));
-        colors.add(new MenuItemAction(this, Global.resourceString("Board_Color")));
-        colors.add(new MenuItemAction(this, Global.resourceString("Black_Color")));
-        colors.add(new MenuItemAction(this, Global.resourceString("Black_Sparkle_Color")));
-        colors.add(new MenuItemAction(this, Global.resourceString("White_Color")));
-        colors.add(new MenuItemAction(this, Global.resourceString("White_Sparkle_Color")));
-        colors.add(new MenuItemAction(this, Global.resourceString("Label_Color")));
-        colors.add(new MenuItemAction(this, Global.resourceString("Marker_Color")));
+        colors.add(new MenuItemAction(this, Global
+                .resourceString("Board_Color")));
+        colors.add(new MenuItemAction(this, Global
+                .resourceString("Black_Color")));
+        colors.add(new MenuItemAction(this, Global
+                .resourceString("Black_Sparkle_Color")));
+        colors.add(new MenuItemAction(this, Global
+                .resourceString("White_Color")));
+        colors.add(new MenuItemAction(this, Global
+                .resourceString("White_Sparkle_Color")));
+        colors.add(new MenuItemAction(this, Global
+                .resourceString("Label_Color")));
+        colors.add(new MenuItemAction(this, Global
+                .resourceString("Marker_Color")));
         options.add(colors);
-        options.add(MenuBWColor = new CheckboxMenuItemAction(this, Global.resourceString("Use_B_W_marks")));
+        options.add(MenuBWColor = new CheckboxMenuItemAction(this, Global
+                .resourceString("Use_B_W_marks")));
         MenuBWColor.setState(Global.getParameter("bwcolor", false));
         BWColor = MenuBWColor.getState();
-        options.add(PureSGF = new CheckboxMenuItemAction(this, Global.resourceString("Save_pure_SGF")));
+        options.add(PureSGF = new CheckboxMenuItemAction(this, Global
+                .resourceString("Save_pure_SGF")));
         PureSGF.setState(Global.getParameter("puresgf", false));
-        options.add(CommentSGF = new CheckboxMenuItemAction(this, Global.resourceString("Use_SGF_Comments")));
+        options.add(CommentSGF = new CheckboxMenuItemAction(this, Global
+                .resourceString("Use_SGF_Comments")));
         CommentSGF.setState(Global.getParameter("sgfcomments", false));
         options.addSeparator();
         Menu fonts = new MyMenu(Global.resourceString("Fonts"));
-        fonts.add(new MenuItemAction(this, Global.resourceString("Board_Font")));
-        fonts.add(new MenuItemAction(this, Global.resourceString("Fixed_Font")));
-        fonts.add(new MenuItemAction(this, Global.resourceString("Normal_Font")));
+        fonts
+                .add(new MenuItemAction(this, Global.resourceString("Board_Font")));
+        fonts
+                .add(new MenuItemAction(this, Global.resourceString("Fixed_Font")));
+        fonts
+                .add(new MenuItemAction(this, Global.resourceString("Normal_Font")));
         options.add(fonts);
         Menu variations = new MyMenu(Global.resourceString("Variation_Display"));
-        variations.add(VCurrent = new CheckboxMenuItemAction(this,
-                Global.resourceString("To_Current")));
+        variations.add(VCurrent = new CheckboxMenuItemAction(this, Global
+                .resourceString("To_Current")));
         VCurrent.setState(Global.getParameter("vcurrent", true));
-        variations.add(VChild = new CheckboxMenuItemAction(this,
-                Global.resourceString("To_Child")));
+        variations.add(VChild = new CheckboxMenuItemAction(this, Global
+                .resourceString("To_Child")));
         VChild.setState(!Global.getParameter("vcurrent", true));
-        variations.add(VHide = new CheckboxMenuItemAction(this,
-                Global.resourceString("Hide")));
+        variations.add(VHide = new CheckboxMenuItemAction(this, Global
+                .resourceString("Hide")));
         VHide.setState(Global.getParameter("vhide", false));
         variations.addSeparator();
-        variations.add(VNumbers = new CheckboxMenuItemAction(this,
-                Global.resourceString("Continue_Numbers")));
+        variations.add(VNumbers = new CheckboxMenuItemAction(this, Global
+                .resourceString("Continue_Numbers")));
         VNumbers.setState(Global.getParameter("variationnumbers", false));
         options.add(variations);
         options.addSeparator();
-        options.add(MenuTarget = new CheckboxMenuItemAction(this, Global.resourceString("Show_Target")));
+        options.add(MenuTarget = new CheckboxMenuItemAction(this, Global
+                .resourceString("Show_Target")));
         MenuTarget.setState(Global.getParameter("showtarget", true));
         ShowTarget = MenuTarget.getState();
-        options.add(MenuLastNumber = new CheckboxMenuItemAction(this, Global.resourceString("Last_Number")));
+        options.add(MenuLastNumber = new CheckboxMenuItemAction(this, Global
+                .resourceString("Last_Number")));
         MenuLastNumber.setState(Global.getParameter("lastnumber", false));
         LastNumber = MenuLastNumber.getState();
         options.add(new MenuItemAction(this, Global.resourceString("Last_50")));
-        options.add(new MenuItemAction(this, Global.resourceString("Last_100")));
+        options
+                .add(new MenuItemAction(this, Global.resourceString("Last_100")));
         options.addSeparator();
-        options.add(TrueColor = new CheckboxMenuItemAction(this, Global.resourceString("True_Color_Board")));
+        options.add(TrueColor = new CheckboxMenuItemAction(this, Global
+                .resourceString("True_Color_Board")));
         TrueColor.setState(Global.getParameter("beauty", true));
-        options.add(TrueColorStones = new CheckboxMenuItemAction(this, Global.resourceString("True_Color_Stones")));
+        options.add(TrueColorStones = new CheckboxMenuItemAction(this, Global
+                .resourceString("True_Color_Stones")));
         TrueColorStones.setState(Global.getParameter("beautystones", true));
-        options.add(Alias = new CheckboxMenuItemAction(this, Global.resourceString("Anti_alias_Stones")));
+        options.add(Alias = new CheckboxMenuItemAction(this, Global
+                .resourceString("Anti_alias_Stones")));
         Alias.setState(Global.getParameter("alias", true));
-        options.add(Shadows = new CheckboxMenuItemAction(this, Global.resourceString("Shadows")));
+        options.add(Shadows = new CheckboxMenuItemAction(this, Global
+                .resourceString("Shadows")));
         Shadows.setState(Global.getParameter("shadows", true));
-        options.add(SmallerStones = new CheckboxMenuItemAction(this, Global.resourceString("Smaller_Stones")));
+        options.add(SmallerStones = new CheckboxMenuItemAction(this, Global
+                .resourceString("Smaller_Stones")));
         SmallerStones.setState(Global.getParameter("smallerstones", false));
-        options.add(BlackOnly = new CheckboxMenuItemAction(this, Global.resourceString("Black_Only")));
+        options.add(BlackOnly = new CheckboxMenuItemAction(this, Global
+                .resourceString("Black_Only")));
         BlackOnly.setState(Global.getParameter("blackonly", false));
         options.addSeparator();
-        options.add(new MenuItemAction(this, Global.resourceString("Set_Encoding")));
-        options.add(
-                ShowButtons = new CheckboxMenuItemAction(this,
-                        Global.resourceString("Show_Buttons")));
+        options.add(new MenuItemAction(this, Global
+                .resourceString("Set_Encoding")));
+        options.add(ShowButtons = new CheckboxMenuItemAction(this, Global
+                .resourceString("Show_Buttons")));
         ShowButtons.setState(Global.getParameter("showbuttons", true));
         Menu help = new MyMenu(Global.resourceString("Help"));
-        help.add(new MenuItemAction(this, Global.resourceString("Board_Window")));
-        help.add(new MenuItemAction(this, Global.resourceString("Making_Moves")));
-        help.add(new MenuItemAction(this, Global.resourceString("Keyboard_Shortcuts")));
-        help.add(new MenuItemAction(this, Global.resourceString("About_Variations")));
-        help.add(new MenuItemAction(this, Global.resourceString("Playing_Games")));
-        help.add(new MenuItemAction(this, Global.resourceString("Mailing_Games")));
+        help
+                .add(new MenuItemAction(this, Global.resourceString("Board_Window")));
+        help
+                .add(new MenuItemAction(this, Global.resourceString("Making_Moves")));
+        help.add(new MenuItemAction(this, Global
+                .resourceString("Keyboard_Shortcuts")));
+        help.add(new MenuItemAction(this, Global
+                .resourceString("About_Variations")));
+        help.add(new MenuItemAction(this, Global
+                .resourceString("Playing_Games")));
+        help.add(new MenuItemAction(this, Global
+                .resourceString("Mailing_Games")));
         M.add(options);
         M.setHelpMenu(help);
         // Board
-        L = new MyLabel(Global.resourceString("New_Game"));
-        Lm = new MyLabel("--");
+        L = new OutputLabel(Global.resourceString("New_Game"));
+        Lm = new OutputLabel("--");
         B = new Board(19, this);
-        Panel BP = new MyPanel();
+        MyPanel BP = new MyPanel();
         BP.setLayout(new BorderLayout());
         BP.add("Center", B);
         // Add the label
-        SimplePanel sp =
-                new SimplePanel((Component) L, 80, (Component) Lm, 20);
+        SimplePanel sp = new SimplePanel(L, 80, Lm, 20);
         BP.add("South", sp);
-        sp.setBackground(Global.gray);
         // Text Area
         Comment = new TextArea("", 0, 0, TextArea.SCROLLBARS_VERTICAL_ONLY);
         Comment.setFont(Global.SansSerif);
-        Comment.setBackground(Global.gray);
-        Panel bcp;
+        JPanel bcp;
         if (Global.getParameter("shownavigationtree", true)) {
             Navigation = new NavigationPanel(B);
-            bcp = new BoardCommentPanel(BP,
-                    new CommentNavigationPanel(Comment, new Panel3D(Navigation)), B);
-        } else bcp = new BoardCommentPanel(BP, Comment, B);
+            bcp = new BoardCommentPanel(new Panel3D(BP),
+                    new CommentNavigationPanel(new Panel3D(Comment), new Panel3D(
+                            Navigation)), B);
+        } else bcp = new BoardCommentPanel(new Panel3D(BP), new Panel3D(Comment),
+                B);
         add("Center", bcp);
         // Navigation panel
         IB = createIconBar();
         ButtonP = new Panel3D(IB);
-        if (Global.getParameter("showbuttons", true))
-            add("South", ButtonP);
+        if (Global.getParameter("showbuttons", true)) add("South", ButtonP);
         // Directory for FileDialog
         Dir = new String("");
         Global.setwindow(this, "board", 500, 450, false);
@@ -702,11 +787,18 @@ public class GoFrame extends CloseFrame
         Show = true;
         B.addKeyListener(this);
         if (Navigation != null) Navigation.addKeyListener(B);
-        show();
+        addmenuitems();
+        setVisible(true);
         repaint();
     }
 
+    public void addmenuitems()
+    // for children to add menu items (because of bug in Linux Java 1.5)
+    {
+    }
+
     public IconBar createIconBar() {
+        Global.setParameter("iconsize", 32);
         IconBar I = new IconBar(this);
         I.Resource = "/jagoclient/icons/";
         I.addLeft("undo");
@@ -724,9 +816,11 @@ public class GoFrame extends CloseFrame
         I.addLeft("main");
         I.addLeft("mainend");
         I.addSeparatorLeft();
-        String icons[] = {
-                "mark", "square", "triangle", "circle", "letter", "text", "",
-                "black", "white", "", "setblack", "setwhite", "delete"};
+        String icons[] =
+                {
+                        "mark", "square", "triangle", "circle", "letter", "text", "",
+                        "black", "white", "", "setblack", "setwhite", "delete"
+                };
         I.addToggleGroupLeft(icons);
         I.addSeparatorLeft();
         I.addLeft("deletemarks");
@@ -736,36 +830,61 @@ public class GoFrame extends CloseFrame
     }
 
     public void iconPressed(String s) {
-        if (s.equals("undo")) doAction(Global.resourceString("Undo"));
-        else if (s.equals("allback")) doAction("I<<");
-        else if (s.equals("fastback")) doAction("<<");
-        else if (s.equals("back")) doAction("<");
-        else if (s.equals("forward")) doAction(">");
-        else if (s.equals("fastforward")) doAction(">>");
-        else if (s.equals("allforward")) doAction(">>I");
-        else if (s.equals("variationback")) doAction("<V");
-        else if (s.equals("variationstart")) doAction("V");
-        else if (s.equals("variationforward")) doAction("V>");
-        else if (s.equals("main")) doAction("*");
-        else if (s.equals("mainend")) doAction("**");
-        else if (s.equals("mark")) B.mark();
-        else if (s.equals("mark")) B.mark();
-        else if (s.equals("square")) B.specialmark(Field.SQUARE);
-        else if (s.equals("triangle")) B.specialmark(Field.TRIANGLE);
-        else if (s.equals("circle")) B.specialmark(Field.CIRCLE);
-        else if (s.equals("letter")) B.letter();
+        if (s.equals("undo"))
+            doAction(Global.resourceString("Undo"));
+        else if (s.equals("allback"))
+            doAction("I<<");
+        else if (s.equals("fastback"))
+            doAction("<<");
+        else if (s.equals("back"))
+            doAction("<");
+        else if (s.equals("forward"))
+            doAction(">");
+        else if (s.equals("fastforward"))
+            doAction(">>");
+        else if (s.equals("allforward"))
+            doAction(">>I");
+        else if (s.equals("variationback"))
+            doAction("<V");
+        else if (s.equals("variationstart"))
+            doAction("V");
+        else if (s.equals("variationforward"))
+            doAction("V>");
+        else if (s.equals("main"))
+            doAction("*");
+        else if (s.equals("mainend"))
+            doAction("**");
+        else if (s.equals("mark"))
+            B.mark();
+        else if (s.equals("mark"))
+            B.mark();
+        else if (s.equals("square"))
+            B.specialmark(Field.SQUARE);
+        else if (s.equals("triangle"))
+            B.specialmark(Field.TRIANGLE);
+        else if (s.equals("circle"))
+            B.specialmark(Field.CIRCLE);
+        else if (s.equals("letter"))
+            B.letter();
         else if (s.equals("text")) {
             B.textmark(Text);
             if (TMQ == null) TMQ = new TextMarkQuestion(this, Text);
-        } else if (s.equals("black")) B.black();
-        else if (s.equals("white")) B.white();
-        else if (s.equals("setblack")) B.setblack();
-        else if (s.equals("setwhite")) B.setwhite();
-        else if (s.equals("delete")) B.deletestones();
-        else if (s.equals("deletemarks")) B.clearmarks();
+        } else if (s.equals("black"))
+            B.black();
+        else if (s.equals("white"))
+            B.white();
+        else if (s.equals("setblack"))
+            B.setblack();
+        else if (s.equals("setwhite"))
+            B.setwhite();
+        else if (s.equals("delete"))
+            B.deletestones();
+        else if (s.equals("deletemarks"))
+            B.clearmarks();
         else if (s.equals("play")) B.resume();
     }
 
+    @Override
     public void doAction(String o) {
         if (Global.resourceString("Undo").equals(o)) {
             B.undo();
@@ -820,8 +939,8 @@ public class GoFrame extends CloseFrame
             ByteArrayOutputStream ba = new ByteArrayOutputStream(50000);
             try {
                 if (Global.getParameter("xml", false)) {
-                    PrintWriter po = new PrintWriter(
-                            new OutputStreamWriter(ba, "UTF8"), true);
+                    PrintWriter po = new PrintWriter(new OutputStreamWriter(ba,
+                            "UTF8"), true);
                     B.saveXML(po, "utf-8");
                     po.close();
                 } else {
@@ -848,31 +967,35 @@ public class GoFrame extends CloseFrame
         {
             B.print(Global.frame());
         } else if (Global.resourceString("Save").equals(o)) // save the game
-        {    // File dialog handling
+        { // File dialog handling
             FileDialog fd = new FileDialog(this, Global.resourceString("Save"),
                     FileDialog.SAVE);
             if (!Dir.equals("")) fd.setDirectory(Dir);
-            String s = ((Node) B.firstnode()).getaction("GN");
+            String s = B.firstnode().getaction("GN");
             if (s != null && !s.equals(""))
-                fd.setFile(s + "." + Global.getParameter("extension",
-                        Global.getParameter("xml", false) ? "xml" : "sgf"));
-            else
-                fd.setFile("*." + Global.getParameter("extension",
-                        Global.getParameter("xml", false) ? "xml" : "sgf"));
+                fd.setFile(s
+                        + "."
+                        + Global.getParameter("extension", Global.getParameter(
+                        "xml", false) ? "xml" : "sgf"));
+            else fd.setFile("*."
+                    + Global.getParameter("extension", Global.getParameter("xml",
+                    false) ? "xml" : "sgf"));
             fd.setFilenameFilter(this);
             center(fd);
-            fd.show();
+            fd.setVisible(true);
             String fn = fd.getFile();
             if (fn == null) return;
             setGameTitle(FileName.purefilename(fn));
             Dir = fd.getDirectory();
-            try // print out using the board class
+            try
+            // print out using the board class
             {
                 PrintWriter fo;
                 if (Global.getParameter("xml", false)) {
                     if (Global.isApplet()) {
                         fo = new PrintWriter(new OutputStreamWriter(
-                                new FileOutputStream(fd.getDirectory() + fn), "UTF8"));
+                                new FileOutputStream(fd.getDirectory() + fn),
+                                "UTF8"));
                         B.saveXML(fo, "utf-8");
                     } else {
                         String Encoding = Global.getParameter("encoding",
@@ -884,16 +1007,17 @@ public class GoFrame extends CloseFrame
                             B.saveXML(fo, "utf-8");
                         } else {
                             String XMLEncoding = "";
-                            if (Encoding.equals("CP1252") ||
-                                    Encoding.equals("ISO8859_1")) {
+                            if (Encoding.equals("CP1252")
+                                    || Encoding.equals("ISO8859_1")) {
                                 Encoding = "ISO8859_1";
                                 XMLEncoding = "iso-8859-1";
                             } else {
                                 Encoding = "UTF8";
                                 XMLEncoding = "utf-8";
                             }
-                            FileOutputStream fos =
-                                    new FileOutputStream(fd.getDirectory() + fn);
+                            FileOutputStream fos = new FileOutputStream(fd
+                                    .getDirectory()
+                                    + fn);
                             try {
                                 fo = new PrintWriter(new OutputStreamWriter(
                                         fos, Encoding));
@@ -908,48 +1032,51 @@ public class GoFrame extends CloseFrame
                     }
                 } else {
                     if (Global.isApplet())
-                        fo =
-                                new PrintWriter(new OutputStreamWriter(
-                                        new FileOutputStream(fd.getDirectory() + fn),
-                                        Global.getParameter("encoding", "ASCII")));
-                    else
-                        fo =
-                                new PrintWriter(new OutputStreamWriter(
-                                        new FileOutputStream(fd.getDirectory() + fn),
-                                        Global.getParameter("encoding",
-                                                System.getProperty("file.encoding"))));
+                        fo = new PrintWriter(new OutputStreamWriter(
+                                new FileOutputStream(fd.getDirectory() + fn),
+                                Global.getParameter("encoding", "ASCII")));
+                    else fo = new PrintWriter(new OutputStreamWriter(
+                            new FileOutputStream(fd.getDirectory() + fn), Global
+                            .getParameter("encoding", System
+                                    .getProperty("file.encoding"))));
                     B.save(fo);
                 }
                 fo.close();
             } catch (IOException ex) {
-                new Message(this, Global.resourceString("Write_error_") + "\n" + ex.toString());
+                new Message(this, Global.resourceString("Write_error_") + "\n"
+                        + ex.toString());
                 return;
             }
-        } else if (Global.resourceString("Save_Position").equals(o)) // save the position
-        {    // File dialog handling
-            FileDialog fd = new FileDialog(this, Global.resourceString("Save Position"),
-                    FileDialog.SAVE);
+        } else if (Global.resourceString("Save_Position").equals(o)) // save the
+        // position
+        { // File dialog handling
+            FileDialog fd = new FileDialog(this, Global
+                    .resourceString("Save Position"), FileDialog.SAVE);
             if (!Dir.equals("")) fd.setDirectory(Dir);
-            String s = ((Node) B.firstnode()).getaction("GN");
+            String s = B.firstnode().getaction("GN");
             if (s != null && !s.equals(""))
-                fd.setFile(s + "." + Global.getParameter("extension",
-                        Global.getParameter("xml", false) ? "xml" : "sgf"));
-            else
-                fd.setFile("*." + Global.getParameter("extension",
-                        Global.getParameter("xml", false) ? "xml" : "sgf"));
+                fd.setFile(s
+                        + "."
+                        + Global.getParameter("extension", Global.getParameter(
+                        "xml", false) ? "xml" : "sgf"));
+            else fd.setFile("*."
+                    + Global.getParameter("extension", Global.getParameter("xml",
+                    false) ? "xml" : "sgf"));
             fd.setFilenameFilter(this);
             center(fd);
-            fd.show();
+            fd.setVisible(true);
             String fn = fd.getFile();
             if (fn == null) return;
             Dir = fd.getDirectory();
-            try // print out using the board class
+            try
+            // print out using the board class
             {
                 PrintWriter fo;
                 if (Global.getParameter("xml", false)) {
                     if (Global.isApplet()) {
                         fo = new PrintWriter(new OutputStreamWriter(
-                                new FileOutputStream(fd.getDirectory() + fn), "UTF8"));
+                                new FileOutputStream(fd.getDirectory() + fn),
+                                "UTF8"));
                         B.saveXML(fo, "utf-8");
                     } else {
                         String Encoding = Global.getParameter("encoding",
@@ -961,16 +1088,17 @@ public class GoFrame extends CloseFrame
                             B.saveXMLPos(fo, "utf-8");
                         } else {
                             String XMLEncoding = "";
-                            if (Encoding.equals("CP1252") ||
-                                    Encoding.equals("ISO8859_1")) {
+                            if (Encoding.equals("CP1252")
+                                    || Encoding.equals("ISO8859_1")) {
                                 Encoding = "ISO8859_1";
                                 XMLEncoding = "iso-8859-1";
                             } else {
                                 Encoding = "UTF8";
                                 XMLEncoding = "utf-8";
                             }
-                            FileOutputStream fos =
-                                    new FileOutputStream(fd.getDirectory() + fn);
+                            FileOutputStream fos = new FileOutputStream(fd
+                                    .getDirectory()
+                                    + fn);
                             try {
                                 fo = new PrintWriter(new OutputStreamWriter(
                                         fos, Encoding));
@@ -985,64 +1113,68 @@ public class GoFrame extends CloseFrame
                     }
                 } else {
                     if (Global.isApplet())
-                        fo =
-                                new PrintWriter(new OutputStreamWriter(
-                                        new FileOutputStream(fd.getDirectory() + fn),
-                                        Global.getParameter("encoding", "ASCII")));
-                    else
-                        fo =
-                                new PrintWriter(new OutputStreamWriter(
-                                        new FileOutputStream(fd.getDirectory() + fn),
-                                        Global.getParameter("encoding",
-                                                System.getProperty("file.encoding"))));
+                        fo = new PrintWriter(new OutputStreamWriter(
+                                new FileOutputStream(fd.getDirectory() + fn),
+                                Global.getParameter("encoding", "ASCII")));
+                    else fo = new PrintWriter(new OutputStreamWriter(
+                            new FileOutputStream(fd.getDirectory() + fn), Global
+                            .getParameter("encoding", System
+                                    .getProperty("file.encoding"))));
                     B.savePos(fo);
                 }
                 fo.close();
             } catch (IOException ex) {
-                new Message(this, Global.resourceString("Write_error_") + "\n" + ex.toString());
+                new Message(this, Global.resourceString("Write_error_") + "\n"
+                        + ex.toString());
                 return;
             }
-        } else if (Global.resourceString("Save_Bitmap").equals(o)) // save the game
-        {    // File dialog handling
-            FileDialog fd = new FileDialog(this, Global.resourceString("Save_Bitmap"), FileDialog.SAVE);
+        } else if (Global.resourceString("Save_Bitmap").equals(o)) // save the
+        // game
+        { // File dialog handling
+            FileDialog fd = new FileDialog(this, Global
+                    .resourceString("Save_Bitmap"), FileDialog.SAVE);
             if (!Dir.equals("")) fd.setDirectory(Dir);
-            String s = ((Node) B.firstnode()).getaction("GN");
+            String s = B.firstnode().getaction("GN");
             if (s != null && !s.equals(""))
                 fd.setFile(s + "." + Global.getParameter("extension", "bmp"));
-            else
-                fd.setFile("*." + Global.getParameter("extension", "bmp"));
+            else fd.setFile("*." + Global.getParameter("extension", "bmp"));
             fd.setFilenameFilter(this);
             center(fd);
-            fd.show();
+            fd.setVisible(true);
             String fn = fd.getFile();
             if (fn == null) return;
             Dir = fd.getDirectory();
-            try // print out using the board class
+            try
+            // print out using the board class
             {
                 BMPFile F = new BMPFile();
                 Dimension d = B.getBoardImageSize();
-                F.saveBitmap(fd.getDirectory() + fn, B.getBoardImage(), d.width, d.height);
+                F.saveBitmap(fd.getDirectory() + fn, B.getBoardImage(),
+                        d.width, d.height);
             } catch (Exception ex) {
-                new Message(this, Global.resourceString("Write_error_") + "\n" + ex.toString());
+                new Message(this, Global.resourceString("Write_error_") + "\n"
+                        + ex.toString());
                 return;
             }
         } else if (Global.resourceString("Load").equals(o)) // load a game
-        {    // File dialog handling
-            FileDialog fd = new FileDialog(this, Global.resourceString("Load_Game"), FileDialog.LOAD);
+        { // File dialog handling
+            FileDialog fd = new FileDialog(this, Global
+                    .resourceString("Load_Game"), FileDialog.LOAD);
             if (!Dir.equals("")) fd.setDirectory(Dir);
             fd.setFilenameFilter(this);
-            fd.setFile("*." + Global.getParameter("extension",
-                    Global.getParameter("xml", false) ? "xml" : "sgf"));
+            fd.setFile("*."
+                    + Global.getParameter("extension", Global.getParameter("xml",
+                    false) ? "xml" : "sgf"));
             center(fd);
-            fd.show();
+            fd.setVisible(true);
             String fn = fd.getFile();
             if (fn == null) return;
             Dir = fd.getDirectory();
-            try // print out using the board class
+            try
+            // print out using the board class
             {
                 if (Global.getParameter("xml", false)) {
-                    InputStream in =
-                            new FileInputStream(fd.getDirectory() + fn);
+                    InputStream in = new FileInputStream(fd.getDirectory() + fn);
                     try {
                         B.loadXml(new XmlReader(in));
                     } catch (XmlReaderException e) {
@@ -1052,18 +1184,13 @@ public class GoFrame extends CloseFrame
                 } else {
                     BufferedReader fi;
                     if (Global.isApplet())
-                        fi =
-                                new BufferedReader(
-                                        new InputStreamReader(
-                                                new FileInputStream(fd.getDirectory() + fn),
-                                                Global.getParameter("encoding", "")));
-                    else
-                        fi =
-                                new BufferedReader(
-                                        new InputStreamReader(
-                                                new FileInputStream(fd.getDirectory() + fn),
-                                                Global.getParameter("encoding",
-                                                        System.getProperty("file.encoding"))));
+                        fi = new BufferedReader(new InputStreamReader(
+                                new FileInputStream(fd.getDirectory() + fn), Global
+                                .getParameter("encoding", "")));
+                    else fi = new BufferedReader(new InputStreamReader(
+                            new FileInputStream(fd.getDirectory() + fn), Global
+                            .getParameter("encoding", System
+                                    .getProperty("file.encoding"))));
                     try {
                         B.load(fi);
                     } catch (IOException e) {
@@ -1072,13 +1199,15 @@ public class GoFrame extends CloseFrame
                     fi.close();
                 }
             } catch (IOException ex) {
-                new Message(this, Global.resourceString("Read_error_") + "\n" + ex.toString());
+                new Message(this, Global.resourceString("Read_error_") + "\n"
+                        + ex.toString());
                 return;
             }
-            String s = ((Node) B.firstnode()).getaction("GN");
-            if (s != null && !s.equals("")) setTitle(s);
+            String s = B.firstnode().getaction("GN");
+            if (s != null && !s.equals(""))
+                setTitle(s);
             else {
-                ((Node) B.firstnode()).setaction("GN", FileName.purefilename(fn));
+                B.firstnode().setaction("GN", FileName.purefilename(fn));
                 setTitle(FileName.purefilename(fn));
             }
             if (fn.toLowerCase().indexOf("kogo") >= 0)
@@ -1108,10 +1237,9 @@ public class GoFrame extends CloseFrame
         } else if (Global.resourceString("Game_Copyright").equals(o)) {
             new EditCopyright(this, B.firstnode());
         } else if (Global.resourceString("Prisoner_Count").equals(o)) {
-            String s =
-                    Global.resourceString("Black__") + B.Pw +
-                            Global.resourceString("__White__") + B.Pb + "\n" +
-                            Global.resourceString("Komi") + " " + B.getKomi();
+            String s = Global.resourceString("Black__") + B.Pw
+                    + Global.resourceString("__White__") + B.Pb + "\n"
+                    + Global.resourceString("Komi") + " " + B.getKomi();
             new Message(this, s);
         } else if (Global.resourceString("Board_Color").equals(o)) {
             new BoardColorEdit(this, "boardcolor", BoardColor);
@@ -1128,19 +1256,19 @@ public class GoFrame extends CloseFrame
         } else if (Global.resourceString("Marker_Color").equals(o)) {
             new BoardColorEdit(this, "markercolor", MarkerColor);
         } else if (Global.resourceString("Board_Font").equals(o)) {
-            (new BoardGetFontSize(this,
-                    "boardfontname", Global.getParameter("boardfontname", "SansSerif"),
-                    "boardfontsize", Global.getParameter("boardfontsize", 10), true)).show();
+            new BoardGetFontSize(this, "boardfontname", Global.getParameter(
+                    "boardfontname", "SansSerif"), "boardfontsize", Global
+                    .getParameter("boardfontsize", 10), true).setVisible(true);
             updateall();
         } else if (Global.resourceString("Normal_Font").equals(o)) {
-            (new BoardGetFontSize(this,
-                    "sansserif", Global.getParameter("sansserif", "SansSerif"),
-                    "ssfontsize", Global.getParameter("ssfontsize", 11), true)).show();
+            new BoardGetFontSize(this, "sansserif", Global.getParameter(
+                    "sansserif", "SansSerif"), "ssfontsize", Global.getParameter(
+                    "ssfontsize", 11), true).setVisible(true);
             updateall();
         } else if (Global.resourceString("Fixed_Font").equals(o)) {
-            (new BoardGetFontSize(this,
-                    "monospaced", Global.getParameter("monospaced", "Monospaced"),
-                    "msfontsize", Global.getParameter("msfontsize", 11), true)).show();
+            new BoardGetFontSize(this, "monospaced", Global.getParameter(
+                    "monospaced", "Monospaced"), "msfontsize", Global.getParameter(
+                    "msfontsize", 11), true).setVisible(true);
             updateall();
         } else if (Global.resourceString("Last_50").equals(o)) {
             B.lastrange(50);
@@ -1172,14 +1300,14 @@ public class GoFrame extends CloseFrame
     public void center(FileDialog d) {
         Point lo = getLocation();
         Dimension di = getSize();
-        d.setLocation(lo.x + di.width / 2 - 100,
-                lo.y + di.height / 2 - 100);
+        d.setLocation(lo.x + di.width / 2 - 100, lo.y + di.height / 2 - 100);
     }
 
     public void search() {
         B.search(Global.getParameter("searchstring", "++"));
     }
 
+    @Override
     public void itemAction(String o, boolean flag) {
         if (Global.resourceString("Save_pure_SGF").equals(o)) {
             Global.setParameter("puresgf", flag);
@@ -1249,12 +1377,12 @@ public class GoFrame extends CloseFrame
             ShowTarget = flag;
             Global.setParameter("showtarget", ShowTarget);
         } else if (Global.resourceString("Show_Buttons").equals(o)) {
-            if (flag) add("South", ButtonP);
+            if (flag)
+                add("South", ButtonP);
             else remove(ButtonP);
             if (this instanceof ConnectedGoFrame)
                 Global.setParameter("showbuttonsconnected", flag);
-            else
-                Global.setParameter("showbuttons", flag);
+            else Global.setParameter("showbuttons", flag);
             setVisible(true);
             validate();
             doLayout();
@@ -1326,16 +1454,18 @@ public class GoFrame extends CloseFrame
      * Next to move
      */
     public void color(int c) {
-        if (c == -1) B.white();
+        if (c == -1)
+            B.white();
         else B.black();
     }
 
     /**
-     * This called from the board to set the menu checks
-     * according to the current state.
+     * This called from the board to set the menu checks according to the
+     * current state.
      *
      * @param i the number of the state the Board is in.
      */
+    @Override
     public void setState(int i) {
         Black.setState(false);
         White.setState(false);
@@ -1441,8 +1571,7 @@ public class GoFrame extends CloseFrame
     }
 
     /**
-     * Called from board to enable and disable navigation
-     * buttons.
+     * Called from board to enable and disable navigation buttons.
      *
      * @param i the number of the button
      * @param f enable/disable the button
@@ -1482,13 +1611,14 @@ public class GoFrame extends CloseFrame
      * tests, if a name is accepted as a SGF file name
      */
     public boolean accept(File dir, String name) {
-        if (name.endsWith("." + Global.getParameter("extension", "sgf"))) return true;
+        if (name.endsWith("." + Global.getParameter("extension", "sgf")))
+            return true;
         else return false;
     }
 
     /**
-     * Called from the edit marker label dialog, when its
-     * text has been entered by the user.
+     * Called from the edit marker label dialog, when its text has been entered
+     * by the user.
      *
      * @param s the marker to be used by the board
      */
@@ -1568,6 +1698,7 @@ public class GoFrame extends CloseFrame
     public void undo() {
     }
 
+    @Override
     public boolean close() // try to close
     {
         if (Global.getParameter("confirmations", true)) {
@@ -1629,8 +1760,8 @@ public class GoFrame extends CloseFrame
     boolean Activated = false;
 
     /**
-     * Note that the board must only load a file, when it is ready.
-     * This is to interpret a command line argument SGF filename.
+     * Note that the board must only load a file, when it is ready. This is to
+     * interpret a command line argument SGF filename.
      */
     public synchronized void load(String file, int move) {
         LaterFilename = FileName.purefilename(file);
@@ -1655,15 +1786,14 @@ public class GoFrame extends CloseFrame
     }
 
     /**
-     * Note that the board must load a file, when it is ready.
-     * This is to interpret a command line argument SGF filename.
+     * Note that the board must load a file, when it is ready. This is to
+     * interpret a command line argument SGF filename.
      */
     public void load(URL file) {
         LaterFilename = file.toString();
         try {
             if (file.toExternalForm().endsWith(".xml")) {
-                LaterLoad = new InputStreamReader(file.openStream(),
-                        "UTF8");
+                LaterLoad = new InputStreamReader(file.openStream(), "UTF8");
                 LaterLoadXml = true;
             } else {
                 LaterLoad = new InputStreamReader(file.openStream());
@@ -1685,19 +1815,19 @@ public class GoFrame extends CloseFrame
             setGameTitle(LaterFilename);
             B.gotoMove(LaterMove);
         } catch (Exception ex) {
-            rene.dialogs.Warning w =
-                    new rene.dialogs.Warning(this, ex.toString(), "Warning", true);
+            rene.dialogs.Warning w = new rene.dialogs.Warning(this, ex
+                    .toString(), "Warning", true);
             w.center(this);
             w.setVisible(true);
         }
     }
 
     public void setGameTitle(String filename) {
-        String s = ((Node) B.firstnode()).getaction("GN");
+        String s = B.firstnode().getaction("GN");
         if (s != null && !s.equals("")) {
             setTitle(s);
         } else {
-            ((Node) B.firstnode()).addaction(new Action("GN", filename));
+            B.firstnode().addaction(new Action("GN", filename));
             setTitle(filename);
         }
     }
@@ -1713,8 +1843,8 @@ public class GoFrame extends CloseFrame
             file.close();
             setGameTitle(LaterFilename);
         } catch (Exception ex) {
-            rene.dialogs.Warning w =
-                    new rene.dialogs.Warning(this, ex.toString(), "Warning", true);
+            rene.dialogs.Warning w = new rene.dialogs.Warning(this, ex
+                    .toString(), "Warning", true);
             w.center(this);
             w.setVisible(true);
         }
@@ -1726,7 +1856,8 @@ public class GoFrame extends CloseFrame
             Transferable t = clip.getContents(this);
             String S = (String) t.getTransferData(DataFlavor.stringFlavor);
             LaterFilename = "Clipboard Content";
-            if (XmlReader.testXml(S)) doloadXml(new StringReader(S));
+            if (XmlReader.testXml(S))
+                doloadXml(new StringReader(S));
             else doload(new StringReader(S));
         } catch (Exception e) {
         }
@@ -1737,8 +1868,8 @@ public class GoFrame extends CloseFrame
             ByteArrayOutputStream ba = new ByteArrayOutputStream(50000);
             try {
                 if (Global.getParameter("xml", false)) {
-                    PrintWriter po = new PrintWriter(
-                            new OutputStreamWriter(ba, "UTF8"), true);
+                    PrintWriter po = new PrintWriter(new OutputStreamWriter(ba,
+                            "UTF8"), true);
                     B.saveXML(po, "utf-8");
                     po.close();
                 } else {
@@ -1762,7 +1893,8 @@ public class GoFrame extends CloseFrame
     public synchronized void activate() {
         Activated = true;
         if (LaterLoad != null) {
-            if (LaterLoadXml) doloadXml(LaterLoad);
+            if (LaterLoadXml)
+                doloadXml(LaterLoad);
             else doload(LaterLoad);
         }
         LaterLoad = null;
@@ -1777,16 +1909,16 @@ public class GoFrame extends CloseFrame
     }
 
     /**
-     * Opens a dialog to ask for deleting of game trees. This is
-     * called from the Board, if the node has grandchildren.
+     * Opens a dialog to ask for deleting of game trees. This is called from the
+     * Board, if the node has grandchildren.
      */
     public boolean askUndo() {
         return new AskUndoQuestion(this).Result;
     }
 
     /**
-     * Called from the board, when a node is to be inserted.
-     * Opens a dialog asking for permission.
+     * Called from the board, when a node is to be inserted. Opens a dialog
+     * asking for permission.
      */
     public boolean askInsert() {
         return new AskInsertQuestion(this).Result;
@@ -1802,8 +1934,8 @@ public class GoFrame extends CloseFrame
     }
 
     /**
-     * Sets the name of the current board name in a dialog
-     * (called from the menu)
+     * Sets the name of the current board name in a dialog (called from the
+     * menu)
      */
     public void callInsert() {
         new NodeNameEdit(this, B.getname());
@@ -1824,8 +1956,8 @@ public class GoFrame extends CloseFrame
     }
 
     /**
-     * Called from the board to set the comment of a board in the Comment
-     * text area.
+     * Called from the board to set the comment of a board in the Comment text
+     * area.
      */
     public void setComment(String s) {
         Comment.setText(s);
@@ -1840,8 +1972,8 @@ public class GoFrame extends CloseFrame
     }
 
     /**
-     * Called from outside to append something to the comment
-     * text area (e.g. from a Distributor).
+     * Called from outside to append something to the comment text area (e.g.
+     * from a Distributor).
      */
     public void appendComment(String s) {
         Comment.append(s);
@@ -1921,8 +2053,8 @@ public class GoFrame extends CloseFrame
     }
 
     /**
-     * Process the insert key, which set the node name by opening
-     * the correspinding dialog.
+     * Process the insert key, which set the node name by opening the
+     * correspinding dialog.
      */
     public void keyPressed(KeyEvent e) {
         if (e.isActionKey()) {
@@ -1958,7 +2090,7 @@ public class GoFrame extends CloseFrame
     }
 
     public String version() {
-        return Global.Version;
+        return "Version " + resourceString("Version");
     }
 
     public boolean getParameter(String s, boolean f) {
@@ -1974,12 +2106,11 @@ public class GoFrame extends CloseFrame
     }
 
     public boolean blackOnly() {
-        if (BlackOnly != null)
-            return BlackOnly.getState();
+        if (BlackOnly != null) return BlackOnly.getState();
         return false;
     }
 
     public Color backgroundColor() {
-        return Global.gray;
+        return Color.gray;
     }
 }

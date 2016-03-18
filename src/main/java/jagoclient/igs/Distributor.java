@@ -1,5 +1,6 @@
 package jagoclient.igs;
 
+
 /**
  * This class takes messages from IgsStream and handles it.
  * Most of the time, it has a client to send the message to.
@@ -18,7 +19,7 @@ package jagoclient.igs;
 public class Distributor {
     int N; // number to expect
     int G; // game number, if applicable
-    boolean Once; // needed only for one input
+    boolean Once = false; // needed only for one input
     IgsStream In;
     public boolean Playing;
 

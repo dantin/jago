@@ -8,16 +8,15 @@ import java.awt.event.*;
 import java.io.PrintWriter;
 
 /**
- * This is a read-only TextArea, removing the memory restriction in some
- * OS's. Component usage is like a Panel. Use appendLine to append a line
- * of text. You can give each line a different color. Moreover, you can
- * save the file to a PrintWriter. You can mark blocks with the right
- * mouse button. Dragging and scrolling is not supported in this version.
+ * This is a read-only TextArea, removing the memory restriction in some OS's.
+ * Component usage is like a Panel. Use appendLine to append a line of text. You
+ * can give each line a different color. Moreover, you can save the file to a
+ * PrintWriter. You can mark blocks with the right mouse button. Dragging and
+ * scrolling is not supported in this version.
  */
 
-public class Viewer extends Panel
-        implements AdjustmentListener, MouseListener, MouseMotionListener,
-        ActionListener, KeyListener {
+public class Viewer extends Panel implements AdjustmentListener, MouseListener,
+        MouseMotionListener, ActionListener, KeyListener, WheelListener {
     TextDisplay TD;
     Scrollbar Vertical, Horizontal;
     TextPosition Start, End;
@@ -30,11 +29,13 @@ public class Viewer extends Panel
         setLayout(new BorderLayout());
         add("Center", P3D = new Panel3D(TD));
         if (vs) {
-            add("East", Vertical = new Scrollbar(Scrollbar.VERTICAL, 0, 100, 0, 1100));
+            add("East", Vertical = new Scrollbar(Scrollbar.VERTICAL, 0, 100, 0,
+                    1100));
             Vertical.addAdjustmentListener(this);
         }
         if (hs) {
-            add("South", Horizontal = new Scrollbar(Scrollbar.HORIZONTAL, 0, 100, 0, 1100));
+            add("South", Horizontal = new Scrollbar(Scrollbar.HORIZONTAL, 0,
+                    100, 0, 1100));
             Horizontal.addAdjustmentListener(this);
         }
         TD.addMouseListener(this);
@@ -52,6 +53,8 @@ public class Viewer extends Panel
         mi.addActionListener(this);
         PM.add(mi);
         add(PM);
+        Wheel W = new Wheel(this);
+        addMouseWheelListener(W);
     }
 
     public Viewer() {
@@ -61,6 +64,7 @@ public class Viewer extends Panel
     public Viewer(String dummy) {
     }
 
+    @Override
     public void setFont(Font f) {
         TD.init(f);
     }
@@ -109,8 +113,7 @@ public class Viewer extends Panel
             }
             setVerticalScrollbar();
         } else if (e.getSource() == Horizontal) {
-            Horizontal.setValue(TD.setHorizontal(
-                    Horizontal.getValue()));
+            Horizontal.setValue(TD.setHorizontal(Horizontal.getValue()));
         }
     }
 
@@ -157,10 +160,12 @@ public class Viewer extends Panel
         }
     }
 
+    @Override
     public Dimension getPreferredSize() {
         return new Dimension(150, 200);
     }
 
+    @Override
     public Dimension getMinimumSize() {
         return new Dimension(150, 200);
     }
@@ -187,7 +192,8 @@ public class Viewer extends Panel
 
     public void actionPerformed(ActionEvent e) {
         String o = e.getActionCommand();
-        if (o.equals(Global.name("block.copy", "Copy"))) TD.copy(Start, End);
+        if (o.equals(Global.name("block.copy", "Copy")))
+            TD.copy(Start, End);
         else if (o.equals(Global.name("block.begin", "Begin Block"))) {
             TD.unmark(Start, End);
             Start = TD.getposition(X, Y);
@@ -219,19 +225,6 @@ public class Viewer extends Panel
     public void keyTyped(KeyEvent e) {
     }
 
-    public static void main(String args[]) {
-        Frame f = new Frame();
-        f.setLayout(new BorderLayout());
-        Viewer v = new Viewer(true, false);
-        f.add("Center", v);
-        f.setSize(300, 300);
-        f.setVisible(true);
-        v.append("test test test test test test test");
-        v.appendLine("test test test test test test test");
-        v.appendLine("test test test test test test test");
-        v.appendLine("test test test test test test test");
-    }
-
     public void setTabWidth(int t) {
         TD.setTabWidth(t);
     }
@@ -248,13 +241,54 @@ public class Viewer extends Panel
         TD.repaint();
     }
 
+    @Override
     public boolean hasFocus() {
         return false;
     }
 
+    @Override
     public void setBackground(Color c) {
         TD.setBackground(c);
         P3D.setBackground(c);
         super.setBackground(c);
     }
+
+    public void up(int n) {
+        for (int i = 0; i < n; i++)
+            TD.verticalUp();
+        setVerticalScrollbar();
+    }
+
+    public void down(int n) {
+        for (int i = 0; i < n; i++)
+            TD.verticalDown();
+        setVerticalScrollbar();
+    }
+
+    public void pageUp() {
+        TD.verticalPageUp();
+        setVerticalScrollbar();
+    }
+
+    public void pageDown() {
+        TD.verticalPageDown();
+        setVerticalScrollbar();
+    }
+
+    public void resized() {
+    }
+
+    public static void main(String args[]) {
+        Frame f = new Frame();
+        f.setLayout(new BorderLayout());
+        Viewer v = new Viewer(true, false);
+        f.add("Center", v);
+        f.setSize(300, 300);
+        f.setVisible(true);
+        v.append("test test test test test test test");
+        v.appendLine("test test test test test test test");
+        v.appendLine("test test test test test test test");
+        v.appendLine("test test test test test test test");
+    }
+
 }

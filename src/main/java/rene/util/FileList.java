@@ -11,6 +11,8 @@ import java.util.Vector;
 class SortFile extends File
         implements SortObject {
     String S;
+    static int SortBy = 0;
+    final public static int NAME = 0, DATE = 1;
 
     public SortFile(File dir, String name) {
         super(dir, name);
@@ -23,6 +25,13 @@ class SortFile extends File
 
     public int compare(SortObject o) {
         SortFile f = (SortFile) o;
+        if (SortBy == DATE) {
+            long n = f.lastModified();
+            long m = lastModified();
+            if (n < m) return -1;
+            if (n > m) return 1;
+            return 0;
+        }
         return -f.S.compareTo(S);
     }
 }
@@ -177,6 +186,12 @@ public class FileList {
         for (i = 0; i < n; i++) Vdir.setElementAt(v[i], i);
     }
 
+    public void sort(int type) {
+        SortFile.SortBy = type;
+        sort();
+        SortFile.SortBy = SortFile.NAME;
+    }
+
     /**
      * @param file The directory that has been found.
      * @return false if recursion should stop here.
@@ -205,5 +220,17 @@ public class FileList {
      */
     public void stopIt() {
         Stop = true;
+    }
+
+    /**
+     * Returns a canonical version of the directory
+     */
+    public String getDir() {
+        File dir = new File(Dir);
+        try {
+            return (dir.getCanonicalPath());
+        } catch (Exception e) {
+            return "Dir does not exist!";
+        }
     }
 }

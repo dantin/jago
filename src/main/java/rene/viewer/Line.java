@@ -5,19 +5,28 @@ import java.awt.*;
 public class Line {
     TextDisplay TD;
     boolean Chosen;
-    int Block;
     int Pos, Posend;
-    static final int NONE = 0, START = 1, END = 2, FULL = 4;
-    Color C, IC;
-    char a[];
+    int Block; // block state
+    static final int NONE = 0, START = 1, END = 2, FULL = 4; // block states (logically or'ed)
+    Color C, IC; // Color of line and high key color of the line
+    char a[]; // Contains the characters of this line
 
     public Line(String s, TextDisplay td) {
         this(s, td, Color.black);
     }
 
+    /**
+     * Generate a line containing s in the textdisplay td.
+     * Display color is c.
+     *
+     * @param s
+     * @param td
+     * @param c
+     */
     public Line(String s, TextDisplay td, Color c) {
         TD = td;
         C = c;
+        // Create a color that is very bright, but resembles the line color
         IC = new Color(C.getRed() / 4 + 192, C.getGreen() / 4 + 192, C.getBlue() / 4 + 192);
         Block = NONE;
         a = s.toCharArray();
@@ -57,52 +66,77 @@ public class Line {
         return i;
     }
 
+    /**
+     * Draw a line.
+     * If the line is in a block, draw it white on black or on dark gray,
+     * depending on the focus.
+     * Drawing in blocks does not use antialias.
+     *
+     * @param g
+     * @param x
+     * @param y
+     */
     public void draw(Graphics g, int x, int y) {
         int i1 = 0, i2, p = 0;
         x -= TD.Offset * TD.FM.charWidth(' ');
-        if (Chosen) {
+        if (Chosen) // Complete line is chosen (in Lister)
+        {    // To see, if the display has the focus:
             if (TD.hasFocus()) g.setColor(Color.darkGray);
             else g.setColor(Color.gray);
             g.fillRect(0, y - TD.Ascent, TD.getSize().width, TD.Height);
-            g.setColor(IC);
+            g.setColor(IC); // draw in light color
+            TD.antialias(false);
             g.drawChars(a, 0, a.length, x, y);
-        } else if ((Block & FULL) != 0) {
+            TD.antialias(true);
+        } else if ((Block & FULL) != 0) // Line in full block (in Viewer)
+        {
             g.setColor(Color.darkGray);
             g.fillRect(x, y - TD.Ascent, TD.FM.charsWidth(a, 0, a.length), TD.Height);
             g.setColor(Color.white);
+            TD.antialias(false);
             g.drawChars(a, 0, a.length, x, y);
+            TD.antialias(true);
         } else if ((Block & START) != 0) {
-            if (Pos > 0) {
+            if (Pos > 0) // Draw text before block
+            {
                 g.setColor(C);
                 g.drawChars(a, 0, Pos, x, y);
                 x += TD.FM.charsWidth(a, 0, Pos);
             }
-            if ((Block & END) != 0) {
+            if ((Block & END) != 0) // draw text in block
+            {
                 if (Posend > Pos) {
                     int h = TD.FM.charsWidth(a, Pos, Posend - Pos);
                     g.setColor(Color.darkGray);
                     g.fillRect(x, y - TD.Ascent, h, TD.Height);
                     g.setColor(Color.white);
+                    TD.antialias(false);
                     g.drawChars(a, Pos, Posend - Pos, x, y);
+                    TD.antialias(true);
                     g.setColor(C);
                     x += h;
                     if (a.length > Posend) {
                         g.drawChars(a, Posend, a.length - Posend, x, y);
                     }
                 } else g.drawChars(a, Pos, a.length - Pos, x, y);
-            } else {
+            } else // draw the rest of the line in block
+            {
                 int h = TD.FM.charsWidth(a, Pos, a.length - Pos);
                 g.setColor(Color.darkGray);
                 g.fillRect(x, y - TD.Ascent, h, TD.Height);
                 g.setColor(Color.white);
+                TD.antialias(false);
                 g.drawChars(a, Pos, a.length - Pos, x, y);
+                TD.antialias(true);
             }
         } else if ((Block & END) != 0) {
             int h = TD.FM.charsWidth(a, 0, Posend);
             g.setColor(Color.darkGray);
             g.fillRect(x, y - TD.Ascent, h, TD.Height);
             g.setColor(Color.white);
+            TD.antialias(false);
             g.drawChars(a, 0, Posend, x, y);
+            TD.antialias(true);
             g.setColor(C);
             x += h;
             if (a.length > Posend) {

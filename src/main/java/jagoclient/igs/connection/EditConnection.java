@@ -7,24 +7,24 @@ import jagoclient.gui.*;
 import rene.util.list.ListClass;
 import rene.util.list.ListElement;
 
+import javax.swing.*;
 import java.awt.*;
 
 public class EditConnection extends CloseDialog {
     ListClass CList;
     Connection C;
-    TextField Name, Server, Port, User, Password, Encoding;
+    JTextField Name, Server, Port, User, Password, Encoding;
     Go G;
     Choice MChoice;
     Frame F;
 
-    public EditConnection(CloseFrame f, ListClass clist, Connection c,
-                          Go go) {
+    public EditConnection(CloseFrame f, ListClass clist, Connection c, Go go) {
         super(f, Global.resourceString("Edit_Connection"), true);
         G = go;
         F = f;
         CList = clist;
         C = c;
-        Panel p1 = new MyPanel();
+        JPanel p1 = new MyPanel();
         p1.setLayout(new GridLayout(0, 2));
         p1.add(new MyLabel(Global.resourceString("Name")));
         p1.add(Name = new FormTextField("" + C.Name));
@@ -32,11 +32,15 @@ public class EditConnection extends CloseDialog {
         p1.add(Server = new FormTextField(C.Server));
         p1.add(new MyLabel(Global.resourceString("Port__Use_23_for_Telnet_")));
         p1.add(Port = new FormTextField("" + C.Port));
-        p1.add(new MyLabel(Global.resourceString("User__empty_for_manual_login_")));
+        p1.add(new MyLabel(Global
+                .resourceString("User__empty_for_manual_login_")));
         p1.add(User = new FormTextField("" + C.User));
-        p1.add(new MyLabel(Global.resourceString("Password__empty_for_prompt_")));
-        p1.add(Password = new FormTextField("" + C.Password));
-        p1.add(new MyLabel(Global.resourceString("Move_Style__move__if_unknown_")));
+        p1
+                .add(new MyLabel(Global
+                        .resourceString("Password__empty_for_prompt_")));
+        p1.add(Password = new JPasswordField("" + C.Password));
+        p1.add(new MyLabel(Global
+                .resourceString("Move_Style__move__if_unknown_")));
         p1.add(MChoice = new Choice());
         MChoice.setFont(Global.SansSerif);
         MChoice.add(Global.resourceString("move"));
@@ -56,8 +60,7 @@ public class EditConnection extends CloseDialog {
         p1.add(new MyLabel(Global.resourceString("Encoding")));
         p1.add(Encoding = new FormTextField("" + C.Encoding));
         add("Center", new Panel3D(p1));
-        Password.setEchoChar('*');
-        Panel p = new MyPanel();
+        MyPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Set")));
         p.add(new ButtonAction(this, Global.resourceString("Add")));
         p.add(new ButtonAction(this, Global.resourceString("Cancel")));
@@ -66,30 +69,34 @@ public class EditConnection extends CloseDialog {
         add("South", new Panel3D(p));
         Global.setpacked(this, "edit", 300, 200, F);
         validate();
-        show();
+        setVisible(true);
         Name.requestFocus();
     }
 
-    public EditConnection(CloseFrame F, ListClass clist,
-                          Go go) {
+    public EditConnection(CloseFrame F, ListClass clist, Go go) {
         super(F, Global.resourceString("Edit_Connection"), true);
         G = go;
         CList = clist;
-        Panel p1 = new MyPanel();
+        MyPanel p1 = new MyPanel();
         p1.setLayout(new GridLayout(0, 2));
         p1.add(new MyLabel(Global.resourceString("Name")));
-        p1.add(Name = new FormTextField(Global.resourceString("Server_shortcut__IGS_")));
+        p1.add(Name = new FormTextField(Global
+                .resourceString("Server_shortcut__IGS_")));
         p1.add(new MyLabel(Global.resourceString("Server")));
-        p1.add(Server = new FormTextField(Global.resourceString("Server_name__igs_nuri_net_")));
+        p1.add(Server = new FormTextField(Global
+                .resourceString("Server_name__igs_nuri_net_")));
         p1.add(new MyLabel(Global.resourceString("Port__Use_23_for_Telnet_")));
         p1.add(Port = new FormTextField(Global.resourceString("Port__6969_")));
-        p1.add(new MyLabel(Global.resourceString("User__empty_for_manual_login_")));
-        p1.add(User = new FormTextField(Global.resourceString("User_name__kingkong_")));
-        p1.add(new
-                MyLabel(Global.resourceString("Password__empty_for_prompt_")));
-        p1.add(Password = new FormTextField(""));
-        p1.add(new
-                MyLabel(Global.resourceString("Move_Style__move__if_unknown_")));
+        p1.add(new MyLabel(Global
+                .resourceString("User__empty_for_manual_login_")));
+        p1.add(User = new FormTextField(Global
+                .resourceString("User_name__kingkong_")));
+        p1
+                .add(new MyLabel(Global
+                        .resourceString("Password__empty_for_prompt_")));
+        p1.add(Password = new JPasswordField(""));
+        p1.add(new MyLabel(Global
+                .resourceString("Move_Style__move__if_unknown_")));
         p1.add(MChoice = new Choice());
         MChoice.setFont(Global.SansSerif);
         MChoice.add(Global.resourceString("move"));
@@ -97,12 +104,10 @@ public class EditConnection extends CloseDialog {
         MChoice.add(Global.resourceString("move_time"));
         MChoice.select(Global.resourceString("move"));
         add("Center", new Panel3D(p1));
-        p1.add(new
-                MyLabel(Global.resourceString("Encoding")));
-        p1.add(Encoding = new FormTextField(
-                Global.isApplet() ? "ASCII" : System.getProperty("file.encoding")));
-        Password.setEchoChar('*');
-        Panel p = new MyPanel();
+        p1.add(new MyLabel(Global.resourceString("Encoding")));
+        p1.add(Encoding = new FormTextField(Global.isApplet() ? "ASCII" : System
+                .getProperty("file.encoding")));
+        JPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Add")));
         p.add(new ButtonAction(this, Global.resourceString("Cancel")));
         p.add(new MyLabel(" "));
@@ -113,6 +118,7 @@ public class EditConnection extends CloseDialog {
         show();
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "edit");
         if (Global.resourceString("Set").equals(o)) {
@@ -180,4 +186,3 @@ public class EditConnection extends CloseDialog {
         } else super.doAction(o);
     }
 }
-

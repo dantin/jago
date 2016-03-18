@@ -39,13 +39,13 @@ public class Beep {
             storeInt(B, 20, 1);
             for (int i = 0; i < Length; i++) {
                 store(B, Offset + i,
-                        0.3 * Math.sin(i / 8000.0 * 2 * Math.PI * frequ)
-                                + 0.2 * Math.sin(i / 8000.0 * 2 * Math.PI * 2 * frequ)
-                                + 0.1 * Math.sin(i / 8000.0 * 2 * Math.PI * 3 * frequ));
+                        0.3 * Math.sin(i / 8000.0 * 2 * Math.PI * frequ) + 0.2
+                                * Math.sin(i / 8000.0 * 2 * Math.PI * 2 * frequ) + 0.1
+                                * Math.sin(i / 8000.0 * 2 * Math.PI * 3 * frequ));
             }
-            DataInputStream in = new DataInputStream(
-                    new ByteArrayInputStream(B, 0, Offset + Length));
-            AudioStream as = new AudioStream(in);
+            DataInputStream in = new DataInputStream(new ByteArrayInputStream(
+                    B, 0, Offset + Length));
+            @SuppressWarnings("resource") AudioStream as = new AudioStream(in);
             AudioData Data = as.getData();
             A = new AudioDataStream(Data);
         } catch (Exception e) {
@@ -60,10 +60,10 @@ public class Beep {
 
     public void store(byte b[], int pos, double value) {
         if (value > 0) {
-            b[pos] = (byte) (127 - (int) (Math.floor((int) (value * 128))));
+            b[pos] = (byte) (127 - (int) Math.floor((int) (value * 128)));
         } else {
-            b[pos] = (byte) (0x00000080 |
-                    (127 - (int) (Math.floor((int) (-value * 128)))));
+            b[pos] = (byte) (0x00000080 | 127 - (int) Math
+                    .floor((int) (-value * 128)));
         }
     }
 
@@ -71,7 +71,7 @@ public class Beep {
         b[pos] = (byte) ((value & 0xFF000000) >> 24);
         b[pos + 1] = (byte) ((value & 0x00FF0000) >> 16);
         b[pos + 2] = (byte) ((value & 0x0000FF00) >> 8);
-        b[pos + 3] = (byte) ((value & 0x000000FF));
+        b[pos + 3] = (byte) (value & 0x000000FF);
     }
 
 }

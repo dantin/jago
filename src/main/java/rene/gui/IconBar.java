@@ -3,7 +3,16 @@ package rene.gui;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.StringTokenizer;
 import java.util.Vector;
+
+class SaveColor extends Color {
+    public SaveColor(int red, int green, int blue) {
+        super(red > 0 ? red : 0, green > 0 ? green : 0, blue > 0 ? blue : 0);
+    }
+}
+
 
 /**
  * These are the common things to Separators and Incons.
@@ -12,7 +21,7 @@ import java.util.Vector;
 interface IconBarElement {
     public int width();
 
-    public void getPosition(int x, int y);
+    public void setPosition(int x, int y);
 
     public Point getPosition();
 
@@ -21,51 +30,79 @@ interface IconBarElement {
     public String getName();
 }
 
+
 /**
  * A simple separator between icons.
  */
 
-class Separator implements IconBarElement {
-    final int Size = 4;
+class Separator extends Panel implements IconBarElement {
+    final int Size = 6;
+
+    public Separator(IconBar bar) {
+        if (bar.Vertical)
+            setSize(BasicIcon.Size, Size);
+        else setSize(Size, BasicIcon.Size);
+    }
 
     public int width() {
         return Size;
     }
 
-    public void getPosition(int x, int y) {
+    public void setPosition(int x, int y) {
+        setLocation(x, y);
     }
 
     public Point getPosition() {
         return new Point(0, 0);
     }
 
+    @Override
     public void setEnabled(boolean flag) {
     }
 
+    @Override
     public String getName() {
         return "";
     }
+
+    @Override
+    public void paint(Graphics g) {
+        g.setColor(getBackground());
+        if (Global.getParameter("iconbar.showseparators", false))
+            g
+                    .fill3DRect(1, 1, getSize().width - 1, getSize().height - 1,
+                            false);
+        else g.fillRect(1, 1, getSize().width - 1, getSize().height - 1);
+    }
 }
 
-class PrimitiveIcon extends Panel
-        implements MouseListener, IconBarElement, Runnable {
+
+/**
+ * @author Rene This is the most basic icon, handling mouse presses and display
+ *         in activated, pressed, unset or disabled state.
+ */
+class BasicIcon extends Panel implements MouseListener, IconBarElement,
+        Runnable {
     IconBar Bar;
     String Name;
-    boolean Enabled, Pressed, Unset;
+    boolean Enabled; // Icon cannot be changed by user action.
+    boolean On; // On or off are the basic stated of icons.
     boolean Focus = false;
-    final static int Size = 20;
+    public static int Size = 22; // the size of icons
+    boolean MouseOver, MouseDown; // for display states during mouse action
+    boolean Unset; // Unknown State!
 
-    public PrimitiveIcon(IconBar bar, String name) {
+    public BasicIcon(IconBar bar, String name) {
         Bar = bar;
         Name = name;
         Enabled = true;
-        Pressed = false;
-        Unset = false;
+        On = false;
         addMouseListener(this);
         enableEvents(AWTEvent.KEY_EVENT_MASK);
         setSize(Size, Size);
     }
 
+    @Override
     public void processKeyEvent(KeyEvent e) {
         Bar.getKey(e);
     }
@@ -73,13 +110,43 @@ class PrimitiveIcon extends Panel
     /**
      * Paint a button with an image
      */
+    @Override
     public void paint(Graphics g) {
-        g.setColor(getBackground());
-        if (Enabled) g.fill3DRect(0, 0, Size, Size, !Pressed);
-        else g.fillRect(0, 0, Size, Size);
-        g.setColor(getForeground());
-        if (Unset) g.drawRect(0, 0, Size, Size);
+        if (MouseDown) {
+            g.setColor(getBackground());
+            g.fill3DRect(0, 0, Size, Size, false);
+        } else {
+            if (MouseOver) {
+                if (On) {
+                    Color c = getBackground();
+                    g.setColor(new SaveColor(c.getRed() - 30,
+                            c.getGreen() - 30, c.getBlue()));
+                } else g.setColor(getBackground());
+                g.fill3DRect(0, 0, Size, Size, true);
+            } else {
+                if (On) {
+                    Color c = getBackground();
+                    g.setColor(c);
+                    g.fillRect(0, 0, Size, Size);
+                    g.setColor(new SaveColor(c.getRed() - 100,
+                            c.getGreen() - 100, c.getBlue()));
+                    g.fillRect(3, 3, Size - 2, Size - 2);
+                    g.setColor(new SaveColor(c.getRed() - 50,
+                            c.getGreen() - 50, c.getBlue()));
+                    g.fillRect(1, 1, Size - 2, Size - 2);
+                } else {
+                    g.setColor(getBackground());
+                    g.fillRect(0, 0, Size, Size);
+                }
+            }
+        }
         dopaint(g);
+        if (Unset) {
+            Color c = getBackground();
+            g.setColor(new SaveColor(c.getRed() - 100, c.getGreen(), c
+                    .getBlue()));
+            g.drawLine(0, 0, Size, Size);
+        }
         if (Focus) showFocus(g);
     }
 
@@ -94,84 +161,123 @@ class PrimitiveIcon extends Panel
     public void dopaint(Graphics g) {
     }
 
+    @Override
     public void update(Graphics g) {
         paint(g);
     }
 
     /**
-     * Repaint in pressed mode.
+     * User pressed the mouse key over this button.
      */
     public void mousePressed(MouseEvent e) {
         if (!Enabled) return;
-        Pressed = true;
-        Unset = false;
+        MouseDown = true;
         repaint();
     }
 
     /**
-     * Repaint in unpressed mode, when the user releases the button.
+     * User released the mouse key again.
      */
     public void mouseReleased(MouseEvent e) {
         if (!Enabled) return;
-        Pressed = false;
-        repaint();
+        MouseDown = false;
         Dimension d = getSize();
-        if (e.getX() < 0 || e.getX() > d.width ||
-                e.getY() < 0 || e.getY() > d.height) return;
-        T = null;
+        if (e.getX() < 0 || e.getX() > d.width || e.getY() < 0
+                || e.getY() > d.height) {
+            repaint();
+            return;
+        }
+        Unset = false;
+        pressed(e); // call method for children to change states etc.
+        repaint();
+        T = null; // stop icon help thread
+        // Notify Iconbar about activation:
+        long time = System.currentTimeMillis();
         Bar.iconPressed(Name, e.isShiftDown(), e.isControlDown());
+        // Necessary, since Java 1.4 does not report
+        // MouseExited, if a modal dialog is active:
+        time = System.currentTimeMillis() - time;
+        if (MouseOver && time > 1000) {
+            MouseOver = false;
+            repaint();
+        }
+    }
+
+    /**
+     * Overwrite for children!
+     *
+     * @param e Mouse event for determining right button etc.
+     */
+    public void pressed(MouseEvent e) {
     }
 
     public void mouseClicked(MouseEvent e) {
     }
 
     Thread T;
+    boolean Control;
 
     /**
-     * Start a thread, that waits for one second, then tells
-     * the icon bar to display the proper help text.
+     * Start a thread, that waits for one second, then tells the icon bar to
+     * display the proper help text.
      */
     public synchronized void mouseEntered(MouseEvent e) {
-        if (T != null || !Global.getParameter("iconbar.showtips", true)) return;
+        if (T != null) return;
+        if (Enabled) MouseOver = true;
+        repaint();
+        if (!Global.getParameter("iconbar.showtips", true)) return;
+        Control = e.isControlDown();
         T = new Thread(this);
         T.start();
     }
 
+    /**
+     * A thread to display an icon help.
+     */
     public void run() {
         try {
-            T.sleep(2000);
+            Thread.sleep(1000);
         } catch (Exception e) {
         }
-        if (T != null) {
+        if (!T.isInterrupted()) {
             synchronized (this) {
                 try {
                     Point P = getLocationOnScreen();
                     String help = Global.name("iconhelp." + Name, "");
                     if (help.equals("") && Name.length() > 1) {
-                        help = Global.name("iconhelp." +
-                                Name.substring(0, Name.length() - 1) + "?", "");
+                        help = Global.name("iconhelp."
+                                + Name.substring(0, Name.length() - 1) + "?", "");
                     }
+                    if (help.equals("")) help = Bar.getHelp(Name);
                     if (help.equals(""))
-                        help = Global.name("iconhelp.nohelp", "No help available");
+                        help = Global.name("iconhelp.nohelp",
+                                "No help available");
+                    if (Control) {
+                        String hc = Global.name("iconhelp.control." + Name, "");
+                        if (!hc.equals("")) help = hc;
+                    }
                     Bar.displayHelp(this, help);
                 } catch (Exception e) {
                 }
             }
             try {
-                T.sleep(5000);
+                Thread.sleep(5000);
             } catch (Exception e) {
             }
-            if (T != null) Bar.removeHelp();
+            if (!T.isInterrupted()) Bar.removeHelp();
             T = null;
         }
     }
 
     /**
-     * Tell the run method, that display is no longer necessary,
-     * and remove the help text.
+     * Tell the run method, that display is no longer necessary, and remove the
+     * help text.
      */
     public synchronized void mouseExited(MouseEvent e) {
+        T.interrupt();
         T = null;
+        MouseOver = false;
+        repaint();
         Bar.removeHelp();
     }
 
@@ -181,7 +287,7 @@ class PrimitiveIcon extends Panel
         return Size;
     }
 
-    public void getPosition(int x, int y) {
+    public void setPosition(int x, int y) {
         setLocation(x, y);
     }
 
@@ -189,16 +295,19 @@ class PrimitiveIcon extends Panel
         return getLocationOnScreen();
     }
 
+    @Override
     public void setEnabled(boolean flag) {
         if (Enabled == flag) return;
         Enabled = flag;
         repaint();
     }
 
+    @Override
     public String getName() {
         return Name;
     }
 
+    @Override
     public boolean hasFocus() {
         return Focus;
     }
@@ -208,35 +317,49 @@ class PrimitiveIcon extends Panel
         repaint();
     }
 
+    // needs to be removed:
+
     public boolean isSet() {
         return !Unset;
     }
 
+    public void unset(boolean flag) {
+        Unset = flag;
+        repaint();
+    }
+
     public void unset() {
-        Unset = true;
+        unset(true);
+        repaint();
+    }
+
+    public void setOn(boolean flag) {
+        On = flag;
+        repaint();
     }
 }
 
-/**
- * An Icon. Loads its image from a resource. The icon can be Enabled
- * or Disabled. It will display a tool tip, when the mouse remains
- * over it for more than a second. The help text is derived from
- * Global.name("iconhelp."+Name).
- */
 
-class SingleIcon extends PrimitiveIcon {
+/**
+ * @author Rene A primitive icon that displays a GIF image.
+ */
+class IconWithGif extends BasicIcon {
     Image I;
     Color C;
     int W, H, X, Y;
 
     /**
-     * Initialize the icon and load its image.
+     * Initialize the icon and load its image. By changing the global parameter
+     * "icontype", png can be used too.
      */
-    public SingleIcon(IconBar bar, String file) {
+    public IconWithGif(IconBar bar, String file) {
         super(bar, file);
+        String iconfile = getDisplay(file);
+        if (!iconfile.equals("")) file = iconfile;
         try {
             InputStream in = getClass().getResourceAsStream(
-                    Bar.Resource + file + ".gif");
+                    Bar.Resource + file + "."
+                            + Global.getParameter("icontype", "gif"));
             int pos = 0;
             int n = in.available();
             byte b[] = new byte[20000];
@@ -251,31 +374,71 @@ class SingleIcon extends PrimitiveIcon {
             MediaTracker T = new MediaTracker(bar);
             T.addImage(I, 0);
             T.waitForAll();
-            W = I.getWidth(this);
-            H = I.getHeight(this);
-            X = Size / 2 - W / 2;
-            Y = Size / 2 - H / 2;
         } catch (Exception e) {
-            I = null;
+            try {
+                I = getToolkit().getImage(
+                        file + "." + Global.getParameter("icontype", "gif"));
+                MediaTracker mt = new MediaTracker(this);
+                mt.addImage(I, 0);
+                mt.waitForID(0);
+                if (!(mt.checkID(0) && !mt.isErrorAny()))
+                    throw new Exception("");
+            } catch (Exception ex) {
+                I = null;
+                return;
+            }
         }
+        W = I.getWidth(this);
+        H = I.getHeight(this);
+        X = Size / 2 - W / 2;
+        Y = Size / 2 - H / 2;
     }
 
-    public SingleIcon(IconBar bar, String name, Color color) {
+    public String getDisplay(String name) {
+        if (!name.endsWith(")")) return "";
+        int n = name.lastIndexOf('(');
+        if (n < 0) return "";
+        return name.substring(n + 1, name.length() - 1);
+    }
+
+    public IconWithGif(IconBar bar, String name, Color color) {
         super(bar, name);
         C = color;
     }
 
+    @Override
     public void dopaint(Graphics g) {
-        if (I != null) g.drawImage(I, X, Y, this);
-        else if (C != null) {
+        if (I != null) {
+            if (W > getSize().width)
+                g.drawImage(I, 1, 1, Size - 2, Size - 2, this);
+            else g.drawImage(I, X, Y, this);
+        } else if (C != null) {
             g.setColor(C);
             g.fillRect(3, 3, Size - 6, Size - 6);
+        } else {
+            g.setFont(new Font("Courier", Font.BOLD, Size / 3));
+            FontMetrics fm = getFontMetrics(getFont());
+            String s = getDisplay(Name);
+            if (s.length() > 3) s = s.substring(0, 3);
+            int w = fm.stringWidth(s);
+            int h = fm.getHeight();
+            g.setColor(this.getForeground());
+            Graphics2D G = (Graphics2D) g;
+            G.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            G
+                    .drawString(s, Size / 2 - w / 2, Size / 2 - h / 2
+                            + fm.getAscent());
         }
     }
 
 }
 
-class MultipleIcon extends PrimitiveIcon {
+
+/**
+ * @author Rene A primitive icon that displays one of several GIF images.
+ */
+class MultipleIcon extends BasicIcon {
     int N;
     Image I[];
     int Selected;
@@ -294,7 +457,8 @@ class MultipleIcon extends PrimitiveIcon {
             for (int i = 0; i < N; i++) {
                 try {
                     InputStream in = getClass().getResourceAsStream(
-                            Bar.Resource + name + i + ".gif");
+                            Bar.Resource + name + i + "."
+                                    + Global.getParameter("icontype", "gif"));
                     int pos = 0;
                     int n = in.available();
                     byte b[] = new byte[20000];
@@ -319,7 +483,8 @@ class MultipleIcon extends PrimitiveIcon {
                 Y[i] = Size / 2 - H[i] / 2;
             }
         } catch (Exception e) {
-            for (int i = 0; i < N; i++) I[i] = null;
+            for (int i = 0; i < N; i++)
+                I[i] = null;
         }
     }
 
@@ -331,28 +496,27 @@ class MultipleIcon extends PrimitiveIcon {
     /**
      * Paint a button with an image
      */
+    @Override
     public void dopaint(Graphics g) {
-        if (I[Selected] != null)
-            g.drawImage(I[Selected], X[Selected], Y[Selected], this);
+        if (I[Selected] != null) {
+            if (W[Selected] > getSize().width)
+                g.drawImage(I[Selected], 1, 1, Size - 2, Size - 2, this);
+            else g.drawImage(I[Selected], X[Selected], Y[Selected], this);
+        }
     }
 
-    public void mousePressed(MouseEvent e) {
-        if (!Enabled) return;
-        Dimension d = getSize();
-        if (e.getX() < 0 || e.getX() > d.width ||
-                e.getY() < 0 || e.getY() > d.height) return;
-        Selected++;
-        Unset = false;
-        if (Selected >= N) Selected = 0;
-        repaint();
-        T = null;
-        Bar.iconPressed(Name, e.isShiftDown(), e.isControlDown());
-    }
-
-    public void mouseReleased(MouseEvent e) {
-    }
-
-    public void mouseClicked(MouseEvent e) {
+    /**
+     * Go up and down the pictures.
+     */
+    @Override
+    public void pressed(MouseEvent e) {
+        if (e.isMetaDown()) {
+            Selected--;
+            if (Selected < 0) Selected = N - 1;
+        } else {
+            Selected++;
+            if (Selected >= N) Selected = 0;
+        }
     }
 
     public void setSelected(int s) {
@@ -366,6 +530,25 @@ class MultipleIcon extends PrimitiveIcon {
     }
 }
 
+
+/**
+ * @author Rene An MultipleIcon that can be enabled externally.
+ */
+class MultipleToggleIcon extends MultipleIcon {
+    public MultipleToggleIcon(IconBar bar, String name, int number) {
+        super(bar, name, number);
+    }
+
+    public void setState(boolean flag) {
+        On = flag;
+        repaint();
+    }
+}
+
+
+/**
+ * @author Rene A toggle icon for several colors.
+ */
 class ColorIcon extends MultipleIcon {
     Color Colors[];
 
@@ -375,20 +558,124 @@ class ColorIcon extends MultipleIcon {
         Colors = colors;
     }
 
+    @Override
     public void dopaint(Graphics g) {
         g.setColor(Colors[Selected]);
-        g.fillRect(3, 3, Size - 6, Size - 6);
+        g.fill3DRect(5, 5, Size - 9, Size - 9, true);
     }
 }
 
-/**
- * This is much like a single icon but it displays a
- * pressed and an unpressed state.
- */
 
-class ToggleIcon extends SingleIcon {
+/**
+ * One icon, which can display one color
+ *
+ * @author Rene Grothmann
+ */
+class ColoredIcon extends BasicIcon {
+    Color C;
+
+    public ColoredIcon(IconBar bar, String name, Color c) {
+        super(bar, name);
+        C = c;
+    }
+
+    @Override
+    public void dopaint(Graphics g) {
+        g.setColor(C);
+        g.fill3DRect(5, 5, Size - 9, Size - 9, true);
+    }
+
+    public Color getColor() {
+        return C;
+    }
+
+    public void setColor(Color c) {
+        C = c;
+    }
+}
+
+
+/**
+ * @author Rene A toggle icon for several strings.
+ */
+class MultipleStringIcon extends MultipleIcon {
+    String S[];
+
+    public MultipleStringIcon(IconBar bar, String name, String s[]) {
+        super(bar, name);
+        S = s;
+        N = S.length;
+    }
+
+    @Override
+    public void dopaint(Graphics g) {
+        g.setColor(getForeground());
+        Font font = new Font("Dialog", Font.PLAIN, Size * 2 / 3);
+        g.setFont(font);
+        FontMetrics fm = getFontMetrics(font);
+        int w = fm.stringWidth(S[Selected]);
+        g.drawString(S[Selected], (Size - w) / 2, Size - fm.getDescent());
+    }
+
+}
+
+
+/**
+ * Button to get all icons, when there is not too much space.
+ */
+class OverflowButton extends Panel {
+    IconBar IB;
+    boolean Left = true;
+
+    public OverflowButton(IconBar ib, boolean left) {
+        IB = ib;
+        Left = left;
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                IB.setShifted(!Left);
+            }
+        });
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        int size = BasicIcon.Size;
+        g.setColor(getBackground());
+        g.fill3DRect(0, 0, 10, size, true);
+        g.setColor(getForeground());
+        int x[] = new int[3], y[] = new int[3];
+        if (Left) {
+            x[0] = 2;
+            x[1] = x[2] = 8;
+            y[0] = size / 2;
+            y[1] = y[0] - 6;
+            y[2] = y[0] + 6;
+        } else {
+            x[0] = 8;
+            x[1] = x[2] = 2;
+            y[0] = size / 2;
+            y[1] = y[0] - 6;
+            y[2] = y[0] + 6;
+        }
+        g.fillPolygon(x, y, 3);
+    }
+}
+
+
+class PopupIcon extends BasicIcon {
+    public PopupIcon(IconBar bar, String name[]) {
+        super(bar, name[0]);
+    }
+}
+
+
+/**
+ * @author Rene An action icon for one click.
+ */
+class ToggleIcon extends IconWithGif {
     boolean State;
-    private IconGroup G;
+    private final IconGroup G;
 
     public ToggleIcon(IconBar bar, String file, IconGroup g) {
         super(bar, file);
@@ -406,31 +693,9 @@ class ToggleIcon extends SingleIcon {
         this(bar, file, null);
     }
 
-    /**
-     * Repaint in pressed mode.
-     */
-    public void mouseReleased(MouseEvent e) {
-    }
-
-    public void mousePressed(MouseEvent e) {
-        if (!Enabled) return;
-        Dimension d = getSize();
-        if (e.getX() < 0 || e.getX() > d.width ||
-                e.getY() < 0 || e.getY() > d.height) return;
-        if (G != null) {
-            G.toggle(this);
-            Pressed = State = true;
-        } else {
-            State = !State;
-            Pressed = State;
-            repaint();
-        }
-        Unset = false;
-        T = null;
-        Bar.iconPressed(Name, e.isShiftDown(), e.isControlDown());
-    }
-
-    public void mouseClicked(MouseEvent e) {
+    @Override
+    public void pressed(MouseEvent e) {
+        setState(!On);
     }
 
     public boolean getState() {
@@ -438,13 +703,14 @@ class ToggleIcon extends SingleIcon {
     }
 
     public void setState(boolean state) {
-        if (G != null) G.toggle(this);
+        if (G != null)
+            G.toggle(this);
         else {
-            if (Pressed == state) {
+            if (On == state) {
                 State = state;
                 return;
             }
-            Pressed = State = state;
+            On = State = state;
             repaint();
         }
     }
@@ -454,11 +720,11 @@ class ToggleIcon extends SingleIcon {
     }
 
     public void setStateInGroup(boolean state) {
-        if (Pressed == state) {
+        if (On == state) {
             State = state;
             return;
         }
-        Pressed = State = state;
+        On = State = state;
         repaint();
     }
 
@@ -467,19 +733,48 @@ class ToggleIcon extends SingleIcon {
         return G.getN();
     }
 
+    @Override
     public void unset() {
-        if (G != null) G.unset();
+        if (G != null)
+            G.unset(true);
         else super.unset();
     }
 
-    public void dounset() {
-        super.unset();
+    public void dounset(boolean flag) {
+        super.unset(flag);
+    }
+
+    public void set() {
+        if (G != null)
+            G.unset(false);
+        else super.unset(false);
+    }
+
+    public void doset() {
+        super.unset(false);
     }
 }
 
+
 /**
- * This class can add several ToggleItems and will enable only one
- * of them.
+ * @author Rene An icon to display on/off state.
+ */
+class OnOffIcon extends ToggleIcon {
+    static int LampSize = 4;
+
+    public OnOffIcon(IconBar bar, String file) {
+        super(bar, file, null);
+    }
+
+    @Override
+    public void pressed(MouseEvent e) {
+        State = On = !On;
+    }
+}
+
+
+/**
+ * This class can add several ToggleItems and will enable only one of them.
  */
 
 class IconGroup {
@@ -537,7 +832,8 @@ class IconGroup {
     public void addLeft() {
         int i = 0;
         for (int k = 0; k < Files.length; k++)
-            if (Files[k].equals("")) Bar.addSeparatorLeft();
+            if (Files[k].equals(""))
+                Bar.addSeparatorLeft();
             else {
                 if (Breaks[k].startsWith("!")) Bar.addSeparatorLeft();
                 Bar.addLeft(Icons[i++]);
@@ -547,7 +843,8 @@ class IconGroup {
     public void addRight() {
         int i = 0;
         for (int k = 0; k < Files.length; k++)
-            if (Files[k].equals("")) Bar.addSeparatorRight();
+            if (Files[k].equals(""))
+                Bar.addSeparatorRight();
             else {
                 if (Breaks[k].startsWith("!")) Bar.addSeparatorRight();
                 Bar.addRight(Icons[i++]);
@@ -556,14 +853,17 @@ class IconGroup {
 
     public void toggle(ToggleIcon icon) {
         for (int i = 0; i < N; i++) {
-            if (Icons[i] == icon) icon.setStateInGroup(true);
+            if (Icons[i] == icon)
+                icon.setStateInGroup(true);
             else Icons[i].setStateInGroup(false);
+            Icons[i].unset(false);
         }
     }
 
     public void unselect() {
         for (int i = 0; i < N; i++) {
             Icons[i].setStateInGroup(false);
+            Icons[i].unset(false);
         }
     }
 
@@ -571,19 +871,20 @@ class IconGroup {
         return N;
     }
 
-    public void unset() {
+    public void unset(boolean flag) {
         for (int i = 0; i < N; i++) {
-            Icons[i].dounset();
+            Icons[i].dounset(flag);
         }
     }
 }
 
+
 /**
- * An state display. Loads two images from a resource and display either
- * of them, depending on the enabled state.
+ * An state display. Loads two images from a resource and display either of
+ * them, depending on the enabled state.
  */
 
-class StateDisplay extends PrimitiveIcon {
+class StateDisplay extends BasicIcon {
     Image IOn, IOff;
     int W, H, X, Y;
 
@@ -594,7 +895,8 @@ class StateDisplay extends PrimitiveIcon {
         super(bar, file);
         try {
             InputStream in = getClass().getResourceAsStream(
-                    Bar.Resource + file + "on" + ".gif");
+                    Bar.Resource + file + "on" + "."
+                            + Global.getParameter("icontype", "gif"));
             int pos = 0;
             int n = in.available();
             byte b[] = new byte[20000];
@@ -609,7 +911,8 @@ class StateDisplay extends PrimitiveIcon {
             MediaTracker T = new MediaTracker(bar);
             T.addImage(IOn, 0);
             in = getClass().getResourceAsStream(
-                    Bar.Resource + file + "off" + ".gif");
+                    Bar.Resource + file + "off" + "."
+                            + Global.getParameter("icontype", "gif"));
             pos = 0;
             n = in.available();
             byte b1[] = new byte[20000];
@@ -625,7 +928,9 @@ class StateDisplay extends PrimitiveIcon {
             T.waitForAll();
             W = IOn.getWidth(this);
             H = IOn.getHeight(this);
-            X = 0;
+            if (Bar.Vertical)
+                X = Size / 2 - W / 2;
+            else X = 0;
             Y = Size / 2 - H / 2;
         } catch (Exception e) {
             IOn = IOff = null;
@@ -635,51 +940,84 @@ class StateDisplay extends PrimitiveIcon {
     /**
      * Paint a button with an image
      */
+    @Override
     public void paint(Graphics g) {
-        if (Enabled && IOn != null) g.drawImage(IOn, X, Y, this);
-        else if (!Enabled && IOff != null) g.drawImage(IOff, X, Y, this);
+        if (Enabled && IOn != null) {
+            if (W > getSize().width)
+                g.drawImage(IOn, 1, 1, Size - 2, Size - 2, this);
+            else g.drawImage(IOn, X, Y, this);
+        } else if (!Enabled && IOff != null) {
+            if (W > getSize().width)
+                g.drawImage(IOff, 1, 1, Size - 2, Size - 2, this);
+            else g.drawImage(IOff, X, Y, this);
+        }
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         T = null;
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
     }
 }
 
+
 /**
- * This panel will display icons vertically.
+ * This panel displays icons and reacts on mouse actions. It can also interpret
+ * key strokes to traverse the icons.
  */
 
-public class IconBar extends Panel
-        implements KeyListener, FocusListener {
+public class IconBar extends Panel implements KeyListener, FocusListener {
     Vector Left = new Vector(), Right = new Vector();
     int W;
-    Frame F;
-    public final int Offset = 4;
+    Window F;
+    public final int Offset = 2;
     public String Resource = "/";
     int Focus = 0;
     public boolean TraverseFocus = true;
     public boolean UseSize = true;
+    public boolean Vertical = false;
 
-    public IconBar(Frame f, boolean traversefocus) {
+    public IconBar(Window f, boolean traversefocus) {
         F = f;
         TraverseFocus = traversefocus;
         if (Global.ControlBackground != null)
             setBackground(Global.ControlBackground);
         else setBackground(SystemColor.menu);
+        Resource = Global.getParameter("iconpath", "");
+        BasicIcon.Size = Global.getParameter("iconsize", 20);
         setLayout(null);
         W = Offset * 2;
         addKeyListener(this);
         if (TraverseFocus) addFocusListener(this);
     }
 
-    public IconBar(Frame f) {
+    public IconBar(Window f) {
         this(f, true);
+    }
+
+    /**
+     * Do not know, if this is necessary. But sometimes the icons do not repaint
+     * after an update.
+     */
+    public void forceRepaint() {
+        super.repaint();
+        Enumeration e = Left.elements();
+        while (e.hasMoreElements()) {
+            BasicIcon i = (BasicIcon) e.nextElement();
+            i.repaint();
+        }
+        e = Right.elements();
+        while (e.hasMoreElements()) {
+            BasicIcon i = (BasicIcon) e.nextElement();
+            i.repaint();
+        }
     }
 
     public void keyPressed(KeyEvent e) {
@@ -691,7 +1029,7 @@ public class IconBar extends Panel
                 setFocus(Focus, false);
                 Focus++;
                 if (Focus >= Left.size() + Right.size()) Focus = 0;
-                while (!(getIcon(Focus) instanceof PrimitiveIcon)) {
+                while (!(getIcon(Focus) instanceof BasicIcon)) {
                     Focus++;
                     if (Focus >= Left.size() + Right.size()) {
                         Focus = 0;
@@ -704,7 +1042,7 @@ public class IconBar extends Panel
                 setFocus(Focus, false);
                 Focus--;
                 if (Focus < 0) Focus = Left.size() + Right.size() - 1;
-                while (!(getIcon(Focus) instanceof PrimitiveIcon)) {
+                while (!(getIcon(Focus) instanceof BasicIcon)) {
                     Focus--;
                     if (Focus < 0) {
                         Focus = Left.size() + Right.size() - 1;
@@ -715,7 +1053,7 @@ public class IconBar extends Panel
                 break;
             case KeyEvent.VK_SPACE:
                 try {
-                    PrimitiveIcon icon = (PrimitiveIcon) getIcon(Focus);
+                    BasicIcon icon = (BasicIcon) getIcon(Focus);
                     icon.mouseReleased(new MouseEvent(this,
                             MouseEvent.MOUSE_RELEASED, 0, 0, 0, 0, 1, false));
                 } catch (Exception ex) {
@@ -728,13 +1066,12 @@ public class IconBar extends Panel
     }
 
 	/*
-	public boolean isFocusTraversable ()
-	{	return TraverseFocus;
-	}
-	*/
+     * public boolean isFocusTraversable () { return TraverseFocus; }
+	 */
 
     public Object getIcon(int n) {
-        if (n < Left.size()) return Left.elementAt(n);
+        if (n < Left.size())
+            return Left.elementAt(n);
         else return Right.elementAt(Right.size() - 1 - (n - Left.size()));
     }
 
@@ -750,11 +1087,11 @@ public class IconBar extends Panel
         if (!TraverseFocus) return;
         try {
             if (n < Left.size()) {
-                PrimitiveIcon icon = (PrimitiveIcon) Left.elementAt(n);
+                BasicIcon icon = (BasicIcon) Left.elementAt(n);
                 icon.setFocus(flag);
             } else {
-                PrimitiveIcon icon = (PrimitiveIcon) Right.elementAt(
-                        Right.size() - 1 - (n - Left.size()));
+                BasicIcon icon = (BasicIcon) Right.elementAt(Right.size() - 1
+                        - (n - Left.size()));
                 icon.setFocus(flag);
             }
         } catch (Exception e) {
@@ -765,10 +1102,10 @@ public class IconBar extends Panel
      * Add an icon
      */
     public void addLeft(String name) {
-        addLeft(new SingleIcon(this, name));
+        addLeft(new IconWithGif(this, name));
     }
 
-    public void addLeft(PrimitiveIcon i) {
+    public void addLeft(BasicIcon i) {
         Left.addElement(i);
         add(i);
         W += i.width() + Offset;
@@ -778,10 +1115,10 @@ public class IconBar extends Panel
      * Add an icon at the right end
      */
     public void addRight(String name) {
-        addRight(new SingleIcon(this, name));
+        addRight(new IconWithGif(this, name));
     }
 
-    public void addRight(PrimitiveIcon i) {
+    public void addRight(BasicIcon i) {
         Right.addElement(i);
         add(i);
         W += i.width() + Offset;
@@ -796,6 +1133,17 @@ public class IconBar extends Panel
 
     public void addToggleRight(String name) {
         addRight(new ToggleIcon(this, name));
+    }
+
+    /**
+     * Add a toggle icon
+     */
+    public void addOnOffLeft(String name) {
+        addLeft(new OnOffIcon(this, name));
+    }
+
+    public void addOnOffRight(String name) {
+        addRight(new OnOffIcon(this, name));
     }
 
     /**
@@ -843,14 +1191,20 @@ public class IconBar extends Panel
      * Add a separator
      */
     public void addSeparatorLeft() {
-        Separator s = new Separator();
+        if (Left.size() == 0) return;
+        if (Left.lastElement() instanceof Separator) return;
+        Separator s = new Separator(this);
         Left.addElement(s);
+        add(s);
         W += s.width() + Offset;
     }
 
     public void addSeparatorRight() {
-        Separator s = new Separator();
+        if (Right.size() == 0) return;
+        if (Right.lastElement() instanceof Separator) return;
+        Separator s = new Separator(this);
         Right.addElement(s);
+        add(s);
         W += s.width() + Offset;
     }
 
@@ -866,6 +1220,28 @@ public class IconBar extends Panel
     }
 
     /**
+     * Add a multiple icon (can toggle between the icons)
+     */
+    public void addMultipleStringIconLeft(String name, String s[]) {
+        addLeft(new MultipleStringIcon(this, name, s));
+    }
+
+    public void addMultipleStringIconRight(String name, String s[]) {
+        addRight(new MultipleStringIcon(this, name, s));
+    }
+
+    /**
+     * Add a multiple icon (can toggle between the icons)
+     */
+    public void addMultipleToggleIconLeft(String name, int number) {
+        addLeft(new MultipleToggleIcon(this, name, number));
+    }
+
+    public void addMultipleToggleIconRight(String name, int number) {
+        addRight(new MultipleToggleIcon(this, name, number));
+    }
+
+    /**
      * Add a multiple icon (can toggle between the colors)
      */
     public void addColorIconLeft(String name, Color colors[]) {
@@ -874,6 +1250,17 @@ public class IconBar extends Panel
 
     public void addColorIconRight(String name, Color colors[]) {
         addRight(new ColorIcon(this, name, colors));
+    }
+
+    /**
+     * Add a colored icon
+     */
+    public void addColoredIconLeft(String name, Color c) {
+        addLeft(new ColoredIcon(this, name, c));
+    }
+
+    public void addColoredIconRight(String name, Color c) {
+        addRight(new ColoredIcon(this, name, c));
     }
 
     /**
@@ -887,38 +1274,98 @@ public class IconBar extends Panel
         addRight(new StateDisplay(this, name));
     }
 
+    boolean Overflow = false, Shifted = false;
+    OverflowButton OB;
+    int OverflowX;
+
     /**
-     * Override the layout and arange the icons from the
-     * left and the right.
+     * Override the layout and arrange the icons from the left and the right.
      */
+    @Override
     public void doLayout() {
-        int x;
-        x = getSize().width;
-        for (int k = 0; k < Right.size(); k++) {
-            IconBarElement i = (IconBarElement) Right.elementAt(k);
-            x -= i.width();
-            i.getPosition(x, 2);
-            x -= Offset;
+        if (OB != null) {
+            remove(OB);
+            OB = null;
         }
-        int xmax = x;
-        x = 0;
-        for (int k = 0; k < Left.size(); k++) {
-            IconBarElement i = (IconBarElement) Left.elementAt(k);
-            i.getPosition(x, 2);
-            x += i.width();
-            x += Offset;
-            if (x + SingleIcon.Size > xmax) x = -1000;
+        if (Vertical) {
+            int x;
+            x = getSize().height;
+            for (int k = 0; k < Right.size(); k++) {
+                IconBarElement i = (IconBarElement) Right.elementAt(k);
+                x -= i.width();
+                i.setPosition(2, x);
+                x -= Offset;
+            }
+            int xmax = x;
+            x = 0;
+            for (int k = 0; k < Left.size(); k++) {
+                IconBarElement i = (IconBarElement) Left.elementAt(k);
+                i.setPosition(2, x);
+                x += i.width();
+                x += Offset;
+                if (x + IconWithGif.Size > xmax) x = -1000;
+            }
+        } else {
+            int x;
+            x = getSize().width;
+            for (int k = 0; k < Right.size(); k++) {
+                IconBarElement i = (IconBarElement) Right.elementAt(k);
+                x -= i.width();
+                i.setPosition(x, 2);
+                x -= Offset;
+            }
+            int xmax = x;
+            x = 0;
+            for (int k = 0; k < Left.size(); k++) {
+                IconBarElement i = (IconBarElement) Left.elementAt(k);
+                i.setPosition(x, 2);
+                x += i.width();
+                x += Offset;
+                if (x + IconWithGif.Size > xmax - 10 && k < Left.size() - 1) {
+                    Overflow = true;
+                    OverflowX = x;
+                    OB = new OverflowButton(this, Shifted);
+                    add(OB);
+                    OB.setSize(10, BasicIcon.Size);
+                    OB.setLocation(xmax - 10 - Offset, 2);
+                    if (!Shifted) {
+                        x = -1000;
+                    } else {
+                        x = xmax - 10 - 2 * Offset;
+                        for (int l = Left.size() - 1; l >= 0; l--) {
+                            i = (IconBarElement) Left.elementAt(l);
+                            x -= i.width();
+                            i.setPosition(x, 2);
+                            x -= Offset;
+                            if (x - IconWithGif.Size < 0) x -= 1000;
+                        }
+                        break;
+                    }
+                }
+            }
         }
+    }
+
+    public void setShifted(boolean flag) {
+        Shifted = flag;
+        doLayout();
     }
 
     /**
      * Override the preferred sizes.
      */
+    @Override
     public Dimension getPreferredSize() {
-        if (!UseSize) return new Dimension(10, SingleIcon.Size + 4);
-        return new Dimension(W + 10, SingleIcon.Size + 4);
+        if (Vertical) {
+            if (!UseSize) return new Dimension(IconWithGif.Size + 4, 10);
+            return new Dimension(IconWithGif.Size + 4, W + 10);
+        } else {
+            if (!UseSize) return new Dimension(10, IconWithGif.Size + 4);
+            return new Dimension(W + 10, IconWithGif.Size + 4);
+        }
     }
 
+    @Override
     public Dimension getMinimumSize() {
         return getPreferredSize();
     }
@@ -953,6 +1400,10 @@ public class IconBar extends Panel
         return Control;
     }
 
+    public void clearShiftControl() {
+        Shift = Control = false;
+    }
+
     // The tool tip help, initiated by the icons.
 
     Window WHelp = null;
@@ -961,7 +1412,13 @@ public class IconBar extends Panel
         if (F == null || WHelp != null) return;
         Point P = i.getPosition();
         WHelp = new Window(F);
-        WHelp.add("Center", new MyLabel(text));
+        Panel p = new Panel();
+        StringTokenizer t = new StringTokenizer(text, "+");
+        p.setLayout(new GridLayout(0, 1));
+        while (t.hasMoreTokens()) {
+            p.add(new MyLabel(t.nextToken()));
+        }
+        WHelp.add("Center", p);
         WHelp.pack();
         Dimension d = WHelp.getSize();
         Dimension ds = getToolkit().getScreenSize();
@@ -969,7 +1426,9 @@ public class IconBar extends Panel
         if (x + d.width > ds.width) x = ds.width - d.width;
         if (y + d.height > ds.height) y = P.y - i.width() - d.height;
         WHelp.setLocation(x, y);
-        WHelp.show();
+        WHelp.setBackground(new Color(255, 255, 220));
+        WHelp.setForeground(Color.black);
+        WHelp.setVisible(true);
     }
 
     public synchronized void removeHelp() {
@@ -979,18 +1438,18 @@ public class IconBar extends Panel
         WHelp = null;
     }
 
-    private PrimitiveIcon find(String name) {
+    private BasicIcon find(String name) {
         int k;
         for (k = 0; k < Left.size(); k++) {
             try {
-                PrimitiveIcon i = (PrimitiveIcon) Left.elementAt(k);
+                BasicIcon i = (BasicIcon) Left.elementAt(k);
                 if (i.getName().equals(name)) return i;
             } catch (Exception e) {
             }
         }
         for (k = 0; k < Right.size(); k++) {
             try {
-                PrimitiveIcon i = (PrimitiveIcon) Right.elementAt(k);
+                BasicIcon i = (BasicIcon) Right.elementAt(k);
                 if (i.getName().equals(name)) return i;
             } catch (Exception e) {
             }
@@ -1002,7 +1461,7 @@ public class IconBar extends Panel
      * Enable the tool with the specified name.
      */
     public void setEnabled(String name, boolean flag) {
-        PrimitiveIcon icon = find(name);
+        BasicIcon icon = find(name);
         if (icon == null) return;
         icon.setEnabled(flag);
     }
@@ -1011,9 +1470,9 @@ public class IconBar extends Panel
      * Select
      */
     public void toggle(String name) {
-        PrimitiveIcon icon = find(name);
-        if (icon == null || !(icon instanceof ToggleIcon)) return;
-        ((ToggleIcon) icon).setState(true);
+        BasicIcon icon = find(name);
+        if (icon == null) return;
+        if (icon instanceof ToggleIcon) ((ToggleIcon) icon).setState(true);
     }
 
     /**
@@ -1027,9 +1486,9 @@ public class IconBar extends Panel
      * Deselect all icons in the group of an icon
      */
     public void unselect(String name) {
-        PrimitiveIcon icon = find(name);
-        if (icon == null || !(icon instanceof ToggleIcon)) return;
-        ((ToggleIcon) icon).unselect();
+        BasicIcon icon = find(name);
+        if (icon == null) return;
+        if (icon instanceof ToggleIcon) ((ToggleIcon) icon).unselect();
     }
 
     /**
@@ -1040,19 +1499,30 @@ public class IconBar extends Panel
     }
 
     /**
+     * Set the state of an icon
+     */
+    public void set(String name, boolean flag) {
+        BasicIcon icon = find(name);
+        if (icon == null) return;
+        icon.setOn(flag);
+    }
+
+    /**
      * Set the state of a single toggle icon.
      */
     public void setState(String name, boolean flag) {
-        PrimitiveIcon icon = find(name);
-        if (icon == null || !(icon instanceof ToggleIcon)) return;
-        ((ToggleIcon) icon).setState(flag);
+        BasicIcon icon = find(name);
+        if (icon != null && icon instanceof ToggleIcon)
+            ((ToggleIcon) icon).setState(flag);
+        if (icon != null && icon instanceof MultipleToggleIcon)
+            ((MultipleToggleIcon) icon).setState(flag);
     }
 
     /**
      * Get the state of the specified toggle icon
      */
     public boolean getState(String name) {
-        PrimitiveIcon icon = find(name);
+        BasicIcon icon = find(name);
         if (icon == null || !(icon instanceof ToggleIcon)) return false;
         return ((ToggleIcon) icon).getState();
     }
@@ -1061,13 +1531,25 @@ public class IconBar extends Panel
      * Return the state of a toggle icon.
      */
     public int getToggleState(String name) {
-        PrimitiveIcon icon = find(name + 0);
+        BasicIcon icon = find(name + 0);
         if (icon == null || !(icon instanceof ToggleIcon)) return -1;
         int n = ((ToggleIcon) icon).countPeers();
         for (int i = 0; i < n; i++) {
             if (getState(name + i)) return i;
         }
         return -1;
+    }
+
+    public void setColoredIcon(String name, Color c) {
+        BasicIcon icon = find(name);
+        if (icon == null || !(icon instanceof ColoredIcon)) return;
+        ((ColoredIcon) icon).setColor(c);
+    }
+
+    public Color getColoredIcon(String name) {
+        BasicIcon icon = find(name);
+        if (icon == null || !(icon instanceof ColoredIcon)) return Color.black;
+        return ((ColoredIcon) icon).getColor();
     }
 
     /**
@@ -1078,13 +1560,15 @@ public class IconBar extends Panel
         for (k = 0; k < Left.size(); k++) {
             IconBarElement i = (IconBarElement) Left.elementAt(k);
             if (i.getName().equals(name) && i instanceof MultipleIcon) {
-                return ((MultipleIcon) i).getSelected();
+                return ((MultipleIcon) i)
+                        .getSelected();
             }
         }
         for (k = 0; k < Right.size(); k++) {
             IconBarElement i = (IconBarElement) Right.elementAt(k);
             if (i.getName().equals(name) && i instanceof MultipleIcon) {
-                return ((MultipleIcon) i).getSelected();
+                return ((MultipleIcon) i)
+                        .getSelected();
             }
         }
         return -1;
@@ -1113,7 +1597,7 @@ public class IconBar extends Panel
      * See, if the specific icon has been set.
      */
     public boolean isSet(String name) {
-        PrimitiveIcon icon = find(name);
+        BasicIcon icon = find(name);
         if (icon == null) return false;
         return icon.isSet();
     }
@@ -1122,11 +1606,85 @@ public class IconBar extends Panel
      * Set the specific icon to unset.
      */
     public void unset(String name) {
-        PrimitiveIcon icon = find(name);
+        BasicIcon icon = find(name);
         if (icon != null) icon.unset();
     }
 
     public void getKey(KeyEvent e) {
         processKeyEvent(e);
     }
+
+    public void setSize(int size) {
+        BasicIcon.Size = size;
+    }
+
+    @Override
+    public void removeAll() {
+        Enumeration e = Left.elements();
+        while (e.hasMoreElements()) {
+            remove((BasicIcon) e.nextElement());
+        }
+        e = Right.elements();
+        while (e.hasMoreElements()) {
+            remove((BasicIcon) e.nextElement());
+        }
+        Left.removeAllElements();
+        Right.removeAllElements();
+    }
+
+    /**
+     * Overwrite in children!
+     *
+     * @param name
+     * @return Help text
+     */
+    public String getHelp(String name) {
+        return "";
+    }
+
+    public static void main(String args[]) {
+        CloseFrame f = new CloseFrame("Test");
+        IconBar IA = new IconBar(f);
+        IA.Vertical = true;
+        IA.setSize(30);
+        IA.Resource = "/icons/";
+        IA.addLeft("back");
+        IA.addLeft("undo");
+        IA.addSeparatorLeft();
+        IA.addOnOffLeft("grid");
+        IA.addSeparatorLeft();
+        IA.addToggleLeft("delete");
+        IA.addSeparatorLeft();
+        String tg[] =
+                {
+                        "zoom", "draw", "", "rename", "edit"
+                };
+        IA.addToggleGroupLeft(tg);
+        IA.addSeparatorLeft();
+        IA.addMultipleToggleIconLeft("macro", 3);
+        IA.addSeparatorLeft();
+        String tga[] =
+                {
+                        "zoom", "draw", "rename", "edit"
+                };
+        IA.addLeft(new PopupIcon(IA, tga));
+        IA.addSeparatorLeft();
+        String st[] =
+                {
+                        "A", "B", "C", "D"
+                };
+        IA.addMultipleStringIconLeft("strings", st);
+        Color col[] =
+                {
+                        Color.BLACK, Color.RED, Color.GREEN
+                };
+        IA.addStateLeft("needsave");
+        IA.addColorIconLeft("color", col);
+        f.add("Center", new IconBarPanel(new Panel3D(IA), new Panel3D(
+                new Panel())));
+        f.pack();
+        f.center();
+        f.setVisible(true);
+    }
+
 }

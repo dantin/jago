@@ -19,9 +19,10 @@ public class NavigationPanel extends MyPanel {
 
     public NavigationPanel(Board b) {
         B = b;
-        BoardColor = Global.getColor("boardcolor", 170, 120, 70);
+        BoardColor = Global.ControlBackground;
     }
 
+    @Override
     public void paint(Graphics g) {
         Overflow = Adjust = false;
         AdjustX = 0;
@@ -29,7 +30,8 @@ public class NavigationPanel extends MyPanel {
         int currentline = 0;
         w = getSize().width;
         h = getSize().height;
-        g.clearRect(0, 0, w, h);
+        g.setColor(BoardColor);
+        g.fillRect(0, 0, w, h);
         TreeNode Pos = B.Pos;
         Parents.addElement(Pos);
         TreeNode ParentPos = Pos.parentPos();
@@ -62,8 +64,8 @@ public class NavigationPanel extends MyPanel {
         }
     }
 
-    public int paint(Graphics g, TreeNode pos, int x, int y,
-                     TreeNode current, int line, int currentline) {
+    public int paint(Graphics g, TreeNode pos, int x, int y, TreeNode current,
+                     int line, int currentline) {
         if (!Overflow && x > w) {
             OverflowRequest = true;
             return x;
@@ -109,13 +111,17 @@ public class NavigationPanel extends MyPanel {
                 if (i == 0) {
                     g.setColor(Color.black);
                     g.drawLine(x, y + size, x, y + 2 * size);
-                    x = paint(g, p, x, y + 3 * size, current, line + 1, currentline);
+                    x = paint(g, p, x, y + 3 * size, current, line + 1,
+                            currentline);
                 } else {
                     g.setColor(Color.black);
-                    g.drawLine(x0, y + size * 3 / 2, x + 3 * size, y + size * 3 / 2);
+                    g.drawLine(x0, y + size * 3 / 2, x + 3 * size, y + size * 3
+                            / 2);
                     x0 = x;
-                    g.drawLine(x + 3 * size, y + size * 3 / 2, x + 3 * size, y + 2 * size);
-                    x = paint(g, p, x + 3 * size, y + 3 * size, current, line + 1, currentline);
+                    g.drawLine(x + 3 * size, y + size * 3 / 2, x + 3 * size, y
+                            + 2 * size);
+                    x = paint(g, p, x + 3 * size, y + 3 * size, current,
+                            line + 1, currentline);
                 }
                 p = Board.getNext(p);
                 i++;

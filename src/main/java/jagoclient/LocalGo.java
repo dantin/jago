@@ -44,19 +44,20 @@ public class LocalGo {
         }
         Global.setApplet(false);
         if (!homefound) Global.home(System.getProperty("user.home"));
-        Global.readparameter("go.cfg");
+        Global.readparameter(".go.cfg");
         Global.createfonts();
         Global.frame(new Frame());
         JagoSound.play("high", "", true);
-        if (!localgame.equals("")) openlocal(localgame, move);
-        else GF = new LocalGoFrame(new Frame(),
-                Global.resourceString("Local_Viewer"));
+        if (!localgame.equals(""))
+            openlocal(localgame, move);
+        else GF = new LocalGoFrame(new Frame(), Global
+                .resourceString("Local_Viewer"));
         Global.setcomponent(GF);
     }
 
     static void openlocal(String file, int move) {
-        GF = new LocalGoFrame(new Frame(),
-                Global.resourceString("Local_Viewer"));
+        GF = new LocalGoFrame(new Frame(), Global
+                .resourceString("Local_Viewer"));
         GF.load(file, move);
     }
 }

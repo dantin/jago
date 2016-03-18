@@ -43,6 +43,8 @@ public class PartnerGoFrame extends ConnectedGoFrame
         else BlackName = Global.resourceString("Opponent");
         if (Col == -1) WhiteName = Global.resourceString("You");
         else WhiteName = Global.resourceString("Opponent");
+        setVisible(true);
+        repaint();
     }
 
     public void doAction(String o) {

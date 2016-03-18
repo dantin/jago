@@ -1,8 +1,7 @@
 package rene.util.list;
 
 /**
- * A class for a list of things. The list is forward and backward
- * chained.
+ * A class for a list of things. The list is forward and backward chained.
  *
  * @see rene.list.ListElement
  */
@@ -22,7 +21,8 @@ public class ListClass {
      * Append a node to the list
      */
     public void append(ListElement l) {
-        if (Last == null) init(l);
+        if (Last == null)
+            init(l);
         else {
             Last.next(l);
             l.previous(Last);
@@ -35,7 +35,8 @@ public class ListClass {
     public void prepend(ListElement l)
     // prepend a node to the list
     {
-        if (First == null) init(l);
+        if (First == null)
+            init(l);
         else {
             First.previous(l);
             l.next(First);
@@ -46,12 +47,15 @@ public class ListClass {
     }
 
     /*
-    @param l ListElement to be inserted.
-    @param after If null, it works like prepend.
-    */
+     * @param l ListElement to be inserted.
+     *
+     * @param after If null, it works like prepend.
+     */
     public void insert(ListElement l, ListElement after) {
-        if (after == Last) append(l);
-        else if (after == null) prepend(l);
+        if (after == Last)
+            append(l);
+        else if (after == null)
+            prepend(l);
         else {
             after.next().previous(l);
             l.next(after.next());
@@ -72,17 +76,19 @@ public class ListClass {
     }
 
     /**
-     * Remove a node from the list.
-     * The node really should be in the list, which is not checked.
+     * Remove a node from the list. The node really should be in the list, which
+     * is not checked.
      */
     public void remove(ListElement l) {
         if (First == l) {
             First = l.next();
-            if (First != null) First.previous(null);
+            if (First != null)
+                First.previous(null);
             else Last = null;
         } else if (Last == l) {
             Last = l.previous();
-            if (Last != null) Last.next(null);
+            if (Last != null)
+                Last.next(null);
             else First = null;
         } else {
             l.previous().next(l.next());
@@ -122,5 +128,19 @@ public class ListClass {
     public ListElement last() {
         return Last;
     }
-}
 
+    /**
+     * Prints the class
+     */
+    @Override
+    public String toString() {
+        ListElement e = First;
+        String s = "";
+        while (e != null) {
+            s = s + e.content().toString() + ", ";
+            e = e.next();
+        }
+        return s;
+    }
+
+}

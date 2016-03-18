@@ -8,6 +8,7 @@ import jagoclient.partner.partner.Partner;
 import rene.util.list.ListClass;
 import rene.util.list.ListElement;
 
+import javax.swing.*;
 import java.awt.*;
 
 class OpenPartnerFrameUpdate extends StopThread {
@@ -18,6 +19,7 @@ class OpenPartnerFrameUpdate extends StopThread {
         start();
     }
 
+    @Override
     public void run() {
         while (stopped()) {
             try {
@@ -29,15 +31,15 @@ class OpenPartnerFrameUpdate extends StopThread {
     }
 }
 
+
 /**
- * This is a frame, which displays a list of all open partner servers.
- * It contains buttons to connect to one of one of them and
- * to refresh the list.
+ * This is a frame, which displays a list of all open partner servers. It
+ * contains buttons to connect to one of one of them and to refresh the list.
  */
 
 public class OpenPartnerFrame extends CloseFrame {
     Go G;
-    List L;
+    java.awt.List L;
     OpenPartnerFrameUpdate OPFU;
 
     public OpenPartnerFrame(Go go) {
@@ -49,11 +51,11 @@ public class OpenPartnerFrame extends CloseFrame {
         m.add(new MenuItemAction(this, Global.resourceString("Close")));
         mb.add(m);
         setLayout(new BorderLayout());
-        L = new List();
+        L = new java.awt.List();
         L.setFont(Global.SansSerif);
         refresh();
         add("Center", L);
-        Panel bp = new MyPanel();
+        JPanel bp = new MyPanel();
         bp.add(new ButtonAction(this, Global.resourceString("Connect")));
         bp.add(new ButtonAction(this, Global.resourceString("Refresh")));
         bp.add(new MyLabel(" "));
@@ -61,10 +63,11 @@ public class OpenPartnerFrame extends CloseFrame {
         add("South", bp);
         Global.setwindow(this, "openpartner", 300, 200);
         seticon("ijago.gif");
-        show();
+        setVisible(true);
         OPFU = new OpenPartnerFrameUpdate(this);
     }
 
+    @Override
     public void doAction(String o) {
         if (o.equals(Global.resourceString("Refresh"))) {
             refresh();
@@ -86,6 +89,7 @@ public class OpenPartnerFrame extends CloseFrame {
         }
     }
 
+    @Override
     public void doclose() {
         G.OPF = null;
         OPFU.stopit();
@@ -99,8 +103,9 @@ public class OpenPartnerFrame extends CloseFrame {
         while (le != null) {
             Partner p = (Partner) le.content();
             if (p.Name.equals(s)) {
-                PartnerFrame cf =
-                        new PartnerFrame(Global.resourceString("Connection_to_") + p.Name, false);
+                PartnerFrame cf = new PartnerFrame(Global
+                        .resourceString("Connection_to_")
+                        + p.Name, false);
                 Global.setwindow(cf, "partner", 500, 400);
                 new ConnectPartner(p, cf);
                 return;

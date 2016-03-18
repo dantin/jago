@@ -5,6 +5,7 @@ import jagoclient.gui.*;
 import jagoclient.sound.JagoSound;
 import rene.util.parser.StringParser;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -12,44 +13,44 @@ import java.awt.event.WindowEvent;
 import java.io.PrintWriter;
 
 /**
- * This dialog is opened, when a match request is received. It will
- * not parse this match request but still provide a mechanism for
- * automatic accept or decline.
+ * This dialog is opened, when a match request is received. It will not parse
+ * this match request but still provide a mechanism for automatic accept or
+ * decline.
  */
 
 class MatchDialog extends CloseDialog {
     PrintWriter Out;
-    TextField Answer;
-    TextArea T;
+    JTextField Answer;
+    JTextArea T;
     ConnectionFrame CF;
     InformationDistributor ID;
     String Accept, Decline, User = "";
 
-    public MatchDialog(ConnectionFrame cf, String m,
-                       PrintWriter out, InformationDistributor id) {
+    public MatchDialog(ConnectionFrame cf, String m, PrintWriter out,
+                       InformationDistributor id) {
         super(cf, Global.resourceString("Message"), false);
         CF = cf;
         ID = id;
         add("North", new MyLabel(Global.resourceString("Match_Request")));
-        Panel pm = new MyPanel();
+        JPanel pm = new MyPanel();
         pm.setLayout(new BorderLayout());
-        pm.add("Center", T = new TextArea());
-        T.setFont(Global.SansSerif);
-        if (Global.Background != null) T.setBackground(Global.Background);
+        pm.add("Center", T = new JTextArea());
+        // T.setFont(Global.SansSerif);
+        // if (Global.Background != null) T.setBackground(Global.Background);
         T.setEditable(false);
         T.setText(m);
-        pm.add("South", Answer =
-                new TextFieldAction(this, Global.resourceString("Send_Command")));
+        pm.add("South", Answer = new TextFieldAction(this, Global
+                .resourceString("Send_Command")));
         Answer.addKeyListener(new KeyAdapter() {
-                                  public void keyReleased(KeyEvent e) {
-                                      String s = Global.getFunctionKey(e.getKeyCode());
-                                      if (s.equals("")) return;
-                                      T.setText(s);
-                                  }
-                              }
-        );
+            @Override
+            public void keyReleased(KeyEvent e) {
+                String s = Global.getFunctionKey(e.getKeyCode());
+                if (s.equals("")) return;
+                T.setText(s);
+            }
+        });
         add("Center", pm);
-        Panel p = new MyPanel();
+        JPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Accept")));
         p.add(new ButtonAction(this, Global.resourceString("Decline")));
         p.add(new ButtonAction(this, Global.resourceString("Status")));
@@ -81,13 +82,12 @@ class MatchDialog extends CloseDialog {
             Decline = mpa2.upto('\"');
             mpa2.skip("\"");
         }
-        if (Decline.startsWith("decline "))
-            User = Decline.substring(8);
+        if (Decline.startsWith("decline ")) User = Decline.substring(8);
         if (Global.getParameter("friends", "").indexOf(User) >= 0) {
-            T.appendText("\n" + Global.resourceString("Opponent_is_a_friend_"));
+            T.append("\n" + Global.resourceString("Opponent_is_a_friend_"));
         }
         if (Global.getParameter("marked", "").indexOf(User) >= 0) {
-            T.appendText("\n" + Global.resourceString("Opponent_is_marked_"));
+            T.append("\n" + Global.resourceString("Opponent_is_marked_"));
         }
         String a = CF.reply();
         if (!a.equals("")) {
@@ -100,10 +100,12 @@ class MatchDialog extends CloseDialog {
         }
     }
 
+    @Override
     public void windowOpened(WindowEvent e) {
         T.requestFocus();
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "matchdialog");
         if (Global.resourceString("Close").equals(o)) {
@@ -125,7 +127,8 @@ class MatchDialog extends CloseDialog {
             setVisible(false);
             dispose();
         } else if (Global.resourceString("Status").equals(o)) {
-            if (User != null) Out.println("stats " + User);
+            if (User != null)
+                Out.println("stats " + User);
             else Answer.setText("stats ");
         } else super.doAction(o);
     }
@@ -134,8 +137,8 @@ class MatchDialog extends CloseDialog {
         T.append(s);
     }
 
+    @Override
     public boolean close() {
         return true;
     }
 }
-

@@ -10,17 +10,14 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 
 /**
- * The Question dialog displays a question and yes/no buttons.
- * It can be modal or non-modal. If the dialog is used modal, there
- * is no need to subclass it. The result can be asked after the
- * show method returns (which must be called from the creating method).
- * If the dialog is non-modal, it should be subclassed and the tell
- * method needs to be redefined to do something useful.
+ * The Question dialog displays a question and yes/no buttons. It can be modal
+ * or non-modal. If the dialog is used modal, there is no need to subclass it.
+ * The result can be asked after the show method returns (which must be called
+ * from the creating method). If the dialog is non-modal, it should be
+ * subclassed and the tell method needs to be redefined to do something useful.
  */
 
-
-public class Question extends CloseDialog
-        implements ActionListener {
+public class Question extends CloseDialog implements ActionListener {
     Object O;
     Frame F;
     public boolean Result = false;
@@ -32,22 +29,24 @@ public class Question extends CloseDialog
     public Question(Frame f, String c, String title, Object o, boolean flag) {
         super(f, title, flag);
         F = f;
-        Panel pc = new MyPanel();
+        MyPanel pc = new MyPanel();
         FlowLayout fl = new FlowLayout();
         pc.setLayout(fl);
         fl.setAlignment(FlowLayout.CENTER);
         pc.add(new MyLabel(" " + c + " "));
         add("Center", pc);
-        Panel p = new MyPanel();
+        MyPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Yes")));
         p.add(new ButtonAction(this, Global.resourceString("No")));
         add("South", p);
         O = o;
-        if (flag) Global.setpacked(this, "question", 300, 150, f);
+        if (flag)
+            Global.setpacked(this, "question", 300, 150, f);
         else Global.setpacked(this, "question", 300, 150);
         validate();
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "question");
         if (Global.resourceString("Yes").equals(o)) {

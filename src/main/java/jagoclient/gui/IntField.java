@@ -1,8 +1,7 @@
 package jagoclient.gui;
 
 /**
- * A TextField, which holds an integer number with minimal
- * and maximal range.
+ * A TextField, which holds an integer number with minimal and maximal range.
  */
 
 public class IntField extends TextFieldAction {
@@ -55,5 +54,3 @@ public class IntField extends TextFieldAction {
         return true;
     }
 }
-
-

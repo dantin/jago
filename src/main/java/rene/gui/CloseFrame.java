@@ -14,6 +14,7 @@ class ToFrontDelay extends Thread {
         start();
     }
 
+    @Override
     public void run() {
         try {
             sleep(Delay);
@@ -24,24 +25,24 @@ class ToFrontDelay extends Thread {
     }
 }
 
+
 /**
- * A Frame, which can be closed with the close button in the window
- * frame.
+ * A Frame, which can be closed with the close button in the window frame.
  * <p>
- * This frame may set an icon. The icon file must be a GIF with 16x16
- * dots in 256 colors. We use the simple method, which does not work
- * in the Netscape browser.
+ * This frame may set an icon. The icon file must be a GIF with 16x16 dots in
+ * 256 colors. We use the simple method, which does not work in the Netscape
+ * browser.
  * <p>
  * This Frame is a DoActionListener. Thus it is possible to use TextFieldAction
- * etc. in it. Override doAction(String) and itemAction(String,boolean) to
- * react on events.
+ * etc. in it. Override doAction(String) and itemAction(String,boolean) to react
+ * on events.
  * <p>
- * Sometimes the Frame wants to set the focus to a certain text field.
- * To support this, override focusGained().
+ * Sometimes the Frame wants to set the focus to a certain text field. To
+ * support this, override focusGained().
  */
 
-public class CloseFrame extends Frame
-        implements WindowListener, ActionListener, DoActionListener, FocusListener {
+public class CloseFrame extends Frame implements WindowListener,
+        ActionListener, DoActionListener, FocusListener {
     public CloseFrame(String s) {
         super(s);
         addWindowListener(this);
@@ -91,13 +92,20 @@ public class CloseFrame extends Frame
     }
 
     /**
-     * Closes the frame. Override, if necessary, and call
-     * super.doclose().
+     * Closes the frame. Override, if necessary, and call super.doclose().
      */
     public void doclose() {
         setMenuBar(null); // for Linux ?!
         setVisible(false);
-        dispose();
+        // Because of a bug in Linux Java 1.4.2 etc.
+        // dispose in a separate thread.
+        Thread t = new Thread() {
+            @Override
+            public void run() {
+                dispose();
+            }
+        };
+        t.start();
     }
 
     public void itemAction(String o, boolean flag) {
@@ -155,12 +163,20 @@ public class CloseFrame extends Frame
         if (d.height - Global.getParameter(name + ".h", 0) != 19)
             // works around a bug in Windows
             Global.setParameter(name + ".h", d.height);
+        boolean maximized = false;
+        if ((getExtendedState() & Frame.MAXIMIZED_BOTH) != 0)
+            Global.setParameter(name + ".maximized", true);
+        else Global.removeParameter(name + ".maximized");
     }
 
     /**
      * Set window position and size.
      */
     public void setPosition(String name) {
+        if (Global.getParameter(name + ".maximized", false)) {
+            setExtendedState(Frame.MAXIMIZED_BOTH);
+            return;
+        }
         Point l = getLocation();
         Dimension d = getSize();
         Dimension dscreen = getToolkit().getScreenSize();
@@ -168,10 +184,12 @@ public class CloseFrame extends Frame
         int y = Global.getParameter(name + ".y", l.y);
         int w = Global.getParameter(name + ".w", d.width);
         int h = Global.getParameter(name + ".h", d.height);
-        if (w > dscreen.width) w = dscreen.width - 30;
-        if (h > dscreen.height) h = dscreen.height - 30;
-        if (x + w > dscreen.width) x = dscreen.width - w - 30;
-        if (y + h > dscreen.height) y = dscreen.height - h - 30;
+        if (w > dscreen.width) w = dscreen.width;
+        if (h > dscreen.height) h = dscreen.height;
+        if (x < 0) x = 0;
+        if (x + w > dscreen.width) x = dscreen.width - w;
+        if (y < 0) y = 0;
+        if (y + h > dscreen.height) y = dscreen.height - h;
         setLocation(x, y);
         setSize(w, h);
     }
@@ -183,6 +201,20 @@ public class CloseFrame extends Frame
     public void center() {
         Dimension dscreen = getToolkit().getScreenSize();
         Dimension d = getSize();
-        setLocation((dscreen.width - d.width) / 2, (dscreen.height - d.height) / 2);
+        setLocation((dscreen.width - d.width) / 2,
+                (dscreen.height - d.height) / 2);
+    }
+
+    public void centerOut(Frame f) {
+        Dimension si = f.getSize(), d = getSize(), dscreen = getToolkit()
+                .getScreenSize();
+        Point lo = f.getLocation();
+        int x = lo.x + si.width - getSize().width + 20;
+        int y = lo.y + si.height / 2 + 40;
+        if (x + d.width > dscreen.width) x = dscreen.width - d.width - 10;
+        if (x < 10) x = 10;
+        if (y + d.height > dscreen.height) y = dscreen.height - d.height - 10;
+        if (y < 10) y = 10;
+        setLocation(x, y);
     }
 }

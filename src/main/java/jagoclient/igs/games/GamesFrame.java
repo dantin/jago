@@ -16,11 +16,10 @@ import java.awt.*;
 import java.io.PrintWriter;
 
 /**
- * This frame displays the games on the server. It is
- * opened by a GamesDistributor. To sort the games it
- * uses the GamesObject class, which is a SortObject
- * implementation and can be sorted via the Sorter
- * quicksort algorithm.
+ * This frame displays the games on the server. It is opened by a
+ * GamesDistributor. To sort the games it uses the GamesObject class, which is a
+ * SortObject implementation and can be sorted via the Sorter quicksort
+ * algorithm.
  *
  * @see jagoclient.sort.Sorter
  */
@@ -46,15 +45,16 @@ public class GamesFrame extends CloseFrame implements CloseListener {
         m.add(new MenuItemAction(this, Global.resourceString("Close")));
         mb.add(m);
         Menu help = new MyMenu(Global.resourceString("Help"));
-        help.add(new MenuItemAction(this, Global.resourceString("About_this_Window")));
+        help.add(new MenuItemAction(this, Global
+                .resourceString("About_this_Window")));
         mb.add(help);
         setLayout(new BorderLayout());
-        T = Global.getParameter("systemlister", false) ? new SystemLister() : new Lister();
+        T = Global.getParameter("systemlister", false) ? new SystemLister()
+                : new Lister();
         T.setFont(Global.Monospaced);
-        T.setBackground(Global.gray);
         T.setText(Global.resourceString("Loading"));
         add("Center", T);
-        Panel p = new MyPanel();
+        MyPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Observe")));
         p.add(new ButtonAction(this, Global.resourceString("Peek")));
         p.add(new ButtonAction(this, Global.resourceString("Status")));
@@ -77,6 +77,7 @@ public class GamesFrame extends CloseFrame implements CloseListener {
         pop.add(mi);
     }
 
+    @Override
     public void doAction(String o) {
         if (Global.resourceString("Refresh").equals(o)) {
             refresh();
@@ -112,6 +113,7 @@ public class GamesFrame extends CloseFrame implements CloseListener {
         } else super.doAction(o);
     }
 
+    @Override
     public synchronized boolean close() {
         if (GD != null) GD.unchain();
         CF.Games = null;
@@ -122,8 +124,8 @@ public class GamesFrame extends CloseFrame implements CloseListener {
     }
 
     /**
-     * Opens a new GamesDistributor to receive the games from the
-     * server. and asks the server to send the games.
+     * Opens a new GamesDistributor to receive the games from the server. and
+     * asks the server to send the games.
      */
     public synchronized void refresh() {
         L = new ListClass();
@@ -142,8 +144,8 @@ public class GamesFrame extends CloseFrame implements CloseListener {
     }
 
     /**
-     * When the distributor has all games, it calls allsended
-     * and the sorting will start.
+     * When the distributor has all games, it calls allsended and the sorting
+     * will start.
      */
     public synchronized void allsended() {
         if (GD != null) GD.unchain();
@@ -166,8 +168,7 @@ public class GamesFrame extends CloseFrame implements CloseListener {
             T.appendLine0(" " + (String) L.first().content());
             Color FC = Color.green.darker().darker();
             for (i = 0; i < n - 1; i++) {
-                T.appendLine0(v[i].game(), v[i].friend() ?
-                        FC : Color.black);
+                T.appendLine0(v[i].game(), v[i].friend() ? FC : Color.black);
             }
             T.doUpdate(false);
         } else {

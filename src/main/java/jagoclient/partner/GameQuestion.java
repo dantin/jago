@@ -4,6 +4,7 @@ import jagoclient.Global;
 import jagoclient.dialogs.Message;
 import jagoclient.gui.*;
 
+import javax.swing.*;
 import java.awt.*;
 
 /**
@@ -18,7 +19,7 @@ public class GameQuestion extends CloseDialog {
     public GameQuestion(PartnerFrame pf) {
         super(pf, Global.resourceString("Game_Setup"), true);
         PF = pf;
-        Panel pa = new MyPanel();
+        JPanel pa = new MyPanel();
         add("Center", new Panel3D(pa));
         pa.setLayout(new GridLayout(0, 2));
         pa.add(new MyLabel(Global.resourceString("Board_size")));
@@ -37,7 +38,7 @@ public class GameQuestion extends CloseDialog {
         pa.add(ExtraTime = new FormTextField("10"));
         pa.add(new MyLabel(Global.resourceString("Moves_per_Extra_Time")));
         pa.add(ExtraMoves = new FormTextField("24"));
-        Panel pb = new MyPanel();
+        JPanel pb = new MyPanel();
         pb.add(new ButtonAction(this, Global.resourceString("Request")));
         pb.add(new ButtonAction(this, Global.resourceString("Cancel")));
         add("South", new Panel3D(pb));
@@ -46,6 +47,7 @@ public class GameQuestion extends CloseDialog {
         show();
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "gamequestion");
         if (Global.resourceString("Request").equals(o)) {
@@ -78,4 +80,3 @@ public class GameQuestion extends CloseDialog {
         } else super.doAction(o);
     }
 }
-

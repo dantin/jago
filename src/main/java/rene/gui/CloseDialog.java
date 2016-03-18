@@ -1,25 +1,28 @@
 package rene.gui;
 
+import rene.dialogs.InfoDialog;
+
 import java.awt.*;
 import java.awt.event.*;
 
 /**
- * A dialog, which can be closed by clicking on the close window
- * field (a cross on the top right corner in Windows 95), or by
- * pressing the escape key.
+ * A dialog, which can be closed by clicking on the close window field (a cross
+ * on the top right corner in Windows 95), or by pressing the escape key.
  * <p>
- * Moreover, the dialog is a DoActionListener, which makes it possible
- * to use the simplified TextFieldAction etc.
+ * Moreover, the dialog is a DoActionListener, which makes it possible to use
+ * the simplified TextFieldAction etc.
  */
 
-public class CloseDialog extends Dialog
-        implements WindowListener, ActionListener, DoActionListener, KeyListener,
-        FocusListener {
+public class CloseDialog extends Dialog implements WindowListener,
+        ActionListener, DoActionListener, KeyListener, FocusListener {
     boolean Dispose = true;
     public boolean Aborted = false;
+    Frame F;
+    public String Subject = "";
 
     public CloseDialog(Frame f, String s, boolean modal) {
         super(f, s, modal);
+        F = f;
         if (Global.ControlBackground != null)
             setBackground(Global.ControlBackground);
         addWindowListener(this);
@@ -65,7 +68,10 @@ public class CloseDialog extends Dialog
         return close();
     }
 
+    public ActionEvent E;
+
     public void actionPerformed(ActionEvent e) {
+        E = e;
         doAction(e.getActionCommand());
     }
 
@@ -73,7 +79,14 @@ public class CloseDialog extends Dialog
         if ("Close".equals(o) && close()) {
             Aborted = true;
             doclose();
+        } else if (o.equals("Help")) {
+            showHelp();
         }
+    }
+
+    public void showHelp() {
+        InfoDialog.Subject = Subject;
+        InfoDialog id = new InfoDialog(F);
     }
 
     public void itemAction(String o, boolean flag) {
@@ -90,19 +103,25 @@ public class CloseDialog extends Dialog
     }
 
     /**
-     * Closes the dialog. This may be used in subclasses to
-     * do some action. Then call super.doclose()
+     * Closes the dialog. This may be used in subclasses to do some action. Then
+     * call super.doclose()
      */
     public void doclose() {
         setVisible(false);
-        if (Dispose) dispose();
+        // Because of a bug in Linux Java 1.4.2 etc.
+        // dispose in a separate thread.
+        Thread t = new Thread() {
+            @Override
+            public void run() {
+                if (Dispose) dispose();
+            }
+        };
+        t.start();
     }
 
     public void center(Frame f) {
-        Dimension
-                si = f.getSize(),
-                d = getSize(),
-                dscreen = getToolkit().getScreenSize();
+        Dimension si = f.getSize(), d = getSize(), dscreen = getToolkit()
+                .getScreenSize();
         Point lo = f.getLocation();
         int x = lo.x + si.width / 2 - d.width / 2;
         int y = lo.y + si.height / 2 - d.height / 2;
@@ -114,10 +133,8 @@ public class CloseDialog extends Dialog
     }
 
     static public void center(Frame f, Dialog dialog) {
-        Dimension
-                si = f.getSize(),
-                d = dialog.getSize(),
-                dscreen = f.getToolkit().getScreenSize();
+        Dimension si = f.getSize(), d = dialog.getSize(), dscreen = f
+                .getToolkit().getScreenSize();
         Point lo = f.getLocation();
         int x = lo.x + si.width / 2 - d.width / 2;
         int y = lo.y + si.height / 2 - d.height / 2;
@@ -129,8 +146,8 @@ public class CloseDialog extends Dialog
     }
 
     public void centerOut(Frame f) {
-        Dimension si = f.getSize(), d = getSize(),
-                dscreen = getToolkit().getScreenSize();
+        Dimension si = f.getSize(), d = getSize(), dscreen = getToolkit()
+                .getScreenSize();
         Point lo = f.getLocation();
         int x = lo.x + si.width - getSize().width + 20;
         int y = lo.y + si.height / 2 + 40;
@@ -148,6 +165,42 @@ public class CloseDialog extends Dialog
     }
 
     /**
+     * Note window position in Global.
+     */
+    public void notePosition(String name) {
+        Point l = getLocation();
+        Dimension d = getSize();
+        Global.setParameter(name + ".x", l.x);
+        Global.setParameter(name + ".y", l.y);
+        Global.setParameter(name + ".w", d.width);
+        if (d.height - Global.getParameter(name + ".h", 0) != 19)
+            // works around a bug in Windows
+            Global.setParameter(name + ".h", d.height);
+        boolean maximized = false;
+    }
+
+    /**
+     * Set window position and size.
+     */
+    public void setPosition(String name) {
+        Point l = getLocation();
+        Dimension d = getSize();
+        Dimension dscreen = getToolkit().getScreenSize();
+        int x = Global.getParameter(name + ".x", l.x);
+        int y = Global.getParameter(name + ".y", l.y);
+        int w = Global.getParameter(name + ".w", d.width);
+        int h = Global.getParameter(name + ".h", d.height);
+        if (w > dscreen.width) w = dscreen.width;
+        if (h > dscreen.height) h = dscreen.height;
+        if (x < 0) x = 0;
+        if (x + w > dscreen.width) x = dscreen.width - w;
+        if (y < 0) y = 0;
+        if (y + h > dscreen.height) y = dscreen.height - h;
+        setLocation(x, y);
+        setSize(w, h);
+    }
+
+    /**
      * Override to set the focus somewhere.
      */
     public void focusGained(FocusEvent e) {
@@ -157,7 +210,7 @@ public class CloseDialog extends Dialog
     }
 
     /**
-     * Note window position in Global.
+     * Note window size in Global.
      */
     public void noteSize(String name) {
         Dimension d = getSize();
@@ -166,10 +219,11 @@ public class CloseDialog extends Dialog
     }
 
     /**
-     * Set window position and size.
+     * Set window size.
      */
     public void setSize(String name) {
-        if (!Global.haveParameter(name + ".w")) pack();
+        if (!Global.haveParameter(name + ".w"))
+            pack();
         else {
             Dimension d = getSize();
             int w = Global.getParameter(name + ".w", d.width);
@@ -188,4 +242,17 @@ public class CloseDialog extends Dialog
     public boolean isAborted() {
         return Aborted;
     }
+
+    /**
+     * To add a help button to children.
+     *
+     * @param p
+     * @param subject
+     */
+    public void addHelp(Panel p, String subject) {
+        p.add(new MyLabel(""));
+        p.add(new ButtonAction(this, Global.name("help"), "Help"));
+        Subject = subject;
+    }
+
 }

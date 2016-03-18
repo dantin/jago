@@ -1,5 +1,6 @@
 package jagoclient.board;
 
+import jagoclient.Global;
 import rene.util.list.ListElement;
 import rene.util.xml.XmlReader;
 import rene.util.xml.XmlReaderException;
@@ -20,20 +21,18 @@ import java.util.Vector;
 /**
  * This is the main file for presenting a Go board.
  * <p>
- * Handles the complete display and storage of a Go board.
- * The display is kept on an offscreen image.
- * Stores a Go game in a node list (with variants).
+ * Handles the complete display and storage of a Go board. The display is kept
+ * on an offscreen image. Stores a Go game in a node list (with variants).
  * Handles the display of the current node.
  * <p>
- * This class handles mouse input to set the next move.
- * It also has methods to move in the node tree from external sources.
+ * This class handles mouse input to set the next move. It also has methods to
+ * move in the node tree from external sources.
  * <p>
- * A BoardInterface is used to encorporate the board
- * into an environment.
+ * A BoardInterface is used to encorporate the board into an environment.
  */
 
-public class Board extends Canvas
-        implements MouseListener, MouseMotionListener, KeyListener {
+public class Board extends Canvas implements MouseListener,
+        MouseMotionListener, KeyListener {
     int O, W, D, S, OT, OTU, OP; // pixel coordinates
     // O=offset, W=total width, D=field width, S=board size (9,11,13,19)
     // OT=offset for coordinates to the right and below
@@ -112,6 +111,7 @@ public class Board extends Canvas
         fontmetrics = getFontMetrics(font);
     }
 
+    @Override
     public Dimension getMinimumSize()
     // for the layout menager of the containing component
     {
@@ -121,6 +121,7 @@ public class Board extends Canvas
         return d;
     }
 
+    @Override
     public Dimension getPreferredSize()
     // for the layout menager of the containing component
     {
@@ -137,14 +138,16 @@ public class Board extends Canvas
         boolean c = GF.getParameter("coordinates", true);
         boolean ulc = GF.getParameter("upperleftcoordinates", true);
         boolean lrc = GF.getParameter("lowerrightcoordinates", false);
-        D = Dim.height / (S + 1 + (c ? ((ulc ? 1 : 0) + (lrc ? 1 : 0)) : 0));
+        D = Dim.height / (S + 1 + (c ? (ulc ? 1 : 0) + (lrc ? 1 : 0) : 0));
         OP = D / 4;
         O = D / 2 + OP;
         W = S * D + 2 * O;
         if (c) {
-            if (lrc) OT = D;
+            if (lrc)
+                OT = D;
             else OT = 0;
-            if (ulc) OTU = D;
+            if (ulc)
+                OTU = D;
             else OTU = 0;
         } else OT = OTU = 0;
         W += OTU + OT;
@@ -161,6 +164,7 @@ public class Board extends Canvas
         repaint();
     }
 
+    @Override
     synchronized public void paint(Graphics g)
     // repaint the board (generate images at first call)
     {
@@ -179,12 +183,11 @@ public class Board extends Canvas
             GF.activate();
         }
         g.setColor(GF.backgroundColor());
-        if (d.width > W)
-            g.fillRect(W, 0, d.width - W, W);
-        if (d.height > W)
-            g.fillRect(0, W, d.width, d.height - W);
+        if (d.width > W) g.fillRect(W, 0, d.width - W, W);
+        if (d.height > W) g.fillRect(0, W, d.width, d.height - W);
     }
 
+    @Override
     public void update(Graphics g) {
         paint(g);
     }
@@ -199,24 +202,24 @@ public class Board extends Canvas
     EmptyPaint EPThread = null;
 
     /**
-     * Try to paint the wooden board. If the size is correct, use
-     * the predraw board. Otherwise generate an EmptyPaint thread
-     * to paint a board.
+     * Try to paint the wooden board. If the size is correct, use the predraw
+     * board. Otherwise generate an EmptyPaint thread to paint a board.
      */
     public synchronized boolean trywood(Graphics gr, Graphics grs, int w) {
-        if (EmptyPaint.haveImage(w, w,
-                GF.getColor("boardcolor", 170, 120, 70), OP + OP / 2, OP - OP / 2, D))
+        if (EmptyPaint.haveImage(w, w, GF.getColor("boardcolor", 170, 120, 70),
+                OP + OP / 2, OP - OP / 2, D))
         // use predrawn image
         {
-            gr.drawImage(EmptyPaint.StaticImage, O + OTU - OP, O + OTU - OP, this);
+            gr.drawImage(EmptyPaint.StaticImage, O + OTU - OP, O + OTU - OP,
+                    this);
             if (EmptyPaint.StaticShadowImage != null && grs != null)
-                grs.drawImage(EmptyPaint.StaticShadowImage, O + OTU - OP, O + OTU - OP, this);
+                grs.drawImage(EmptyPaint.StaticShadowImage, O + OTU - OP, O
+                        + OTU - OP, this);
             return true;
         } else {
             if (EPThread != null && EPThread.isAlive()) EPThread.stopit();
-            EPThread = new EmptyPaint(this, w, w,
-                    GF.getColor("boardcolor", 170, 120, 70),
-                    true, OP + OP / 2, OP - OP / 2, D);
+            EPThread = new EmptyPaint(this, w, w, GF.getColor("boardcolor",
+                    170, 120, 70), true, OP + OP / 2, OP - OP / 2, D);
         }
         return false;
     }
@@ -234,7 +237,7 @@ public class Board extends Canvas
             int pb[] = new int[d * d];
             int pw[] = new int[d * d];
             int i, j, g, k;
-            double di, dj, d2 = (double) d / 2.0 - 5e-1, r = d2 - 2e-1, f = Math.sqrt(3);
+            double di, dj, d2 = d / 2.0 - 5e-1, r = d2 - 2e-1, f = Math.sqrt(3);
             double x, y, z, xr, xg, hh;
             k = 0;
             if (GF.getParameter("smallerstones", false)) r -= 1;
@@ -245,44 +248,45 @@ public class Board extends Canvas
                     hh = r - Math.sqrt(di * di + dj * dj);
                     if (hh >= 0) {
                         z = r * r - di * di - dj * dj;
-                        if (z > 0) z = Math.sqrt(z) * f;
+                        if (z > 0)
+                            z = Math.sqrt(z) * f;
                         else z = 0;
                         x = di;
                         y = dj;
                         xr = Math.sqrt(6 * (x * x + y * y + z * z));
                         xr = (2 * z - x + y) / xr;
-                        if (xr > 0.9) xg = (xr - 0.9) * 10;
+                        if (xr > 0.9)
+                            xg = (xr - 0.9) * 10;
                         else xg = 0;
                         if (hh > pixel || !Alias) {
                             g = (int) (10 + 10 * xr + xg * 140);
-                            pb[k] = (255 << 24) | (g << 16) | (g << 8) | g;
+                            pb[k] = 255 << 24 | g << 16 | g << 8 | g;
                             g = (int) (200 + 10 * xr + xg * 45);
-                            pw[k] = (255 << 24) | (g << 16) | (g << 8) | g;
+                            pw[k] = 255 << 24 | g << 16 | g << 8 | g;
                         } else {
                             hh = (pixel - hh) / pixel;
                             g = (int) (10 + 10 * xr + xg * 140);
                             double shade;
-                            if (di - dj < r / 3) shade = 1;
+                            if (di - dj < r / 3)
+                                shade = 1;
                             else shade = shadow;
-                            pb[k] = ((255 << 24)
-                                    | (((int) ((1 - hh) * g + hh * shade * red)) << 16)
-                                    | (((int) ((1 - hh) * g + hh * shade * green)) << 8)
-                                    | ((int) ((1 - hh) * g + hh * shade * blue)));
+                            pb[k] = 255 << 24
+                                    | (int) ((1 - hh) * g + hh * shade * red) << 16
+                                    | (int) ((1 - hh) * g + hh * shade * green) << 8
+                                    | (int) ((1 - hh) * g + hh * shade * blue);
                             g = (int) (200 + 10 * xr + xg * 45);
-                            pw[k] = ((255 << 24)
-                                    | (((int) ((1 - hh) * g + hh * shade * red)) << 16)
-                                    | (((int) ((1 - hh) * g + hh * shade * green)) << 8)
-                                    | ((int) ((1 - hh) * g + hh * shade * blue)));
+                            pw[k] = 255 << 24
+                                    | (int) ((1 - hh) * g + hh * shade * red) << 16
+                                    | (int) ((1 - hh) * g + hh * shade * green) << 8
+                                    | (int) ((1 - hh) * g + hh * shade * blue);
                         }
                     } else pb[k] = pw[k] = 0;
                     k++;
                 }
-            BlackStone = createImage(
-                    new MemoryImageSource(d, d, ColorModel.getRGBdefault(),
-                            pb, 0, d));
-            WhiteStone = createImage(
-                    new MemoryImageSource(d, d, ColorModel.getRGBdefault(),
-                            pw, 0, d));
+            BlackStone = createImage(new MemoryImageSource(d, d, ColorModel
+                    .getRGBdefault(), pb, 0, d));
+            WhiteStone = createImage(new MemoryImageSource(d, d, ColorModel
+                    .getRGBdefault(), pw, 0, d));
         }
     }
 
@@ -293,16 +297,23 @@ public class Board extends Canvas
         if (woodpaint != null && woodpaint.isAlive()) woodpaint.stopit();
         synchronized (this) {
             if (Empty == null || EmptyShadow == null) return;
-            Graphics g = Empty.getGraphics(), gs = EmptyShadow.getGraphics();
-            g.setColor(GF.backgroundColor());
+            Graphics2D g = (Graphics2D) Empty.getGraphics(), gs = (Graphics2D) EmptyShadow
+                    .getGraphics();
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                    RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+
+            g.setColor(Global.ControlBackground);
             g.fillRect(0, 0, S * D + 2 * OP + 100, S * D + 2 * OP + 100);
             if (!GF.getParameter("beauty", true)
-                    || !trywood(g, gs, S * D + 2 * OP)) // beauty board not available
+                    || !trywood(g, gs, S * D + 2 * OP)) // beauty board not
+            // available
             {
                 g.setColor(GF.boardColor());
-                g.fillRect(O + OTU - OP, O + OTU - OP, S * D + 2 * OP, S * D + 2 * OP);
+                g.fillRect(O + OTU - OP, O + OTU - OP, S * D + 2 * OP, S * D
+                        + 2 * OP);
                 gs.setColor(GF.boardColor());
-                gs.fillRect(O + OTU - OP, O + OTU - OP, S * D + 2 * OP, S * D + 2 * OP);
+                gs.fillRect(O + OTU - OP, O + OTU - OP, S * D + 2 * OP, S * D
+                        + 2 * OP);
             }
             if (GF.getParameter("beautystones", true)) stonespaint();
             g.setColor(Color.black);
@@ -354,7 +365,8 @@ public class Board extends Canvas
                 for (i = 0; i < S; i++) {
                     String s = "" + (S - i);
                     int w = fontmetrics.stringWidth(s) / 2;
-                    g.drawString(s, O + OTU + S * D + D / 2 + OP - w, y + D / 2 + h);
+                    g.drawString(s, O + OTU + S * D + D / 2 + OP - w, y + D / 2
+                            + h);
                     y += D;
                 }
                 x = O + OTU;
@@ -362,11 +374,13 @@ public class Board extends Canvas
                 for (i = 0; i < S; i++) {
                     j = i;
                     if (j > 7) j++;
-                    if (j > 'Z' - 'A') a[0] = (char) ('a' + j - ('Z' - 'A') - 1);
+                    if (j > 'Z' - 'A')
+                        a[0] = (char) ('a' + j - ('Z' - 'A') - 1);
                     else a[0] = (char) ('A' + j);
                     String s = new String(a);
                     int w = fontmetrics.stringWidth(s) / 2;
-                    g.drawString(s, x + D / 2 - w, O + OTU + S * D + D / 2 + OP + h);
+                    g.drawString(s, x + D / 2 - w, O + OTU + S * D + D / 2 + OP
+                            + h);
                     x += D;
                 }
             }
@@ -386,7 +400,8 @@ public class Board extends Canvas
                 for (i = 0; i < S; i++) {
                     j = i;
                     if (j > 7) j++;
-                    if (j > 'Z' - 'A') a[0] = (char) ('a' + j - ('Z' - 'A') - 1);
+                    if (j > 'Z' - 'A')
+                        a[0] = (char) ('a' + j - ('Z' - 'A') - 1);
                     else a[0] = (char) ('A' + j);
                     String s = new String(a);
                     int w = fontmetrics.stringWidth(s) / 2;
@@ -403,7 +418,8 @@ public class Board extends Canvas
         g.setColor(Color.black);
         int s = D / 10;
         if (s < 2) s = 2;
-        g.fillRect(O + OTU + D / 2 + i * D - s, O + OTU + D / 2 + j * D - s, 2 * s + 1, 2 * s + 1);
+        g.fillRect(O + OTU + D / 2 + i * D - s, O + OTU + D / 2 + j * D - s,
+                2 * s + 1, 2 * s + 1);
     }
 
     // *************** mouse events **********************
@@ -437,12 +453,14 @@ public class Board extends Canvas
         switch (State) {
             case 3: // set a black stone
                 if (GF.blocked() && Pos.isLastMain()) return;
-                if (e.isShiftDown() && e.isControlDown()) setmousec(i, j, 1);
+                if (e.isShiftDown() && e.isControlDown())
+                    setmousec(i, j, 1);
                 else setmouse(i, j, 1);
                 break;
             case 4: // set a white stone
                 if (GF.blocked() && Pos.isLastMain()) return;
-                if (e.isShiftDown() && e.isControlDown()) setmousec(i, j, -1);
+                if (e.isShiftDown() && e.isControlDown())
+                    setmousec(i, j, -1);
                 else setmouse(i, j, -1);
                 break;
             case 5:
@@ -452,7 +470,8 @@ public class Board extends Canvas
                 letter(i, j);
                 break;
             case 7: // delete a stone
-                if (e.isShiftDown() && e.isControlDown()) deletemousec(i, j);
+                if (e.isShiftDown() && e.isControlDown())
+                    deletemousec(i, j);
                 else deletemouse(i, j);
                 break;
             case 8: // remove a group
@@ -483,7 +502,8 @@ public class Board extends Canvas
                     if (P.tree(i, j) != null) {
                         gotovariation(i, j);
                     } else variation(i, j);
-                } else // place a W or B stone
+                } else
+                // place a W or B stone
                 {
                     if (GF.blocked() && Pos.isLastMain()) return;
                     movemouse(i, j);
@@ -531,7 +551,8 @@ public class Board extends Canvas
         if (g == null) return;
         i = O + OTU + i * D + D / 2;
         j = O + OTU + j * D + D / 2;
-        if (GF.bwColor()) g.setColor(Color.white);
+        if (GF.bwColor())
+            g.setColor(Color.white);
         else g.setColor(Color.gray.brighter());
         g.drawRect(i - D / 4, j - D / 4, D / 2, D / 2);
         g.dispose();
@@ -747,8 +768,8 @@ public class Board extends Canvas
         if (P.color(i, j) == 0) return;
         synchronized (Pos) {
             Node n = Pos.node();
-            if (GF.getParameter("puresgf", true) &&
-                    (n.contains("B") || n.contains("W"))) n = newnode();
+            if (GF.getParameter("puresgf", true)
+                    && (n.contains("B") || n.contains("W"))) n = newnode();
             String field = Field.string(i, j);
             if (n.contains("AB", field)) {
                 undonode();
@@ -812,7 +833,9 @@ public class Board extends Canvas
             for (j = 0; j < S; j++) {
                 if (P.marked(i, j)) {
                     a = new Action("AE", Field.string(i, j));
-                    n.addchange(new Change(i, j, P.color(i, j), P.number(i, j)));
+                    n
+                            .addchange(new Change(i, j, P.color(i, j), P.number(i,
+                                    j)));
                     n.expandaction(a);
                     if (P.color(i, j) > 0) {
                         n.Pb++;
@@ -863,7 +886,8 @@ public class Board extends Canvas
 
     public void markterritory(int i, int j, int color) {
         Action a;
-        if (color > 0) a = new Action("TB", Field.string(i, j));
+        if (color > 0)
+            a = new Action("TB", Field.string(i, j));
         else a = new Action("TW", Field.string(i, j));
         Pos.node().expandaction(a);
         update(i, j);
@@ -908,8 +932,8 @@ public class Board extends Canvas
             if (P.color(i, j) == 0) // empty?
             {
                 Node n = Pos.node();
-                if (GF.getParameter("puresgf", true) &&
-                        (n.contains("B") || n.contains("W"))) n = newnode();
+                if (GF.getParameter("puresgf", true)
+                        && (n.contains("B") || n.contains("W"))) n = newnode();
                 n.addchange(new Change(i, j, 0));
                 if (c > 0) {
                     a = new Action("AB", Field.string(i, j));
@@ -938,8 +962,7 @@ public class Board extends Canvas
         if (P.color(i, j) == -c) {
             capturegroup(i, j, -c, n);
         }
-        if (captured == 1 && P.count(i, j) != 1)
-            captured = 0;
+        if (captured == 1 && P.count(i, j) != 1) captured = 0;
         if (!GF.getParameter("korule", true)) captured = 0;
     }
 
@@ -956,7 +979,8 @@ public class Board extends Canvas
             for (ii = 0; ii < S; ii++)
                 for (jj = 0; jj < S; jj++) {
                     if (P.marked(ii, jj)) {
-                        n.addchange(new Change(ii, jj, P.color(ii, jj), P.number(ii, jj)));
+                        n.addchange(new Change(ii, jj, P.color(ii, jj), P
+                                .number(ii, jj)));
                         if (P.color(ii, jj) > 0) {
                             Pb++;
                             n.Pb++;
@@ -1006,7 +1030,8 @@ public class Board extends Canvas
     }
 
     public String twodigits(int n) {
-        if (n < 10) return "0" + n;
+        if (n < 10)
+            return "0" + n;
         else return "" + n;
     }
 
@@ -1037,7 +1062,8 @@ public class Board extends Canvas
         NodeName = n.getaction("N");
         String ms = "";
         if (n.main()) {
-            if (!Pos.haschildren()) ms = "** ";
+            if (!Pos.haschildren())
+                ms = "** ";
             else ms = "* ";
         }
         switch (State) {
@@ -1069,19 +1095,21 @@ public class Board extends Canvas
                 if (P.color() > 0) {
                     String s = lookuptime("BL");
                     if (!s.equals(""))
-                        LText = ms + GF.resourceString("Next_move__Black_") + number + " (" + s + ")";
-                    else
-                        LText = ms + GF.resourceString("Next_move__Black_") + number;
+                        LText = ms + GF.resourceString("Next_move__Black_")
+                                + number + " (" + s + ")";
+                    else LText = ms + GF.resourceString("Next_move__Black_")
+                            + number;
                 } else {
                     String s = lookuptime("WL");
                     if (!s.equals(""))
-                        LText = ms + GF.resourceString("Next_move__White_") + number + " (" + s + ")";
-                    else
-                        LText = ms + GF.resourceString("Next_move__White_") + number;
+                        LText = ms + GF.resourceString("Next_move__White_")
+                                + number + " (" + s + ")";
+                    else LText = ms + GF.resourceString("Next_move__White_")
+                            + number;
                 }
         }
-        LText = LText + " (" + siblings() + " " + GF.resourceString("Siblings") + ", " +
-                children() + " " + GF.resourceString("Children") + ")";
+        LText = LText + " (" + siblings() + " " + GF.resourceString("Siblings")
+                + ", " + children() + " " + GF.resourceString("Children") + ")";
         if (NodeName.equals("")) {
             GF.setLabel(LText);
             DisplayNodeName = false;
@@ -1093,16 +1121,18 @@ public class Board extends Canvas
         GF.setState(4, !n.main());
         GF.setState(7, !n.main() || Pos.haschildren());
         if (State == 1 || State == 2) {
-            if (P.color() == 1) State = 1;
+            if (P.color() == 1)
+                State = 1;
             else State = 2;
         }
-        GF.setState(1, Pos.parentPos() != null &&
-                Pos.parentPos().firstChild() != Pos);
-        GF.setState(2, Pos.parentPos() != null &&
-                Pos.parentPos().lastChild() != Pos);
+        GF.setState(1, Pos.parentPos() != null
+                && Pos.parentPos().firstChild() != Pos);
+        GF.setState(2, Pos.parentPos() != null
+                && Pos.parentPos().lastChild() != Pos);
         GF.setState(5, Pos.haschildren());
         GF.setState(6, Pos.parentPos() != null);
-        if (State != 9) GF.setState(State);
+        if (State != 9)
+            GF.setState(State);
         else GF.setMarkState(SpecialMarker);
         int i, j;
         // delete all marks and variations
@@ -1203,8 +1233,7 @@ public class Board extends Canvas
                     s = (String) larg.content();
                     i = Field.i(s);
                     j = Field.j(s);
-                    if (valid(i, j) && s.length() >= 4 &&
-                            s.charAt(2) == ':') {
+                    if (valid(i, j) && s.length() >= 4 && s.charAt(2) == ':') {
                         P.setlabel(i, j, s.substring(3));
                         update(i, j);
                     }
@@ -1251,7 +1280,8 @@ public class Board extends Canvas
     public int siblings() {
         ListElement l = Pos.listelement();
         if (l == null) return 0;
-        while (l.previous() != null) l = l.previous();
+        while (l.previous() != null)
+            l = l.previous();
         int count = 0;
         while (l.next() != null) {
             l = l.next();
@@ -1266,7 +1296,8 @@ public class Board extends Canvas
         if (p == null) return 0;
         ListElement l = p.listelement();
         if (l == null) return 0;
-        while (l.previous() != null) l = l.previous();
+        while (l.previous() != null)
+            l = l.previous();
         int count = 1;
         while (l.next() != null) {
             l = l.next();
@@ -1294,8 +1325,7 @@ public class Board extends Canvas
             if (a.type().equals("C")) {
                 if (GF.getComment().equals(""))
                     Pos.node().removeaction(la);
-                else
-                    a.arguments().content((Object) GF.getComment());
+                else a.arguments().content(GF.getComment());
                 return;
             }
             la = la.next();
@@ -1317,15 +1347,19 @@ public class Board extends Canvas
         int xi = O + OTU + i * D;
         int xj = O + OTU + j * D;
         synchronized (this) {
-            g.drawImage(Empty, xi, xj, xi + D, xj + D, xi, xj, xi + D, xj + D, this);
-            if (GF.getParameter("shadows", true) && GF.getParameter("beauty", true)
+            g.drawImage(Empty, xi, xj, xi + D, xj + D, xi, xj, xi + D, xj + D,
+                    this);
+            if (GF.getParameter("shadows", true)
+                    && GF.getParameter("beauty", true)
                     && GF.getParameter("beautystones", true)) {
                 if (P.color(i, j) != 0) {
-                    g.drawImage(EmptyShadow, xi - OP / 2, xj + OP / 2, xi + D - OP / 2, xj + D + OP / 2,
-                            xi - OP / 2, xj + OP / 2, xi + D - OP / 2, xj + D + OP / 2, this);
+                    g.drawImage(EmptyShadow, xi - OP / 2, xj + OP / 2, xi + D
+                            - OP / 2, xj + D + OP / 2, xi - OP / 2, xj + OP / 2, xi
+                            + D - OP / 2, xj + D + OP / 2, this);
                 } else {
-                    g.drawImage(Empty, xi - OP / 2, xj + OP / 2, xi + D - OP / 2, xj + D + OP / 2,
-                            xi - OP / 2, xj + OP / 2, xi + D - OP / 2, xj + D + OP / 2, this);
+                    g.drawImage(Empty, xi - OP / 2, xj + OP / 2, xi + D - OP
+                            / 2, xj + D + OP / 2, xi - OP / 2, xj + OP / 2, xi + D
+                            - OP / 2, xj + D + OP / 2, this);
                 }
                 g.setClip(xi - OP / 2, xj + OP / 2, D, D);
                 update1(g, i - 1, j);
@@ -1333,12 +1367,13 @@ public class Board extends Canvas
                 update1(g, i - 1, j + 1);
                 g.setClip(xi, xj, D, D);
                 if (i < S - 1 && P.color(i + 1, j) != 0) {
-                    g.drawImage(EmptyShadow, xi + D - OP / 2, xj + OP / 2, xi + D, xj + D,
-                            xi + D - OP / 2, xj + OP / 2, xi + D, xj + D, this);
+                    g.drawImage(EmptyShadow, xi + D - OP / 2, xj + OP / 2, xi
+                            + D, xj + D, xi + D - OP / 2, xj + OP / 2, xi + D, xj
+                            + D, this);
                 }
                 if (j > 0 && P.color(i, j - 1) != 0) {
-                    g.drawImage(EmptyShadow, xi, xj, xi + D - OP / 2, xj + OP / 2,
-                            xi, xj, xi + D - OP / 2, xj + OP / 2, this);
+                    g.drawImage(EmptyShadow, xi, xj, xi + D - OP / 2, xj + OP
+                            / 2, xi, xj, xi + D - OP / 2, xj + OP / 2, this);
                 }
             }
         }
@@ -1353,7 +1388,7 @@ public class Board extends Canvas
         int n;
         int xi = O + OTU + i * D;
         int xj = O + OTU + j * D;
-        if (P.color(i, j) > 0 || (P.color(i, j) < 0 && GF.blackOnly())) {
+        if (P.color(i, j) > 0 || P.color(i, j) < 0 && GF.blackOnly()) {
             if (BlackStone != null) {
                 g.drawImage(BlackStone, xi - 1, xj - 1, this);
             } else {
@@ -1374,7 +1409,8 @@ public class Board extends Canvas
         }
         if (P.marker(i, j) != Field.NONE) {
             if (GF.bwColor()) {
-                if (P.color(i, j) >= 0) g.setColor(Color.white);
+                if (P.color(i, j) >= 0)
+                    g.setColor(Color.white);
                 else g.setColor(Color.black);
             } else g.setColor(GF.markerColor(P.color(i, j)));
             int h = D / 4;
@@ -1383,13 +1419,18 @@ public class Board extends Canvas
                     g.drawOval(xi + D / 2 - h, xj + D / 2 - h, 2 * h, 2 * h);
                     break;
                 case Field.CROSS:
-                    g.drawLine(xi + D / 2 - h, xj + D / 2 - h, xi + D / 2 + h, xj + D / 2 + h);
-                    g.drawLine(xi + D / 2 + h, xj + D / 2 - h, xi + D / 2 - h, xj + D / 2 + h);
+                    g.drawLine(xi + D / 2 - h, xj + D / 2 - h, xi + D / 2 + h,
+                            xj + D / 2 + h);
+                    g.drawLine(xi + D / 2 + h, xj + D / 2 - h, xi + D / 2 - h,
+                            xj + D / 2 + h);
                     break;
                 case Field.TRIANGLE:
-                    g.drawLine(xi + D / 2, xj + D / 2 - h, xi + D / 2 - h, xj + D / 2 + h);
-                    g.drawLine(xi + D / 2, xj + D / 2 - h, xi + D / 2 + h, xj + D / 2 + h);
-                    g.drawLine(xi + D / 2 - h, xj + D / 2 + h, xi + D / 2 + h, xj + D / 2 + h);
+                    g.drawLine(xi + D / 2, xj + D / 2 - h, xi + D / 2 - h, xj
+                            + D / 2 + h);
+                    g.drawLine(xi + D / 2, xj + D / 2 - h, xi + D / 2 + h, xj
+                            + D / 2 + h);
+                    g.drawLine(xi + D / 2 - h, xj + D / 2 + h, xi + D / 2 + h,
+                            xj + D / 2 + h);
                     break;
                 default:
                     g.drawRect(xi + D / 2 - h, xj + D / 2 - h, 2 * h, 2 * h);
@@ -1397,7 +1438,8 @@ public class Board extends Canvas
         }
         if (P.letter(i, j) != 0) {
             if (GF.bwColor()) {
-                if (P.color(i, j) >= 0) g.setColor(Color.white);
+                if (P.color(i, j) >= 0)
+                    g.setColor(Color.white);
                 else g.setColor(Color.black);
             } else g.setColor(GF.labelColor(P.color(i, j)));
             c[0] = (char) ('a' + P.letter(i, j) - 1);
@@ -1408,7 +1450,8 @@ public class Board extends Canvas
             g.drawString(hs, xi + D / 2 - w, xj + D / 2 + h);
         } else if (P.haslabel(i, j)) {
             if (GF.bwColor()) {
-                if (P.color(i, j) >= 0) g.setColor(Color.white);
+                if (P.color(i, j) >= 0)
+                    g.setColor(Color.white);
                 else g.setColor(Color.black);
             } else g.setColor(GF.labelColor(P.color(i, j)));
             String hs = P.label(i, j);
@@ -1417,40 +1460,49 @@ public class Board extends Canvas
             g.setFont(font);
             g.drawString(hs, xi + D / 2 - w, xj + D / 2 + h);
         } else if (P.tree(i, j) != null && !VHide) {
-            if (GF.bwColor()) g.setColor(Color.white);
+            if (GF.bwColor())
+                g.setColor(Color.white);
             else g.setColor(Color.green);
-            g.drawLine(xi + D / 2 - D / 6, xj + D / 2, xi + D / 2 + D / 6, xj + D / 2);
-            g.drawLine(xi + D / 2, xj + D / 2 - D / 6, xi + D / 2, xj + D / 2 + D / 6);
+            g.drawLine(xi + D / 2 - D / 6, xj + D / 2, xi + D / 2 + D / 6, xj
+                    + D / 2);
+            g.drawLine(xi + D / 2, xj + D / 2 - D / 6, xi + D / 2, xj + D / 2
+                    + D / 6);
         }
         if (sendi == i && sendj == j) {
             if (GF.bwColor()) {
-                if (P.color(i, j) > 0) g.setColor(Color.white);
+                if (P.color(i, j) > 0)
+                    g.setColor(Color.white);
                 else g.setColor(Color.black);
             } else g.setColor(Color.gray);
             g.drawLine(xi + D / 2 - 1, xj + D / 2, xi + D / 2 + 1, xj + D / 2);
             g.drawLine(xi + D / 2, xj + D / 2 - 1, xi + D / 2, xj + D / 2 + 1);
         }
         if (lasti == i && lastj == j && showlast) {
-            if (GF.lastNumber() || (Range >= 0 && P.number(i, j) > Range)) {
-                if (P.color(i, j) > 0) g.setColor(Color.white);
+            if (GF.lastNumber() || Range >= 0 && P.number(i, j) > Range) {
+                if (P.color(i, j) > 0)
+                    g.setColor(Color.white);
                 else g.setColor(Color.black);
-                String hs = "" + (P.number(i, j) % 100);
+                String hs = "" + P.number(i, j) % 100;
                 int w = fontmetrics.stringWidth(hs) / 2;
                 int h = fontmetrics.getAscent() / 2 - 1;
                 g.setFont(font);
                 g.drawString(hs, xi + D / 2 - w, xj + D / 2 + h);
             } else {
                 if (GF.bwColor()) {
-                    if (P.color(i, j) > 0) g.setColor(Color.white);
+                    if (P.color(i, j) > 0)
+                        g.setColor(Color.white);
                     else g.setColor(Color.black);
                 } else g.setColor(Color.red);
-                g.drawLine(xi + D / 2 - D / 6, xj + D / 2, xi + D / 2 + D / 6, xj + D / 2);
-                g.drawLine(xi + D / 2, xj + D / 2 - D / 6, xi + D / 2, xj + D / 2 + D / 6);
+                g.drawLine(xi + D / 2 - D / 6, xj + D / 2, xi + D / 2 + D / 6,
+                        xj + D / 2);
+                g.drawLine(xi + D / 2, xj + D / 2 - D / 6, xi + D / 2, xj + D
+                        / 2 + D / 6);
             }
         } else if (P.color(i, j) != 0 && Range >= 0 && P.number(i, j) > Range) {
-            if (P.color(i, j) > 0) g.setColor(Color.white);
+            if (P.color(i, j) > 0)
+                g.setColor(Color.white);
             else g.setColor(Color.black);
-            String hs = "" + (P.number(i, j) % 100);
+            String hs = "" + P.number(i, j) % 100;
             int w = fontmetrics.stringWidth(hs) / 2;
             int h = fontmetrics.getAscent() / 2 - 1;
             g.setFont(font);
@@ -1491,7 +1543,7 @@ public class Board extends Canvas
     // interpret a set move action, update the last move marker,
     // c being the color of the move.
     {
-        String s = (String) (a.arguments().content());
+        String s = (String) a.arguments().content();
         int i = Field.i(s);
         int j = Field.j(s);
         if (!valid(i, j)) return;
@@ -1562,7 +1614,7 @@ public class Board extends Canvas
         String s;
         int i, j;
         while (p != null) {
-            a = (Action) (p.content());
+            a = (Action) p.content();
             if (a.type().equals("SZ")) {
                 if (Pos.parentPos() == null)
                 // only at first node
@@ -1586,7 +1638,7 @@ public class Board extends Canvas
         n.Pw = n.Pb = 0;
         p = n.actions();
         while (p != null) {
-            a = (Action) (p.content());
+            a = (Action) p.content();
             if (a.type().equals("B")) {
                 setaction(n, a, 1);
             } else if (a.type().equals("W")) {
@@ -1617,7 +1669,7 @@ public class Board extends Canvas
         lastj = -1;
         update(i, j);
         while (l != null) {
-            a = (Action) (l.content());
+            a = (Action) l.content();
             if (a.type().equals("B") || a.type().equals("W")) {
                 s = (String) a.arguments().content();
                 i = Field.i(s);
@@ -1636,11 +1688,10 @@ public class Board extends Canvas
 
     public void undo()
     // take back the last move, ask if necessary
-    {    // System.out.println("undo");
-        if (Pos.haschildren() ||
-                (Pos.parent() != null &&
-                        Pos.parent().lastchild() != Pos.parent().firstchild() &&
-                        Pos == Pos.parent().firstchild())) {
+    { // System.out.println("undo");
+        if (Pos.haschildren() || Pos.parent() != null
+                && Pos.parent().lastchild() != Pos.parent().firstchild()
+                && Pos == Pos.parent().firstchild()) {
             if (GF.askUndo()) doundo(Pos);
         } else doundo(Pos);
     }
@@ -1657,7 +1708,8 @@ public class Board extends Canvas
         }
         TreeNode pos = Pos;
         goback();
-        if (pos == Pos.firstchild()) Pos.removeall();
+        if (pos == Pos.firstchild())
+            Pos.removeall();
         else Pos.remove(pos);
         goforward();
         showinformation();
@@ -1730,7 +1782,8 @@ public class Board extends Canvas
 
     public void setpass() {
         TreeNode p = T.top();
-        while (p.haschildren()) p = p.firstChild();
+        while (p.haschildren())
+            p = p.firstChild();
         Node n = new Node(number);
         p.addchild(new TreeNode(n));
         n.main(p);
@@ -1804,7 +1857,7 @@ public class Board extends Canvas
     }
 
     boolean valid(int i, int j) {
-        return (i >= 0 && i < S && j >= 0 && j < S);
+        return i >= 0 && i < S && j >= 0 && j < S;
     }
 
     public void clearrange() {
@@ -1847,7 +1900,8 @@ public class Board extends Canvas
     // 10 moves up
     {
         getinformation();
-        for (int i = 0; i < 10; i++) goback();
+        for (int i = 0; i < 10; i++)
+            goback();
         showinformation();
         copy();
     }
@@ -1856,7 +1910,8 @@ public class Board extends Canvas
     // 10 moves down
     {
         getinformation();
-        for (int i = 0; i < 10; i++) goforward();
+        for (int i = 0; i < 10; i++)
+            goforward();
         showinformation();
         copy();
     }
@@ -1865,7 +1920,8 @@ public class Board extends Canvas
     // to top of tree
     {
         getinformation();
-        while (Pos.parentPos() != null) goback();
+        while (Pos.parentPos() != null)
+            goback();
         showinformation();
         copy();
     }
@@ -1874,7 +1930,8 @@ public class Board extends Canvas
     // to end of variation
     {
         getinformation();
-        while (Pos.haschildren()) goforward();
+        while (Pos.haschildren())
+            goforward();
         showinformation();
         copy();
     }
@@ -1916,8 +1973,7 @@ public class Board extends Canvas
     {
         State = 1;
         getinformation();
-        while (Pos.parentPos() != null &&
-                !Pos.node().main()) {
+        while (Pos.parentPos() != null && !Pos.node().main()) {
             goback();
         }
         if (Pos.haschildren()) goforward();
@@ -1930,8 +1986,7 @@ public class Board extends Canvas
     {
         State = 1;
         getinformation();
-        while (Pos.parentPos() != null &&
-                !Pos.node().main()) {
+        while (Pos.parentPos() != null && !Pos.node().main()) {
             goback();
         }
         while (Pos.haschildren()) {
@@ -1947,8 +2002,8 @@ public class Board extends Canvas
         State = 1;
         getinformation();
         if (Pos.parentPos() != null) goback();
-        while (Pos.parentPos() != null &&
-                Pos.parentPos().firstChild() == Pos.parentPos().lastChild()
+        while (Pos.parentPos() != null
+                && Pos.parentPos().firstChild() == Pos.parentPos().lastChild()
                 && !Pos.node().main()) {
             goback();
         }
@@ -1993,8 +2048,8 @@ public class Board extends Canvas
         T.top().setaction("AP", "Jago:" + GF.version(), true);
         T.top().setaction("SZ", "" + S, true);
         T.top().setaction("GM", "1", true);
-        T.top().setaction("FF",
-                GF.getParameter("puresgf", false) ? "4" : "1", true);
+        T.top()
+                .setaction("FF", GF.getParameter("puresgf", false) ? "4" : "1", true);
         CurrentTree++;
         T = (SGFTree) Trees.elementAt(CurrentTree);
         resettree();
@@ -2012,8 +2067,8 @@ public class Board extends Canvas
         T.top().setaction("AP", "Jago:" + GF.version(), true);
         T.top().setaction("SZ", "" + S, true);
         T.top().setaction("GM", "1", true);
-        T.top().setaction("FF",
-                GF.getParameter("puresgf", false) ? "4" : "1", true);
+        T.top()
+                .setaction("FF", GF.getParameter("puresgf", false) ? "4" : "1", true);
         CurrentTree--;
         T = (SGFTree) Trees.elementAt(CurrentTree);
         resettree();
@@ -2028,12 +2083,13 @@ public class Board extends Canvas
         T.top().setaction("AP", "Jago:" + GF.version(), true);
         T.top().setaction("SZ", "" + S, true);
         T.top().setaction("GM", "1", true);
-        T.top().setaction("FF",
-                GF.getParameter("puresgf", false) ? "4" : "1", true);
+        T.top()
+                .setaction("FF", GF.getParameter("puresgf", false) ? "4" : "1", true);
         Node n = new Node(number);
         T = new SGFTree(n);
         CurrentTree++;
-        if (CurrentTree >= Trees.size()) Trees.addElement(T);
+        if (CurrentTree >= Trees.size())
+            Trees.addElement(T);
         else Trees.insertElementAt(T, CurrentTree);
         resettree();
         setnode();
@@ -2060,7 +2116,8 @@ public class Board extends Canvas
     {
         if (i < 0 || j < 0 || i >= S || j >= S) return;
         TreeNode p = T.top();
-        while (p.haschildren()) p = p.firstChild();
+        while (p.haschildren())
+            p = p.firstChild();
         Action a = new Action("B", Field.string(i, j));
         Node n = new Node(p.node().number() + 1);
         n.addaction(a);
@@ -2076,7 +2133,8 @@ public class Board extends Canvas
     {
         if (i < 0 || j < 0 || i >= S || j >= S) return;
         TreeNode p = T.top();
-        while (p.haschildren()) p = p.firstChild();
+        while (p.haschildren())
+            p = p.firstChild();
         Action a = new Action("W", Field.string(i, j));
         Node n = new Node(p.node().number() + 1);
         n.addaction(a);
@@ -2092,7 +2150,8 @@ public class Board extends Canvas
     {
         if (i < 0 || j < 0 || i >= S || j >= S) return;
         TreeNode p = T.top();
-        while (p.haschildren()) p = (TreeNode) p.firstChild();
+        while (p.haschildren())
+            p = p.firstChild();
         Action a = new Action("AB", Field.string(i, j));
         Node n;
         if (p == T.top()) {
@@ -2118,7 +2177,8 @@ public class Board extends Canvas
     {
         if (i < 0 || j < 0 || i >= S || j >= S) return;
         TreeNode p = T.top();
-        while (p.haschildren()) p = (TreeNode) p.firstChild();
+        while (p.haschildren())
+            p = p.firstChild();
         Action a = new Action("AW", Field.string(i, j));
         Node n;
         if (p == T.top()) {
@@ -2170,13 +2230,15 @@ public class Board extends Canvas
         int i, j;
         int c = P.color(i0, j0);
         Node n = Pos.node();
-        if (GF.getParameter("puresgf", true) &&
-                (n.contains("B") || n.contains("W"))) n = newnode();
+        if (GF.getParameter("puresgf", true)
+                && (n.contains("B") || n.contains("W"))) n = newnode();
         for (i = 0; i < S; i++)
             for (j = 0; j < S; j++) {
                 if (P.marked(i, j)) {
                     a = new Action("AE", Field.string(i, j));
-                    n.addchange(new Change(i, j, P.color(i, j), P.number(i, j)));
+                    n
+                            .addchange(new Change(i, j, P.color(i, j), P.number(i,
+                                    j)));
                     n.expandaction(a);
                     if (P.color(i, j) > 0) {
                         n.Pb++;
@@ -2371,7 +2433,8 @@ public class Board extends Canvas
         State = 8;
         Removing = true;
         showinformation();
-        if (Pos.node().main()) return true;
+        if (Pos.node().main())
+            return true;
         else return false;
     }
 
@@ -2403,9 +2466,8 @@ public class Board extends Canvas
         showinformation();
     }
 
-    public void setinformation(String black, String blackrank,
-                               String white, String whiterank,
-                               String komi, String handicap)
+    public void setinformation(String black, String blackrank, String white,
+                               String whiterank, String komi, String handicap)
     // set various things like names, rank etc.
     {
         T.top().setaction("PB", black, true);
@@ -2465,8 +2527,8 @@ public class Board extends Canvas
     public void lastrange(int n)
     // set the range for stone numbers
     {
-        int l = (Pos.node().number()) - 2;
-        Range = (l / n) * n;
+        int l = Pos.node().number() - 2;
+        Range = l / n * n;
         if (Range < 0) Range = 0;
         KeepRange = true;
         updateall();
@@ -2478,7 +2540,8 @@ public class Board extends Canvas
     // add a string to the comments, notifies comment area
     {
         TreeNode p = T.top();
-        while (p.haschildren()) p = p.firstChild();
+        while (p.haschildren())
+            p = p.firstChild();
         if (Pos == p) getinformation();
         ListElement la = p.node().actions();
         Action a;
@@ -2524,19 +2587,21 @@ public class Board extends Canvas
             for (j = 0; j < S; j++) {
                 if (P.territory(i, j) == 1 || P.territory(i, j) == -1) {
                     markterritory(i, j, P.territory(i, j));
-                    if (P.territory(i, j) > 0) tb++;
+                    if (P.territory(i, j) > 0)
+                        tb++;
                     else tw++;
                 } else {
-                    if (P.color(i, j) > 0) sb++;
+                    if (P.color(i, j) > 0)
+                        sb++;
                     else if (P.color(i, j) < 0) sw++;
                 }
             }
-        String s = GF.resourceString("Chinese_count_") + "\n" +
-                GF.resourceString("Black__") + (sb + tb) +
-                GF.resourceString("__White__") + (sw + tw) + "\n" +
-                GF.resourceString("Japanese_count_") + "\n" +
-                GF.resourceString("Black__") + (Pw + tb) +
-                GF.resourceString("__White__") + (Pb + tw);
+        String s = GF.resourceString("Chinese_count_") + "\n"
+                + GF.resourceString("Black__") + (sb + tb)
+                + GF.resourceString("__White__") + (sw + tw) + "\n"
+                + GF.resourceString("Japanese_count_") + "\n"
+                + GF.resourceString("Black__") + (Pw + tb)
+                + GF.resourceString("__White__") + (Pb + tw);
         showinformation();
         copy();
         if (Pos.node().main()) {
@@ -2557,21 +2622,23 @@ public class Board extends Canvas
             for (j = 0; j < S; j++) {
                 if (P.territory(i, j) == 1 || P.territory(i, j) == -1) {
                     markterritory(i, j, P.territory(i, j));
-                    if (P.territory(i, j) > 0) tb++;
+                    if (P.territory(i, j) > 0)
+                        tb++;
                     else tw++;
                 } else {
-                    if (P.color(i, j) > 0) sb++;
+                    if (P.color(i, j) > 0)
+                        sb++;
                     else if (P.color(i, j) < 0) sw++;
                 }
             }
         showinformation();
         copy();
-        return GF.resourceString("Chinese_count_") + "\n" +
-                GF.resourceString("Black__") + (sb + tb) +
-                GF.resourceString("__White__") + (sw + tw) + "\n" +
-                GF.resourceString("Japanese_count_") + "\n" +
-                GF.resourceString("Black__") + (Pw + tb) +
-                GF.resourceString("__White__") + (Pb + tw);
+        return GF.resourceString("Chinese_count_") + "\n"
+                + GF.resourceString("Black__") + (sb + tb)
+                + GF.resourceString("__White__") + (sw + tw) + "\n"
+                + GF.resourceString("Japanese_count_") + "\n"
+                + GF.resourceString("Black__") + (Pw + tb)
+                + GF.resourceString("__White__") + (Pb + tw);
     }
 
     public void load(BufferedReader in) throws IOException
@@ -2595,8 +2662,7 @@ public class Board extends Canvas
         }
     }
 
-    public void loadXml(XmlReader xml)
-            throws XmlReaderException
+    public void loadXml(XmlReader xml) throws XmlReaderException
     // load a game from the stream
     {
         Vector v = SGFTree.load(xml, GF);
@@ -2625,8 +2691,8 @@ public class Board extends Canvas
         T.top().setaction("AP", "Jago:" + GF.version(), true);
         T.top().setaction("SZ", "" + S, true);
         T.top().setaction("GM", "1", true);
-        T.top().setaction("FF",
-                GF.getParameter("puresgf", false) ? "4" : "1", true);
+        T.top()
+                .setaction("FF", GF.getParameter("puresgf", false) ? "4" : "1", true);
         for (int i = 0; i < Trees.size(); i++)
             ((SGFTree) Trees.elementAt(i)).print(o);
     }
@@ -2650,8 +2716,8 @@ public class Board extends Canvas
         T.top().setaction("AP", "Jago:" + GF.version(), true);
         T.top().setaction("SZ", "" + S, true);
         T.top().setaction("GM", "1", true);
-        T.top().setaction("FF",
-                GF.getParameter("puresgf", false) ? "4" : "1", true);
+        T.top()
+                .setaction("FF", GF.getParameter("puresgf", false) ? "4" : "1", true);
         XmlWriter xml = new XmlWriter(o);
         xml.printEncoding(encoding);
         xml.printXls("go.xsl");
@@ -2670,8 +2736,8 @@ public class Board extends Canvas
         T.top().setaction("AP", "Jago:" + GF.version(), true);
         T.top().setaction("SZ", "" + S, true);
         T.top().setaction("GM", "1", true);
-        T.top().setaction("FF",
-                GF.getParameter("puresgf", false) ? "4" : "1", true);
+        T.top()
+                .setaction("FF", GF.getParameter("puresgf", false) ? "4" : "1", true);
         XmlWriter xml = new XmlWriter(o);
         xml.printEncoding(encoding);
         xml.printXls("go.xsl");
@@ -2692,17 +2758,20 @@ public class Board extends Canvas
         o.print("      ");
         for (i = 0; i < S; i++) {
             char a;
-            if (i <= 7) a = (char) ('A' + i);
+            if (i <= 7)
+                a = (char) ('A' + i);
             else a = (char) ('A' + i + 1);
             o.print(" " + a);
         }
         o.println();
         o.print("      ");
-        for (i = 0; i < S; i++) o.print("--");
+        for (i = 0; i < S; i++)
+            o.print("--");
         o.println("-");
         for (i = 0; i < S; i++) {
             o.print("  ");
-            if (S - i < 10) o.print(" " + (S - i));
+            if (S - i < 10)
+                o.print(" " + (S - i));
             else o.print(S - i);
             o.print(" |");
             for (j = 0; j < S; j++) {
@@ -2714,26 +2783,33 @@ public class Board extends Canvas
                         o.print(" O");
                         break;
                     case 0:
-                        if (P.haslabel(j, i)) o.print(" " + P.label(j, i));
-                        else if (P.letter(j, i) > 0) o.print(" " + (char) (P.letter(j, i) + 'a' - 1));
-                        else if (P.marker(j, i) > 0) o.print(" X");
-                        else if (ishand(i) && ishand(j)) o.print(" ,");
+                        if (P.haslabel(j, i))
+                            o.print(" " + P.label(j, i));
+                        else if (P.letter(j, i) > 0)
+                            o.print(" " + (char) (P.letter(j, i) + 'a' - 1));
+                        else if (P.marker(j, i) > 0)
+                            o.print(" X");
+                        else if (ishand(i) && ishand(j))
+                            o.print(" ,");
                         else o.print(" .");
                         break;
                 }
             }
             o.print(" | ");
-            if (S - i < 10) o.print(" " + (S - i));
+            if (S - i < 10)
+                o.print(" " + (S - i));
             else o.print(S - i);
             o.println();
         }
         o.print("      ");
-        for (i = 0; i < S; i++) o.print("--");
+        for (i = 0; i < S; i++)
+            o.print("--");
         o.println("-");
         o.print("      ");
         for (i = 0; i < S; i++) {
             char a;
-            if (i <= 7) a = (char) ('A' + i);
+            if (i <= 7)
+                a = (char) ('A' + i);
             else a = (char) ('A' + i + 1);
             o.print(" " + a);
         }
@@ -2746,8 +2822,7 @@ public class Board extends Canvas
         n.setaction("AP", "Jago:" + GF.version(), true);
         n.setaction("SZ", "" + S, true);
         n.setaction("GM", "1", true);
-        n.setaction("FF",
-                GF.getParameter("puresgf", false) ? "4" : "1", true);
+        n.setaction("FF", GF.getParameter("puresgf", false) ? "4" : "1", true);
         n.copyAction(T.top().node(), "GN");
         n.copyAction(T.top().node(), "DT");
         n.copyAction(T.top().node(), "PB");
@@ -2784,25 +2859,28 @@ public class Board extends Canvas
                             n.expandaction(new MarkAction(field, GF));
                     }
                 } else if (P.haslabel(i, j))
-                    n.expandaction(new Action("LB", field + ":" + P.label(i, j)));
+                    n
+                            .expandaction(new Action("LB", field + ":"
+                                    + P.label(i, j)));
                 else if (P.letter(i, j) > 0)
-                    n.expandaction(new Action("LB", field + ":" + P.letter(i, j)));
+                    n.expandaction(new Action("LB", field + ":"
+                            + P.letter(i, j)));
             }
         }
     }
 
     boolean ishand(int i) {
         if (S > 13) {
-            return (i == 3 || i == S - 4 || i == S / 2);
+            return i == 3 || i == S - 4 || i == S / 2;
         } else if (S > 9) {
-            return (i == 3 || i == S - 4);
+            return i == 3 || i == S - 4;
         } else return false;
     }
 
     public void handicap(int n)
     // set number of handicap points
     {
-        int h = (S < 13) ? 3 : 4;
+        int h = S < 13 ? 3 : 4;
         if (n > 5) {
             setblack(h - 1, S / 2);
             setblack(S - h, S / 2);
@@ -2856,9 +2934,8 @@ public class Board extends Canvas
     }
 
     /**
-     * Search the string as substring of a comment,
-     * go to that node and report success. On failure
-     * this routine will go up to the root node.
+     * Search the string as substring of a comment, go to that node and report
+     * success. On failure this routine will go up to the root node.
      */
     public boolean search(String s) {
         State = 1;
@@ -2887,20 +2964,21 @@ public class Board extends Canvas
     }
 
     Dimension getBoardImageSize() {
-        return new Dimension(ActiveImage.getWidth(this), ActiveImage.getHeight(this));
+        return new Dimension(ActiveImage.getWidth(this), ActiveImage
+                .getHeight(this));
     }
 
-    //*****************************************************
+    // *****************************************************
     // procedures that might be overloaded for more control
     // (Callback to server etc.)
-    //*****************************************************
+    // *****************************************************
 
     void movemouse(int i, int j)
     // set a move at i,j
     {
         if (Pos.haschildren()) return;
-        if (captured == 1 && capturei == i && capturej == j &&
-                GF.getParameter("preventko", true)) return;
+        if (captured == 1 && capturei == i && capturej == j
+                && GF.getParameter("preventko", true)) return;
         set(i, j); // try to set a new move
     }
 

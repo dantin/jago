@@ -24,6 +24,8 @@ public class GMPGoFrame extends ConnectedGoFrame
         C = c;
         Timer = new GoTimer(this, 1000);
         CurrentTime = System.currentTimeMillis();
+        setVisible(true);
+        repaint();
     }
 
     public boolean wantsmove() {

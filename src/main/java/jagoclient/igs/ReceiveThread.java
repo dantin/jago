@@ -9,11 +9,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
- * This thread uses the output of IgsStream to login to server.
- * After the login it will fall into a loop, and echo all input
- * to the Output text area of the ConnectionFrame. Some elements
- * get filtered by this process. But most filtering is done by
- * IgsStream itself.
+ * This thread uses the output of IgsStream to login to server. After the login
+ * it will fall into a loop, and echo all input to the Output text area of the
+ * ConnectionFrame. Some elements get filtered by this process. But most
+ * filtering is done by IgsStream itself.
  * <p>
  * Moreover, it will toggle to client mode, if necessary.
  *
@@ -41,8 +40,10 @@ public class ReceiveThread extends Thread {
         CF = cf;
     }
 
+    @Override
     public void run() {
-        boolean Auto = Global.getParameter("automatic", true) && !User.equals("");
+        boolean Auto = Global.getParameter("automatic", true)
+                && !User.equals("");
         try {
             if (!Proxy) Out.println("");
             // try to auto-login into the server
@@ -52,7 +53,8 @@ public class ReceiveThread extends Thread {
                         Output.append(In.line() + "\n");
                     }
                     if (In.line().startsWith("Login")) {
-                        Output.append(Global.resourceString("_____logging_in_n"));
+                        Output.append(Global
+                                .resourceString("_____logging_in_n"));
                         Out.println(User);
                         break;
                     }
@@ -62,10 +64,12 @@ public class ReceiveThread extends Thread {
                     if (In.readline()) {
                         if (In.number() == 1 && In.commandnumber() == 1) {
                             Out.println(Password);
-                            Output.append(Global.resourceString("_____sending_password_n"));
+                            Output.append(Global
+                                    .resourceString("_____sending_password_n"));
                             break;
                         } else if (In.number() == 1) {
-                            Output.append(Global.resourceString("_____enter_commands__n"));
+                            Output.append(Global
+                                    .resourceString("_____enter_commands__n"));
                             break;
                         } else Output.append(In.line() + "\n");
                     } else {
@@ -73,7 +77,8 @@ public class ReceiveThread extends Thread {
                             goclient();
                         } else if (In.line().startsWith("Password")) {
                             Out.println(Password);
-                            Output.append(Global.resourceString("_____sending_password_n"));
+                            Output.append(Global
+                                    .resourceString("_____sending_password_n"));
                         }
                     }
                 }
@@ -84,17 +89,23 @@ public class ReceiveThread extends Thread {
             while (true) {
                 try {
                     if (In.readline()) {
-                        if (FileMode && In.number() != 100) FileMode = false;
+                        if (FileMode && In.number() != 100)
+                            FileMode = false;
                         else if (In.command().equals("File")) FileMode = true;
                         switch (In.number()) {
                             case 1:
                                 Proxy = false;
-                                if (!Auto && In.commandnumber() == 1 && AskPassword) {
-                                    Output.append(Global.resourceString("____Enter_Password_____n"));
+                                if (!Auto && In.commandnumber() == 1
+                                        && AskPassword) {
+                                    Output
+                                            .append(Global
+                                                    .resourceString("____Enter_Password_____n"));
                                     AskPassword = false;
                                     break;
                                 } else if (!Auto && In.commandnumber() == 0) {
-                                    Output.append(Global.resourceString("____Enter_Login_____n"));
+                                    Output
+                                            .append(Global
+                                                    .resourceString("____Enter_Login_____n"));
                                     AskPassword = true;
                                     break;
                                 }
@@ -108,13 +119,15 @@ public class ReceiveThread extends Thread {
                         }
                         if (!Auto && In.command().startsWith("Login")) {
                             AskPassword = true;
-                            Output.append(Global.resourceString("____Enter_Login_____n"));
+                            Output.append(Global
+                                    .resourceString("____Enter_Login_____n"));
                         }
                         if (In.command().startsWith("#>")) {
                             goclient();
                         }
                     } else if (!Auto && In.line().startsWith("Login")) {
-                        Output.append(Global.resourceString("____Enter_Login_____n"));
+                        Output.append(Global
+                                .resourceString("____Enter_Login_____n"));
                     } else if (In.command().startsWith("#>")) {
                         goclient();
                     } else if (Proxy) {
@@ -123,16 +136,19 @@ public class ReceiveThread extends Thread {
                 } catch (IOException e) {
                     throw e;
                 } catch (Exception e) {
-                    System.out.println("Exception (please report to the author)\n" +
-                            e.toString() + "\n");
+                    System.out
+                            .println("Exception (please report to the author)\n"
+                                    + e.toString() + "\n");
                     e.printStackTrace();
                 }
             }
         } catch (IOException ex) // server has closed connection
         {
             if (!CF.hasClosed) {
-                Output.append(Global.resourceString("_____connection_error__n") + ex + "\n");
-                new Message(Global.frame(), Global.resourceString("Lost_Connection"));
+                Output.append(Global.resourceString("_____connection_error__n")
+                        + ex + "\n");
+                new Message(Global.frame(), Global
+                        .resourceString("Lost_Connection"));
                 try {
                     sleep(10000);
                 } catch (Exception e) {

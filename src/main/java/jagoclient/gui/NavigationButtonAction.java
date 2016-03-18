@@ -10,8 +10,7 @@ import java.awt.event.MouseListener;
  * A lightweight button for the navigation buttons (reacts quicker).
  */
 
-public class NavigationButtonAction extends Panel
-        implements MouseListener {
+public class NavigationButtonAction extends Panel implements MouseListener {
     DoActionListener C;
     String Name;
     String S;
@@ -31,7 +30,8 @@ public class NavigationButtonAction extends Panel
         setFont(Global.SansSerif);
         FM = getFontMetrics(Global.SansSerif);
         int sw1 = FM.stringWidth("<<<"), sw2 = FM.stringWidth(S);
-        if (sw2 > sw1) W = sw2 * 5 / 4 + 2;
+        if (sw2 > sw1)
+            W = sw2 * 5 / 4 + 2;
         else W = sw1 * 5 / 4 + 2;
         H = FM.getHeight() * 5 / 4 + 2;
         repaint();
@@ -62,6 +62,7 @@ public class NavigationButtonAction extends Panel
     public void mouseExited(MouseEvent e) {
     }
 
+    @Override
     public void paint(Graphics g) {
         if (I == null) {
             I = createImage(W, H);
@@ -69,26 +70,31 @@ public class NavigationButtonAction extends Panel
             IG.setFont(getFont());
         }
         int w = FM.stringWidth(S);
-        IG.setColor(Global.gray);
         IG.fill3DRect(0, 0, W, H, !Pressed);
-        if (Enabled) IG.setColor(Color.black);
+        if (Enabled)
+            IG.setColor(Color.black);
         else IG.setColor(Color.gray);
-        IG.drawString(S, (W - w) / 2, H - ((H - FM.getHeight()) / 2 + FM.getDescent()));
+        IG.drawString(S, (W - w) / 2, H
+                - ((H - FM.getHeight()) / 2 + FM.getDescent()));
         g.drawImage(I, 0, 0, W, H, this);
     }
 
+    @Override
     public void update(Graphics g) {
         paint(g);
     }
 
+    @Override
     public Dimension getPreferredSize() {
         return new Dimension(W, H);
     }
 
+    @Override
     public Dimension getMinimumSize() {
         return new Dimension(W, H);
     }
 
+    @Override
     public void setEnabled(boolean flag) {
         if (Enabled == flag) return;
         Enabled = flag;

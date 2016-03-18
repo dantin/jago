@@ -13,22 +13,22 @@ import java.util.Locale;
 class GlobalObject {
 }
 
+
 /**
- * This class stores global parameters. It is equivalent to global
- * parameters in a non-OO programming environment.
+ * This class stores global parameters. It is equivalent to global parameters in
+ * a non-OO programming environment.
  * <p>
- * The most important class of parameters is a list of keys and values.
- * It is implemented as a hash table. Paremeters can be strings, integers,
- * boolean values and colors. Function keys are stored as strings with
- * key f1 etc.
+ * The most important class of parameters is a list of keys and values. It is
+ * implemented as a hash table. Paremeters can be strings, integers, boolean
+ * values and colors. Function keys are stored as strings with key f1 etc.
  * <p>
- * Another global variable is the start directory of Jago, where the
- * program expects its help files, unless the -home parameter is used.
- * Also the URL for the WWW applet version is stored here. The parameters
- * are retrieved from that URL, if applicable.
+ * Another global variable is the start directory of Jago, where the program
+ * expects its help files, unless the -home parameter is used. Also the URL for
+ * the WWW applet version is stored here. The parameters are retrieved from that
+ * URL, if applicable.
  * <p>
- * There is static RessourceBundle, which contains the label names etc. in
- * local versions. The file is "JagoResource.properties" (or
+ * There is static RessourceBundle, which contains the label names etc. in local
+ * versions. The file is "JagoResource.properties" (or
  * "JagoResource_de.properties" and similar).
  */
 
@@ -43,10 +43,8 @@ public class Global extends rene.gui.Global {
     public static boolean IsApplet = false;
     public static URL Url;
     public static boolean Busy = true;
-    public static Color gray = Color.gray;
     public static Font SansSerif, Monospaced, BigMonospaced, BoardFont;
     public static Hashtable WindowList;
-    public static String Version = "Version 4.53";
     public static int Silent = 0;
 
     /** initialze the Jago Ressource bundle */
@@ -54,8 +52,9 @@ public class Global extends rene.gui.Global {
         WindowList = new Hashtable();
         Dir = "";
         Home = "";
-        initBundle("JagoResource");
+        initBundle("jagoclient/foreign/JagoResource");
         if (B == null) initBundle("jagoclient/JagoResource");
+        if (B == null) initBundle("JagoResource");
     }
 
     /**
@@ -80,11 +79,10 @@ public class Global extends rene.gui.Global {
     }
 
     /**
-     * Helper function for correctly open a stream to either
-     * an URL or a file in the current directory. URLs are used,
-     * when the applet starts from a server. If the opening fails,
-     * a ressource in the / (root) directory is tried. This
-     * allows for overwriting resources with local files.
+     * Helper function for correctly open a stream to either an URL or a file in
+     * the current directory. URLs are used, when the applet starts from a
+     * server. If the opening fails, a ressource in the / (root) directory is
+     * tried. This allows for overwriting resources with local files.
      */
     public static InputStream getDataStream(String filename) {
         try {
@@ -101,8 +99,8 @@ public class Global extends rene.gui.Global {
 
     public static BufferedReader getStream(String filename, String encoding) {
         try {
-            return new BufferedReader(
-                    new InputStreamReader(getDataStream(filename), encoding));
+            return new BufferedReader(new InputStreamReader(
+                    getDataStream(filename), encoding));
         } catch (UnsupportedEncodingException e) {
             return getStream(filename);
         }
@@ -113,18 +111,19 @@ public class Global extends rene.gui.Global {
                 new InputStreamReader(getDataStream(filename)));
     }
 
-    public static BufferedReader getEncodedStream(String filename) {
-        String encoding = getParameter("HELP_ENCODING", "");
-        if (encoding.equals("")) return getStream(filename);
+    public static BufferedReader getEncodedStream(String filename) { // String encoding=getParameter("HELP_ENCODING","");
+        String encoding = resourceString("HELP_ENCODING");
+        if (encoding.equals(""))
+            return getStream(filename);
         else return getStream(filename, encoding);
     }
 
     /**
-     * Read the paramters from a file (normally go.cfg). This method
-     * uses getStream to either open an URL, a local file or a resource.
+     * Read the paramters from a file (normally go.cfg). This method uses
+     * getStream to either open an URL, a local file or a resource.
      * <p>
-     * If there is the language parameter, a new resource bundle with
-     * that locale is loaded.
+     * If there is the language parameter, a new resource bundle with that
+     * locale is loaded.
      */
     public static void readparameter(String filename) {
         File f = new File(home() + filename);
@@ -137,9 +136,10 @@ public class Global extends rene.gui.Global {
                 lang = lang.substring(0, 2);
             }
             Locale.setDefault(new Locale(lang, langsec));
-            initBundle("JagoResource");
+            initBundle("jagoclient/foreign/JagoResource");
+            if (B == null) initBundle("jagoclient/JagoResource");
+            if (B == null) initBundle("JagoResource");
         }
-        gray = getColor("globalgray", new Color(220, 220, 220));
     }
 
     /**
@@ -147,7 +147,7 @@ public class Global extends rene.gui.Global {
      */
     public static void writeparameter(String filename) {
         if (isApplet()) return;
-        saveProperties("Jago Properties", home() + "go.cfg");
+        saveProperties("Jago Properties", home() + ".go.cfg");
     }
 
     public static void saveMessageFilter() {
@@ -165,7 +165,8 @@ public class Global extends rene.gui.Global {
      * set the current directory
      */
     public static void dir(String dir) {
-        if (isApplet()) Dir = dir + "\\";
+        if (isApplet())
+            Dir = dir + "\\";
         else Dir = dir + System.getProperty("file.separator");
     }
 
@@ -180,7 +181,8 @@ public class Global extends rene.gui.Global {
      * set the home directory
      */
     public static void home(String dir) {
-        if (isApplet()) Home = dir + "\\";
+        if (isApplet())
+            Home = dir + "\\";
         else Home = dir + System.getProperty("file.separator");
     }
 
@@ -310,30 +312,40 @@ public class Global extends rene.gui.Global {
      * create the user chosen fonts
      */
     public static void createfonts() {
-        SansSerif = createfont("sansserif", "SansSerif", "ssfontsize", 11);
-        Monospaced = createfont("monospaced", "Monospaced", "msfontsize", 11);
-        BigMonospaced = createfont("bigmonospaced", "BoldMonospaced", "bigmsfontsize", 22);
-        BoardFont = createfont("boardfontname", "SansSerif", "boardfontsize", 10);
+        SansSerif = createfont("sansserif", "SansSerif", "ssfontsize", 12);
+        Monospaced = createfont("monospaced", "Monospaced", "msfontsize", 12);
+        BigMonospaced = createfont("bigmonospaced", "BoldMonospaced",
+                "bigmsfontsize", 22);
+        BoardFont = createboldfont("boardfontname", "SansSerif",
+                "boardfontsize", 11);
     }
 
     static Font createfont(String name, String def, String size, int sdef) {
         name = getParameter(name, def);
         if (name.startsWith("Bold")) {
-            return new Font(name.substring(4), Font.BOLD, Global.getParameter(size, sdef));
+            return new Font(name.substring(4), Font.BOLD, Global.getParameter(
+                    size, sdef));
         } else if (name.startsWith("Italic")) {
-            return new Font(name.substring(5), Font.ITALIC, Global.getParameter(size, sdef));
+            return new Font(name.substring(5), Font.ITALIC, Global
+                    .getParameter(size, sdef));
         } else {
             return new Font(name, Font.PLAIN, Global.getParameter(size, sdef));
         }
     }
 
+    static Font createboldfont(String name, String def, String size, int sdef) {
+        name = getParameter(name, def);
+        return new Font(name, Font.BOLD, Global.getParameter(size, sdef));
+    }
+
     /**
-     * Set the window sizes as read from go.cfg. The paramter tags are made
-     * from the window name and "ypos", "xpos", "width" or "height".
+     * Set the window sizes as read from go.cfg. The paramter tags are made from
+     * the window name and "ypos", "xpos", "width" or "height".
      */
     public static void setwindow(Window c, String name, int w, int h,
                                  boolean minsize) {
-        int x = getParameter(name + "xpos", 100), y = getParameter(name + "ypos", 100);
+        int x = getParameter(name + "xpos", 100), y = getParameter(name
+                + "ypos", 100);
         w = getParameter(name + "width", w);
         h = getParameter(name + "height", h);
         if (minsize) {
@@ -358,8 +370,8 @@ public class Global extends rene.gui.Global {
     }
 
     /**
-     * Same as setwindow, but the window will be packed, if the pack
-     * parameter is set (advanced options).
+     * Same as setwindow, but the window will be packed, if the pack parameter
+     * is set (advanced options).
      */
     public static void setpacked(Window c, String name, int w, int h) {
         Dimension d = c.getToolkit().getScreenSize();
@@ -384,8 +396,9 @@ public class Global extends rene.gui.Global {
      * Places a dialog nicely centered with a frame.
      */
     public static void setwindow(Dialog c, String name, int w, int h, Frame f) {
-        int x = f.getLocation().x + f.getSize().width / 2 - c.getSize().width / 2,
-                y = f.getLocation().y + f.getSize().height / 2 - c.getSize().height / 2;
+        int x = f.getLocation().x + f.getSize().width / 2 - c.getSize().width
+                / 2, y = f.getLocation().y + f.getSize().height / 2
+                - c.getSize().height / 2;
         w = getParameter(name + "width", w);
         h = getParameter(name + "height", h);
         Dimension d = c.getToolkit().getScreenSize();
@@ -402,8 +415,9 @@ public class Global extends rene.gui.Global {
      * Same as setwindow(Dialog,...), but packs the dialog.
      */
     public static void setpacked(Dialog c, String name, int w, int h, Frame f) {
-        int x = f.getLocation().x + f.getSize().width / 2 - c.getSize().width / 2,
-                y = f.getLocation().y + f.getSize().height / 2 - c.getSize().height / 2;
+        int x = f.getLocation().x + f.getSize().width / 2 - c.getSize().width
+                / 2, y = f.getLocation().y + f.getSize().height / 2
+                - c.getSize().height / 2;
         w = getParameter(name + "width", w);
         h = getParameter(name + "height", h);
         Dimension d = c.getToolkit().getScreenSize();
@@ -413,7 +427,8 @@ public class Global extends rene.gui.Global {
         if (x < 0) x = 0;
         if (y + h > d.height) y = d.height - h;
         if (y < 0) y = 0;
-        if (Global.getParameter("pack", true)) c.pack();
+        if (Global.getParameter("pack", true))
+            c.pack();
         else c.setSize(w, h);
         c.setLocation(x, y);
     }
@@ -422,8 +437,9 @@ public class Global extends rene.gui.Global {
      * Same as setwindow(Dialog,...), but packs the dialog.
      */
     public static void setpacked(Frame c, String name, int w, int h, Frame f) {
-        int x = f.getLocation().x + f.getSize().width / 2 - c.getSize().width / 2,
-                y = f.getLocation().y + f.getSize().height / 2 - c.getSize().height / 2;
+        int x = f.getLocation().x + f.getSize().width / 2 - c.getSize().width
+                / 2, y = f.getLocation().y + f.getSize().height / 2
+                - c.getSize().height / 2;
         w = getParameter(name + "width", w);
         h = getParameter(name + "height", h);
         Dimension d = c.getToolkit().getScreenSize();
@@ -433,7 +449,8 @@ public class Global extends rene.gui.Global {
         if (x < 0) x = 0;
         if (y + h > d.height) y = d.height - h;
         if (y < 0) y = 0;
-        if (Global.getParameter("pack", true)) c.pack();
+        if (Global.getParameter("pack", true))
+            c.pack();
         else c.setSize(w, h);
         c.setLocation(x, y);
     }
@@ -449,10 +466,9 @@ public class Global extends rene.gui.Global {
     }
 
     /**
-     * Get the national translation fot the string s.
-     * The resource strings contain _ instead of blanks.
-     * If the resource is not found, the strings s (with _ replaced
-     * by blanks) will be used.
+     * Get the national translation fot the string s. The resource strings
+     * contain _ instead of blanks. If the resource is not found, the strings s
+     * (with _ replaced by blanks) will be used.
      */
     public static String resourceString(String s) {
         String res;
@@ -465,5 +481,22 @@ public class Global extends rene.gui.Global {
             }
         }
         return res;
+    }
+
+    public static void version51() {
+        version51handle("go.cfg");
+        version51handle("server.cfg");
+        version51handle("partner.cfg");
+        version51handle("filter.cfg");
+    }
+
+    public static void version51handle(String s) {
+        File f = new File(home() + s);
+        File f1 = new File(home() + "." + s);
+        if (f.exists()) {
+            if (f1.exists())
+                f.delete();
+            else f.renameTo(f1);
+        }
     }
 }

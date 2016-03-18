@@ -21,6 +21,17 @@ public class SVGWriter extends XmlWriter {
         super(o);
     }
 
+    public void startSVG(int w, int h) {
+        printEncoding("utf-8");
+        Out.println("<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"");
+        Out.println("\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">");
+        startTagStart("svg");
+        printArg("xmlns", "http://www.w3.org/2000/svg");
+        printArg("width", "" + w);
+        printArg("height", "" + h);
+        startTagEndNewLine();
+    }
+
     public void close() {
         endTag("svg");
         super.close();

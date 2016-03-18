@@ -3,6 +3,7 @@ package jagoclient.igs;
 import jagoclient.Global;
 import jagoclient.gui.*;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -10,14 +11,12 @@ import java.awt.event.WindowEvent;
 import java.io.PrintWriter;
 
 /**
- * The SayDialog is opened by the SayDistributor in response to
- * a say.
+ * The SayDialog is opened by the SayDistributor in response to a say.
  */
 
-public class SayDialog extends CloseFrame
-        implements CloseListener, KeyListener {
+public class SayDialog extends CloseFrame implements CloseListener, KeyListener {
     PrintWriter Out;
-    TextField Answer;
+    JTextField Answer;
     TextArea T;
     SayDistributor SD;
     ConnectionFrame CF;
@@ -30,15 +29,14 @@ public class SayDialog extends CloseFrame
         SD = sd;
         CF = cf;
         add("North", new MyLabel(Global.resourceString("Opponent_said_")));
-        Panel pm = new MyPanel();
+        JPanel pm = new MyPanel();
         pm.setLayout(new BorderLayout());
         pm.add("Center", T = new TextArea());
-        T.setBackground(Global.gray.brighter());
         T.setFont(Global.Monospaced);
         T.setEditable(false);
         pm.add("South", Answer = new HistoryTextField(this, "Answer", 40));
         add("Center", pm);
-        Panel p = new MyPanel();
+        JPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Close")));
         p.add(new ButtonAction(this, Global.resourceString("Send_Answer")));
         add("South", new Panel3D(p));
@@ -46,19 +44,20 @@ public class SayDialog extends CloseFrame
         SD.MD = this;
         Global.setwindow(this, "say", 400, 200);
         validate();
-        show();
+        setVisible(true);
         T.setText(m);
         Answer.addKeyListener(this);
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "say");
         if (Global.resourceString("Close").equals(o)) {
             close();
             setVisible(false);
             dispose();
-        } else if (Global.resourceString("Send_Answer").equals(o) ||
-                "Answer".equals(o)) {
+        } else if (Global.resourceString("Send_Answer").equals(o)
+                || "Answer".equals(o)) {
             if (!Answer.getText().equals("")) {
                 Out.println("say " + Answer.getText());
                 CF.append("say: " + Answer.getText());
@@ -71,6 +70,7 @@ public class SayDialog extends CloseFrame
         T.append("\n" + s);
     }
 
+    @Override
     public void paint(Graphics g) {
         if (SD.MD == null) {
             CF.removeCloseListener(this);
@@ -81,6 +81,7 @@ public class SayDialog extends CloseFrame
         super.paint(g);
     }
 
+    @Override
     public boolean close() {
         return true;
     }
@@ -89,12 +90,14 @@ public class SayDialog extends CloseFrame
         doclose();
     }
 
+    @Override
     public void doclose() {
         SD.MD = null;
         CF.removeCloseListener(this);
         super.doclose();
     }
 
+    @Override
     public void windowOpened(WindowEvent e) {
         Answer.requestFocus();
     }

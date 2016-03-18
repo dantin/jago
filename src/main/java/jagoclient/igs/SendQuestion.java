@@ -3,7 +3,7 @@ package jagoclient.igs;
 import jagoclient.Global;
 import jagoclient.gui.*;
 
-import java.awt.*;
+import javax.swing.*;
 
 /**
  * This dialog is opened by IgsGoFrame, when the "Send" button is pressed.
@@ -11,7 +11,7 @@ import java.awt.*;
 
 public class SendQuestion extends CloseDialog {
     IgsGoFrame F;
-    TextField T;
+    JTextField T;
     Distributor Dis;
 
     public SendQuestion(IgsGoFrame f, Distributor dis) {
@@ -19,7 +19,7 @@ public class SendQuestion extends CloseDialog {
         F = f;
         add("North", new MyLabel(Global.resourceString("Message_")));
         add("Center", T = new GrayTextField(40));
-        Panel p = new MyPanel();
+        JPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Kibitz")));
         if (dis instanceof PlayDistributor)
             p.add(new ButtonAction(this, Global.resourceString("Say")));
@@ -32,6 +32,7 @@ public class SendQuestion extends CloseDialog {
         Dis = dis;
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "send");
         if (Global.resourceString("Kibitz").equals(o)) {

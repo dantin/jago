@@ -8,8 +8,8 @@ import java.awt.*;
 import java.io.PrintWriter;
 
 /**
- * A text area that takes care of the maximal length imposed by Windows
- * and other OSs. This should be replaced by jagoclient.viewer.Viewer
+ * A text area that takes care of the maximal length imposed by Windows and
+ * other OSs. This should be replaced by jagoclient.viewer.Viewer
  * <p>
  * The class works much like TextArea, but takes care of its length.
  *
@@ -23,7 +23,6 @@ public class MyTextArea extends TextArea {
 
     public MyTextArea() {
         setFont(Global.Monospaced);
-        setBackground(Global.gray);
         L = new ListClass();
         MaxLength = Global.getParameter("maxlength", 10000);
     }
@@ -31,12 +30,12 @@ public class MyTextArea extends TextArea {
     public MyTextArea(String s, int x, int y, int f) {
         super(s, x, y, f);
         setFont(Global.Monospaced);
-        setBackground(Global.gray);
         L = new ListClass();
         MaxLength = Global.getParameter("maxlength", 10000);
         setText(s);
     }
 
+    @Override
     public void append(String s) {
         Length += s.length();
         L.append(new ListElement(s));
@@ -66,6 +65,7 @@ public class MyTextArea extends TextArea {
         }
     }
 
+    @Override
     public void setText(String s) {
         Length = s.length();
         super.setText(s);
@@ -73,8 +73,8 @@ public class MyTextArea extends TextArea {
         L.append(new ListElement(s));
     }
 
+    @Override
     public void setEditable(boolean flag) {
         super.setEditable(flag);
-        if (!flag) setBackground(Global.gray.brighter());
     }
 }

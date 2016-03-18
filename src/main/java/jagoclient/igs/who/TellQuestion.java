@@ -4,6 +4,7 @@ import jagoclient.Global;
 import jagoclient.gui.*;
 import jagoclient.igs.ConnectionFrame;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -15,8 +16,8 @@ import java.awt.event.WindowEvent;
 
 public class TellQuestion extends CloseDialog {
     ConnectionFrame F;
-    TextField T;
-    TextField User;
+    JTextField T;
+    JTextField User;
 
     /**
      * @param f    the connection frame, which is used to send the output to IGS.
@@ -25,19 +26,19 @@ public class TellQuestion extends CloseDialog {
     public TellQuestion(Frame fr, ConnectionFrame f, String user) {
         super(fr, Global.resourceString("Tell"), false);
         F = f;
-        add("North", new SimplePanel(
-                new MyLabel(Global.resourceString("To_")), 0.4,
-                User = new GrayTextField(user), 0.6));
-        add("Center", T = new TextFieldAction(this, Global.resourceString("Tell")));
+        add("North", new SimplePanel(new MyLabel(Global.resourceString("To_")),
+                0.4, User = new GrayTextField(user), 0.6));
+        add("Center", T = new TextFieldAction(this, Global
+                .resourceString("Tell")));
         T.addKeyListener(new KeyAdapter() {
-                             public void keyReleased(KeyEvent e) {
-                                 String s = Global.getFunctionKey(e.getKeyCode());
-                                 if (s.equals("")) return;
-                                 T.setText(s);
-                             }
-                         }
-        );
-        Panel p = new MyPanel();
+            @Override
+            public void keyReleased(KeyEvent e) {
+                String s = Global.getFunctionKey(e.getKeyCode());
+                if (s.equals("")) return;
+                T.setText(s);
+            }
+        });
+        MyPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Tell")));
         p.add(new ButtonAction(this, Global.resourceString("Message")));
         p.add(new ButtonAction(this, Global.resourceString("Cancel")));
@@ -47,10 +48,12 @@ public class TellQuestion extends CloseDialog {
         show();
     }
 
+    @Override
     public void windowOpened(WindowEvent e) {
         T.requestFocus();
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "tell");
         if (Global.resourceString("Tell").equals(o)) {

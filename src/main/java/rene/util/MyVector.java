@@ -1,6 +1,7 @@
 package rene.util;
 
 import java.util.Enumeration;
+import java.util.Iterator;
 
 /**
  * This is a more effective replacement of the Vector class. It is based
@@ -22,14 +23,14 @@ import java.util.Enumeration;
  * Nothing in this class is synchronized!
  **/
 
-public class MyVector
-        implements Enumeration {
-    Object O[];
+public class MyVector<klasse>
+        implements Enumeration<klasse>, Iterator<klasse>, Iterable<klasse> {
+    klasse O[];
     int OSize, ON, OLast, Gap;
     int EN = 0;
 
     public MyVector(int initsize) {
-        O = new Object[initsize];
+        O = (klasse[]) (new Object[initsize]);
         OSize = initsize;
         OLast = ON = 0;
         Gap = -1;
@@ -42,7 +43,7 @@ public class MyVector
     /**
      * Add an element. Extend the array, if necessary.
      */
-    public void addElement(Object o) {
+    public void addElement(klasse o) {
         if (OLast >= OSize) extend();
         O[OLast++] = o;
         ON++;
@@ -56,7 +57,7 @@ public class MyVector
             compress();
             return;
         }
-        Object o[] = new Object[2 * OSize];
+        klasse o[] = (klasse[]) (new Object[2 * OSize]);
         System.arraycopy(O, 0, o, 0, OLast);
         OSize *= 2;
         O = o;
@@ -81,7 +82,7 @@ public class MyVector
     /**
      * Get an enumeration of this array.
      */
-    public Enumeration elements() {
+    public Enumeration<klasse> elements() {
         compress();
         EN = 0;
         return this;
@@ -98,10 +99,48 @@ public class MyVector
     /**
      * Method for Enumeration.
      */
-    public Object nextElement() {
+    public klasse nextElement() {
         if (!hasMoreElements())
             throw new ArrayIndexOutOfBoundsException(OLast);
         return O[EN++];
+    }
+
+    /**
+     * Method for Iterator
+     */
+    public boolean hasNext() {
+        while (EN < OLast && O[EN] == null) EN++;
+        return EN < OLast;
+    }
+
+    /**
+     * Method for Iterator
+     */
+    public klasse next() {
+        if (!hasMoreElements())
+            throw new ArrayIndexOutOfBoundsException(OLast);
+        return O[EN++];
+    }
+
+    /**
+     * Method for iterator
+     */
+    public void remove() {
+        int i = EN - 1;
+        if (EN < 0) return;
+        O[i] = null;
+        ON--;
+        if (Gap < 0 || Gap > i) Gap = i;
+        if (i == OLast - 1) OLast--;
+        while (OLast > 0 && O[OLast - 1] == null) OLast--;
+        if (Gap >= OLast) Gap = -1;
+    }
+
+    /**
+     * Method for iteration
+     */
+    public Iterator<klasse> iterator() {
+        return this;
     }
 
     /**
@@ -117,14 +156,14 @@ public class MyVector
      * Remove a single element. This will also compress the part below
      * the element, or all, if it is not found.
      */
-    public void removeElement(Object o) {
+    public void removeElement(klasse o) {
         int i = indexOf(o);
         if (i < 0) return;
         O[i] = null;
         ON--;
         if (Gap < 0 || Gap > i) Gap = i;
         if (i == OLast - 1) OLast--;
-        while (O[OLast - 1] == null && OLast > 0) OLast--;
+        while (OLast > 0 && O[OLast - 1] == null) OLast--;
         if (Gap >= OLast) Gap = -1;
     }
 
@@ -135,7 +174,7 @@ public class MyVector
      *
      * @return -1, if not found.
      */
-    public int indexOf(Object o) {
+    public int indexOf(klasse o) {
         if (EN > 0 && EN <= OLast && O[EN - 1].equals(o)) return EN - 1;
         if (Gap < 0) {
             for (int i = 0; i < OLast; i++) {
@@ -175,7 +214,7 @@ public class MyVector
      * effective. First access compresses. Throws an exception, if the
      * index is invalid.
      */
-    public Object elementAt(int n) {
+    public klasse elementAt(int n) {
         if (n < 0 || n >= ON)
             throw new ArrayIndexOutOfBoundsException(n);
         if (Gap < 0 || n < Gap) return O[n];
@@ -185,7 +224,7 @@ public class MyVector
             O[k] = O[i];
             O[i] = null;
             if (k == n) {
-                Object ret = O[k];
+                klasse ret = O[k];
                 k++;
                 Gap = k;
                 if (Gap >= ON) {
@@ -246,7 +285,7 @@ public class MyVector
     }
 
     /**
-     * Trancate the vector to n elements, if it has more.
+     * Truncate the vector to n elements, if it has more.
      */
     public void truncate(int n) {
         if (n >= ON) return;

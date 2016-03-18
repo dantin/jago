@@ -1,27 +1,25 @@
 package jagoclient.gui;
 
-import jagoclient.Global;
-
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-class CardPanelButton extends Button
-        implements ActionListener, KeyListener {
+class CardPanelButton extends JButton implements ActionListener, KeyListener {
     String Name;
-    Panel P;
+    JPanel P;
     CardLayout CL;
 
-    public CardPanelButton(String text, CardLayout cl, String name, Panel p) {
+    public CardPanelButton(String text, CardLayout cl, String name, JPanel p) {
         super(text);
         Name = name;
         P = p;
         CL = cl;
         addActionListener(this);
         addKeyListener(this);
-        setFont(Global.SansSerif);
+        // setFont(Global.SansSerif);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -41,13 +39,14 @@ class CardPanelButton extends Button
     }
 }
 
+
 /**
  * A simplified card panel. The panel has a south component, which displays
  * buttons, which switch the center component.
  */
 
 public class CardPanel extends Panel {
-    Panel P, Bp;
+    MyPanel P, Bp;
     CardLayout CL;
 
     public CardPanel() {
@@ -60,8 +59,8 @@ public class CardPanel extends Panel {
     }
 
     /**
-     * Adds a component to the card panel.
-     * The name is used to create a button with this label.
+     * Adds a component to the card panel. The name is used to create a button
+     * with this label.
      */
     public void add(Component c, String name) {
         P.add(name, c);

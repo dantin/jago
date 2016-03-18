@@ -28,8 +28,7 @@ public class Sound11 implements Sound {
 
     public void load(String file) {
         try {
-            InputStream in =
-                    getClass().getResourceAsStream(file);
+            InputStream in = getClass().getResourceAsStream(file);
             load(in);
         } catch (Exception e) {
             System.out.println(e);
@@ -39,7 +38,7 @@ public class Sound11 implements Sound {
 
     public void load(InputStream in) {
         try {
-            AudioStream AS = new AudioStream(in);
+            @SuppressWarnings("resource") AudioStream AS = new AudioStream(in);
             Length = AS.available();
             Data = AS.getData();
         } catch (Exception e) {
@@ -50,10 +49,11 @@ public class Sound11 implements Sound {
     public void start() {
         if (Data != null) {
             try {
-                if (A == null) A = new AudioDataStream(Data);
+                if (A == null)
+                    A = new AudioDataStream(Data);
                 else A.reset();
                 AudioPlayer.player.start(A);
-                Thread.currentThread().sleep(Length * 1000 / 8000 + 500);
+                Thread.sleep(Length * 1000 / 8000 + 500);
             } catch (Exception e) {
                 System.out.println(e);
             }
@@ -65,7 +65,7 @@ public class Sound11 implements Sound {
         s.start();
         s.start();
         try {
-            Thread.currentThread().sleep(5000);
+            Thread.sleep(5000);
         } catch (Exception e) {
         }
     }

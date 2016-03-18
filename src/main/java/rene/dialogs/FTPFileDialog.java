@@ -1,10 +1,10 @@
 package rene.dialogs;
 
 import rene.gui.*;
+import rene.lister.Lister;
 import rene.util.FileName;
 import rene.util.ftp.FTP;
 import rene.util.regexp.RegExp;
-import rene.viewer.Lister;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -12,9 +12,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 
-public class FTPFileDialog
-        extends CloseDialog
-        implements Runnable {
+public class FTPFileDialog extends CloseDialog implements Runnable {
     HistoryTextField Server, Path, User, Password;
     boolean Result = false;
     Lister L;
@@ -23,8 +21,7 @@ public class FTPFileDialog
     ButtonAction Dir, OK;
     boolean Active;
 
-    public FTPFileDialog(Frame f,
-                         String title, String prompt) {
+    public FTPFileDialog(Frame f, String title, String prompt) {
         super(f, title, true);
         setLayout(new BorderLayout());
         Panel p = new MyPanel();
@@ -44,10 +41,13 @@ public class FTPFileDialog
         add("North", new Panel3D(p));
         L = new Lister();
         if (Global.FixedFont != null) L.setFont(Global.FixedFont);
+        L.setMode(false, false, false, false);
         L.addActionListener(this);
         add("Center", new Panel3D(L));
         Panel ps = new MyPanel();
-        ps.add(Dir = new ButtonAction(this, Global.name("ftpdialog.dir"), "Dir"));
+        ps
+                .add(Dir = new ButtonAction(this, Global.name("ftpdialog.dir"),
+                        "Dir"));
         ps.add(OK = new ButtonAction(this, prompt, "OK"));
         ps.add(new ButtonAction(this, Global.name("abort", "Abort"), "Close"));
         add("South", new Panel3D(ps));
@@ -89,13 +89,13 @@ public class FTPFileDialog
         return Password.getText();
     }
 
-    public FTP getFTP()
-            throws IOException, UnknownHostException {
+    public FTP getFTP() throws IOException, UnknownHostException {
         FTP ftp = new FTP(getServer());
         ftp.open(getUser(), Password.getText());
         return ftp;
     }
 
+    @Override
     public void doAction(String o) {
         if (Active) return;
         noteSize("ftpdialog");
@@ -115,43 +115,44 @@ public class FTPFileDialog
             new Thread(this).start();
         } else if (o.equals("Path") || o.equals("Password")) {
             String path = Path.getText();
-            if (path.endsWith("/") || path.endsWith("\\")
-                    || path.equals("") || path.equals(".")) {
+            if (path.endsWith("/") || path.endsWith("\\") || path.equals("")
+                    || path.equals(".")) {
                 doAction("Dir");
             } else doAction("OK");
         } else super.doAction(o);
     }
 
     public void run() {
-        L.setText("..\n");
+        L.clear();
+        L.addElement("..");
         if (Path.getText().equals("")) Path.setText(".");
         try {
             FTP ftp = new FTP(getServer());
             ftp.open(getUser(), Password.getText());
             String path = Path.getText();
             FtpDir = path;
-            if (path.endsWith(Separator))
-                path = path + ".";
+            if (path.endsWith(Separator)) path = path + ".";
             Enumeration e = ftp.getDirectory(path).elements();
             while (e.hasMoreElements()) {
                 String s = (String) e.nextElement();
                 if (s.startsWith("d"))
-                    L.add(s, Color.green.darker().darker());
+                    L.addElement(s, Color.green.darker().darker());
                 else if (s.startsWith("l"))
-                    L.add(s, Color.blue.darker());
-                else
-                    L.add(s);
+                    L.addElement(s, Color.blue.darker());
+                else L.addElement(s);
             }
-            L.doUpdate(false);
+            L.updateDisplay();
         } catch (Exception e) {
-            L.setText(e.toString());
-            L.doUpdate(false);
+            L.clear();
+            L.addElement(e.toString());
+            L.updateDisplay();
         }
         Active = false;
         Dir.setEnabled(true);
         OK.setEnabled(true);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == L) {
             if (Active) return;
@@ -163,16 +164,16 @@ public class FTPFileDialog
                 doAction("Dir");
                 return;
             }
-            RegExp r = new RegExp(
-                    Global.getParameter("ftp.regexp", "^([dl]*).* ([^[:white:]]+)$"),
-                    false);
+            RegExp r = new RegExp(Global.getParameter("ftp.regexp",
+                    "^([dl]*).* ([^[:white:]]+)$"), false);
             if (!r.match(s)) return;
             try {
-                String d = r.expand(Global.getParameter("ftp.regexp.dir", "(0)"));
-                s = r.expand(
-                        Global.getParameter("ftp.regexp.file", "(1)"));
+                String d = r.expand(Global
+                        .getParameter("ftp.regexp.dir", "(0)"));
+                s = r.expand(Global.getParameter("ftp.regexp.file", "(1)"));
                 if (d.equals("") || d.equals("l")) {
-                    if (!FtpDir.endsWith(Separator)) FtpDir = FtpDir + Separator;
+                    if (!FtpDir.endsWith(Separator))
+                        FtpDir = FtpDir + Separator;
                     Path.setText(FtpDir + s);
                 } else {
                     if (!FtpDir.endsWith(Separator))

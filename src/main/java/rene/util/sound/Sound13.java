@@ -73,7 +73,7 @@ public class Sound13 implements Sound {
     }
 
     public static void main(String args[]) {
-        Sound13 s = new Sound13("/ctmelody.wav");
+        Sound13 s = new Sound13("/jagoclient/au/message.wav");
         s.start();
         s.start();
         System.exit(0);

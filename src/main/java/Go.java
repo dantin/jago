@@ -1,9 +1,5 @@
-/**
- * Bootstrap
- */
 public class Go {
-    public static void main(String args[]) {
-        //System.out.println("Jago is running");
+    static public void main(String args[]) {
         jagoclient.Go.main(args);
     }
 }

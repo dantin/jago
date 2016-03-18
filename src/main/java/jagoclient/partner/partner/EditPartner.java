@@ -7,24 +7,24 @@ import jagoclient.gui.*;
 import rene.util.list.ListClass;
 import rene.util.list.ListElement;
 
+import javax.swing.*;
 import java.awt.*;
 
 public class EditPartner extends CloseDialog {
     ListClass PList;
     Partner C;
-    TextField Name, Server, Port;
+    JTextField Name, Server, Port;
     Go G;
     Choice State;
     Frame F;
 
-    public EditPartner(CloseFrame f, ListClass plist, Partner c,
-                       Go go) {
+    public EditPartner(CloseFrame f, ListClass plist, Partner c, Go go) {
         super(f, Global.resourceString("Edit_Connection"), true);
         G = go;
         F = f;
         PList = plist;
         C = c;
-        Panel p1 = new MyPanel();
+        JPanel p1 = new MyPanel();
         p1.setLayout(new GridLayout(0, 2));
         p1.add(new MyLabel(Global.resourceString("Name")));
         p1.add(Name = new FormTextField("" + C.Name));
@@ -41,7 +41,7 @@ public class EditPartner extends CloseDialog {
         State.add(Global.resourceString("public"));
         State.select(C.State);
         add("Center", new Panel3D(p1));
-        Panel p = new MyPanel();
+        JPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Set")));
         p.add(new ButtonAction(this, Global.resourceString("Add")));
         p.add(new ButtonAction(this, Global.resourceString("Cancel")));
@@ -54,18 +54,20 @@ public class EditPartner extends CloseDialog {
         Name.requestFocus();
     }
 
-    public EditPartner(CloseFrame f, ListClass plist,
-                       Go go) {
+    public EditPartner(CloseFrame f, ListClass plist, Go go) {
         super(f, Global.resourceString("Edit_Connection"), true);
         G = go;
         F = f;
         PList = plist;
-        Panel p1 = new MyPanel();
+        JPanel p1 = new MyPanel();
         p1.setLayout(new GridLayout(0, 2));
         p1.add(new MyLabel(Global.resourceString("Name")));
-        p1.add(Name = new FormTextField(Global.resourceString("Name_for_list")));
+        p1
+                .add(Name = new FormTextField(Global
+                        .resourceString("Name_for_list")));
         p1.add(new MyLabel(Global.resourceString("Server")));
-        p1.add(Server = new FormTextField(Global.resourceString("Internet_server_name")));
+        p1.add(Server = new FormTextField(Global
+                .resourceString("Internet_server_name")));
         p1.add(new MyLabel(Global.resourceString("Port")));
         p1.add(Port = new FormTextField("Port (default 6970)"));
         p1.add(new MyLabel(Global.resourceString("State")));
@@ -77,7 +79,7 @@ public class EditPartner extends CloseDialog {
         State.add(Global.resourceString("public"));
         State.select(1);
         add("Center", new Panel3D(p1));
-        Panel p = new MyPanel();
+        JPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Add")));
         p.add(new ButtonAction(this, Global.resourceString("Cancel")));
         p.add(new MyLabel(" "));
@@ -85,10 +87,11 @@ public class EditPartner extends CloseDialog {
         add("South", new Panel3D(p));
         Global.setpacked(this, "editp", 300, 200, F);
         validate();
-        show();
+        setVisible(true);
         Name.requestFocus();
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "editp");
         if (Global.resourceString("Set").equals(o)) {
@@ -130,4 +133,3 @@ public class EditPartner extends CloseDialog {
         } else super.doAction(o);
     }
 }
-

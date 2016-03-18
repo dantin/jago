@@ -15,21 +15,20 @@ import java.net.URL;
 import java.util.Vector;
 
 /**
- * This applet starts a game viewer. It can either start a specific
- * game or can display a list of games. OtherJagoGame applets on the same
- * page can use this applet to start a viewer.
+ * This applet starts a game viewer. It can either start a specific game or can
+ * display a list of games. OtherJagoGame applets on the same page can use this
+ * applet to start a viewer.
  * <p>
- * If the applet is to display a single game, it will show a button
- * "Load" to start the game display. The game is determined by the
- * Game applet paramter, which must contain a valid URL to a game.
+ * If the applet is to display a single game, it will show a button "Load" to
+ * start the game display. The game is determined by the Game applet paramter,
+ * which must contain a valid URL to a game.
  * <p>
  * If it is to display a list of games, it expects an URL to this list file as a
- * Games applet parameter. The list file consists pairs of lines with the
- * game name in the first line and the game URL in the next.
+ * Games applet parameter. The list file consists pairs of lines with the game
+ * name in the first line and the game URL in the next.
  */
 
-public class JagoGame extends Applet
-        implements ActionListener, Runnable {
+public class JagoGame extends Applet implements ActionListener, Runnable {
     JagoGameFrame GF;
     java.awt.List L = null;
     Button B;
@@ -37,9 +36,10 @@ public class JagoGame extends Applet
     Vector Urls;
 
     /**
-     * Initialize the applet depending on wether there is
-     * a "Game" or a "Games" applet parameter.
+     * Initialize the applet depending on wether there is a "Game" or a "Games"
+     * applet parameter.
      */
+    @Override
     synchronized public void init() {
         Game = getParameter("Game");
         Games = getParameter("Games");
@@ -52,12 +52,10 @@ public class JagoGame extends Applet
                 BufferedReader in = null;
                 if (Games.startsWith("http"))
                     in = new BufferedReader(new InputStreamReader(
-                            new DataInputStream(
-                                    new URL(Games).openStream())));
-                else
-                    in = new BufferedReader(new InputStreamReader(
-                            new DataInputStream(
-                                    new URL(getDocumentBase(), Games).openStream())));
+                            new DataInputStream(new URL(Games).openStream())));
+                else in = new BufferedReader(new InputStreamReader(
+                        new DataInputStream(new URL(getDocumentBase(), Games)
+                                .openStream())));
                 while (true) {
                     String name, value;
                     name = in.readLine();
@@ -77,13 +75,13 @@ public class JagoGame extends Applet
         }
         B.addActionListener(this);
         Global.url(getCodeBase());
-        Global.readparameter("go.cfg");
+        Global.readparameter(".go.cfg");
         Global.createfonts();
     }
 
     public void actionPerformed(ActionEvent e) {
-        GF = new JagoGameFrame(new Frame(),
-                Global.resourceString("Jago_Viewer"));
+        GF = new JagoGameFrame(new Frame(), Global
+                .resourceString("Jago_Viewer"));
         Global.setcomponent(GF);
         if (L != null) {
             if (L.getSelectedIndex() < 0) return;
@@ -103,7 +101,8 @@ public class JagoGame extends Applet
         GF.setVisible(false);
         try {
             if (Game != null) {
-                if (Game.startsWith("http")) GF.load(new URL(Game));
+                if (Game.startsWith("http"))
+                    GF.load(new URL(Game));
                 else GF.load(new URL(getDocumentBase(), Game));
             }
         } catch (Exception ex) {
@@ -114,7 +113,8 @@ public class JagoGame extends Applet
 
     public void load(String game) {
         Game = game;
-        GF = new JagoGameFrame(new Frame(), Global.resourceString("Jago_Viewer"));
+        GF = new JagoGameFrame(new Frame(), Global
+                .resourceString("Jago_Viewer"));
         new Thread(this).start();
     }
 }

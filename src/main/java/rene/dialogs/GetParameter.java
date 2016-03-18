@@ -10,12 +10,21 @@ import java.awt.*;
 
 public class GetParameter extends CloseDialog {
     HistoryTextField Input;
-    static public int InputLength;
+    static public int InputLength = 32;
     String Result = "";
     boolean Aborted = true;
 
     public GetParameter(Frame f, String title, String prompt, String action) {
         this(f, title, prompt, action, false);
+    }
+
+    public GetParameter(Frame f, String title, String prompt, String action,
+                        String subject) {
+        super(f, title, true);
+        Subject = subject;
+        Input = new HistoryTextField(this, "Action", InputLength);
+        Input.addKeyListener(this);
+        init(f, title, prompt, action, true);
     }
 
     public GetParameter(Frame f, String title, String prompt, String action,
@@ -38,11 +47,13 @@ public class GetParameter extends CloseDialog {
         south.add(new ButtonAction(this, action, "Action"));
         south.add(new ButtonAction(this, Global.name("abort"), "Abort"));
         if (help)
-            south.add(new ButtonAction(this, Global.name("help"), "Help"));
+            south.add(new ButtonAction(this, Global.name("help", "Help"),
+                    "Help"));
         add("South", new Panel3D(south));
         pack();
     }
 
+    @Override
     public void doAction(String o) {
         if (o.equals("Abort")) {
             doclose();
@@ -50,8 +61,6 @@ public class GetParameter extends CloseDialog {
             Result = Input.getText();
             doclose();
             Aborted = false;
-        } else if (o.equals("Help")) {
-            help();
         } else super.doAction(o);
     }
 
@@ -67,6 +76,4 @@ public class GetParameter extends CloseDialog {
         return Aborted;
     }
 
-    public void help() {
-    }
 }

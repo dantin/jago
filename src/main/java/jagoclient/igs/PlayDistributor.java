@@ -46,7 +46,8 @@ public class PlayDistributor extends Distributor {
         IgsGoFrame gf = new IgsGoFrame(F, Global.resourceString("Play_game"));
         gf.distributor(this);
         gf.Playing.setState(true);
-        gf.show();
+        gf.setVisible(true);
+        gf.repaint();
         P = new Player(gf, In, Out, this);
         G = n;
         P.game(n);

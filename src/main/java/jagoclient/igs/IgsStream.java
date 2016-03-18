@@ -11,17 +11,15 @@ import rene.util.parser.StringParser;
 import java.io.*;
 
 /**
- * This class handles the line by line input from the server,
- * parsing it for command numbers and sub-numbers.
+ * This class handles the line by line input from the server, parsing it for
+ * command numbers and sub-numbers.
  * <p>
- * Furthermore, it will filter the input and distribute it to
- * the distributors. The class initializes a list of distributors.
- * All distributors must chain themselves to this list. They can
- * unchain themselves, if they do no longer wish to receive
- * input.
+ * Furthermore, it will filter the input and distribute it to the distributors.
+ * The class initializes a list of distributors. All distributors must chain
+ * themselves to this list. They can unchain themselves, if they do no longer
+ * wish to receive input.
  * <p>
- * The input is done via a BufferedReader, which does the encoding
- * stuff.
+ * The input is done via a BufferedReader, which does the encoding stuff.
  */
 
 public class IgsStream {
@@ -38,14 +36,13 @@ public class IgsStream {
 
     /**
      * The in and out streams to the server are opened by the ConnectionFrame.
-     * However, the input stream is used for a BufferedReader, which does
-     * local decoding. The output stream is already assumed to be using
-     * the correct encoding.
+     * However, the input stream is used for a BufferedReader, which does local
+     * decoding. The output stream is already assumed to be using the correct
+     * encoding.
      *
      * @see jagoclient.igs.ProxyIgsStream
      */
-    public IgsStream(ConnectionFrame cf, InputStream in,
-                     PrintWriter out) {
+    public IgsStream(ConnectionFrame cf, InputStream in, PrintWriter out) {
         CF = cf;
         Out = out;
         Line = "";
@@ -70,8 +67,7 @@ public class IgsStream {
             } else ina = new TelnetStream(CF, in, Out);
             if (encoding.equals(""))
                 In = new BufferedReader(new InputStreamReader(ina));
-            else
-                In = new BufferedReader(new InputStreamReader(ina, encoding));
+            else In = new BufferedReader(new InputStreamReader(ina, encoding));
         } catch (UnsupportedEncodingException e) {
             CF.append(e.toString() + "\n");
             In = new BufferedReader(new InputStreamReader(in));
@@ -81,12 +77,16 @@ public class IgsStream {
         }
     }
 
-    int lastcr = 0;
+    int lastcr = 0, lastcommand = 0;
 
     public char read() throws IOException {
         while (true) {
             int c = In.read();
-            if (c == -1) throw new IOException();
+            if (c == -1 || c == 255 && lastcommand == 255) {
+                Dump.println("Received character " + c);
+                throw new IOException();
+            }
+            lastcommand = c;
             if (c == 10) {
                 if (lastcr == 13) {
                     lastcr = 0;
@@ -153,34 +153,47 @@ public class IgsStream {
     }
 
     /**
-     * Processes the input, until there is a line, which is not
-     * suited for the specified distributor.
+     * Processes the input, until there is a line, which is not suited for the
+     * specified distributor.
      */
     void sendall(Distributor dis) throws IOException {
         while (true) {
             readlineprim();
-            Dump.println("IGS: " + Command);
-            if (Number == dis.number()) dis.send(Command);
-            else {
+            Dump.println("IGS:(" + Number + " for " + dis.number() + ") "
+                    + Command);
+            if (Number == dis.number())
+                dis.send(Command);
+            else if (Number == 9) // information got in other content
+            {
+                Distributor dist = findDistributor(9);
+                if (dist != null) {
+                    Dump.println("Sending information");
+                    dist.send(Command);
+                    // sendall(dist); // logical error
+                }
+            } else {
                 if (dis.once()) {
                     unchain(dis);
                     dis.finished();
+                    Dump.println("Distributor " + dis.number() + " finished");
                 }
                 break;
             }
         }
+        Dump.println("sendall() for " + dis.number() + " finished");
         dis.allsended();
     }
 
     /**
-     * Sames as above, but the distrubutor get the input with
-     * the String prepended.
+     * Same as above, but the distrubutor get the input with the String
+     * prepended.
      */
     void sendall(String s, Distributor dis) throws IOException {
         while (true) {
             readlineprim();
             Dump.println("IGS: " + Command);
-            if (Number == 11) dis.send(s + Command);
+            if (Number == 11)
+                dis.send(s + Command);
             else {
                 if (dis.once()) {
                     unchain(dis);
@@ -195,21 +208,20 @@ public class IgsStream {
     /**
      * The most important method of this class.
      * <p>
-     * This method reads input from the server line by line, filtering
-     * out and answering Telnet protocol characters. If it receives a
-     * full line it will interpret it and return true. Otherwise,
-     * it will return false. The line can be read from the Line
-     * variable. Incomplete lines happen only at the start of the
-     * connection during login.
+     * This method reads input from the server line by line, filtering out and
+     * answering Telnet protocol characters. If it receives a full line it will
+     * interpret it and return true. Otherwise, it will return false. The line
+     * can be read from the Line variable. Incomplete lines happen only at the
+     * start of the connection during login.
      * <p>
-     * Interpreting a lines means determining its command number and
-     * an eventual sub-command number. Both are used to determine
-     * the right distributor for this command, if there is one. Otherwise,
-     * the function returns true and InputThread handles the command.
+     * Interpreting a lines means determining its command number and an eventual
+     * sub-command number. Both are used to determine the right distributor for
+     * this command, if there is one. Otherwise, the function returns true and
+     * InputThread handles the command.
      * <p>
-     * The protocol is not very logic, and nor is the structure of this
-     * method. It has cases for several distributors. Probably, this
-     * code should a static method of the distributor.
+     * The protocol is not very logic, nor is the structure of this method. It
+     * has cases for several distributors. Probably, this code should be a
+     * static method of the distributor.
      *
      * @see jagoclient.igs.InputThread
      */
@@ -236,7 +248,7 @@ public class IgsStream {
             }
             // Dump.println(L+" characters received from server");
             Line = new String(C, 0, L);
-            Dump.println("IGS: " + Line);
+            Dump.println("IGS sent: " + Line);
             Number = 0;
             Command = "";
             if (full) {
@@ -258,10 +270,10 @@ public class IgsStream {
                 L = 0;
                 loop1:
                 while (true) {
-                    if (Number == 21 &&
-                            (Command.startsWith("{Game") ||
-                                    Command.startsWith("{ Game"))
-                            ) {
+                    Dump.println("loop1 with " + Number + " " + Command);
+                    if (Number == 21
+                            && (Command.startsWith("{Game") || Command
+                            .startsWith("{ Game"))) {
                         sp = new StringParser(Command);
                         sp.skip("{");
                         sp.skipblanks();
@@ -280,12 +292,12 @@ public class IgsStream {
                                 && !Global.posfilter(Command)) {
                             continue outerloop;
                         }
-                    } else if (Number == 21 && !CF.Waitfor.equals("") &&
-                            Command.indexOf(CF.Waitfor) >= 0) {
+                    } else if (Number == 21 && !CF.Waitfor.equals("")
+                            && Command.indexOf(CF.Waitfor) >= 0) {
                         new Message(CF, Command);
                     } else if (Number == 21 && Command.startsWith("{")
-                            && Global.getParameter("reducedoutput", true) &&
-                            !Global.posfilter(Command)) {
+                            && Global.getParameter("reducedoutput", true)
+                            && !Global.posfilter(Command)) {
                         continue outerloop;
                     } else if (Number == 21 && Global.posfilter(Command)) {
                         JagoSound.play("message", "wip", true);
@@ -325,6 +337,7 @@ public class IgsStream {
                             Dump.println("Sending information");
                             dis.send(Command);
                             sendall(dis);
+                            Dump.println("End of information");
                             continue loop1;
                         }
                     } else if (Number == 15 && Command.startsWith("Game")) {
@@ -364,8 +377,8 @@ public class IgsStream {
                             dis.send(sp.upto((char) 0));
                             continue outerloop;
                         }
-                        ChannelDistributor cd =
-                                new ChannelDistributor(CF, this, Out, G);
+                        ChannelDistributor cd = new ChannelDistributor(CF,
+                                this, Out, G);
                         cd.send(sp.upto((char) 0));
                         continue outerloop;
                     } else if (Number == 22) {
@@ -376,6 +389,8 @@ public class IgsStream {
                             continue loop1;
                         }
                         IgsGoFrame gf = new IgsGoFrame(CF, "Peek game");
+                        gf.setVisible(true);
+                        gf.repaint();
                         Status s = new Status(gf, this, Out);
                         s.PD.send(Command);
                         sendall(s.PD);
@@ -387,13 +402,18 @@ public class IgsStream {
                             continue outerloop;
                         }
                         continue outerloop;
+                    } else if (Number == 1
+                            && (Command.startsWith("8") || Command.startsWith("5") || Command
+                            .startsWith("6"))) {
+                        Dump.println("1 received " + Command);
                     } else if (Number != 9) {
                         Distributor dis = findDistributor(Number);
                         if (dis != null) {
                             dis.send(Command);
                             sendall(dis);
                             continue loop1;
-                        }
+                        } else Dump.println("Distributor " + Number
+                                + " not found");
                     }
                     break;
                 }
@@ -464,7 +484,8 @@ public class IgsStream {
             synchronized (DistributorList) {
                 ListElement l = DistributorList.first();
                 while (l != null) {
-                    if ((Distributor) l.content() == o) DistributorList.remove(l);
+                    if ((Distributor) l.content() == o)
+                        DistributorList.remove(l);
                     l = l.next();
                 }
             }
@@ -514,4 +535,3 @@ public class IgsStream {
     }
 
 }
-

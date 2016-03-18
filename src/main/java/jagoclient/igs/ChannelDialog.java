@@ -14,8 +14,8 @@ import java.io.PrintWriter;
  *
  * @see jagoclient.igs.ChannelDistributor
  */
-public class ChannelDialog extends CloseFrame
-        implements CloseListener, KeyListener {
+public class ChannelDialog extends CloseFrame implements CloseListener,
+        KeyListener {
     PrintWriter Out;
     TextArea T;
     ConnectionFrame CF;
@@ -23,8 +23,8 @@ public class ChannelDialog extends CloseFrame
     int N;
     HistoryTextField Answer;
 
-    public ChannelDialog(ConnectionFrame cf,
-                         PrintWriter out, int n, ChannelDistributor mdis) {
+    public ChannelDialog(ConnectionFrame cf, PrintWriter out, int n,
+                         ChannelDistributor mdis) {
         super(Global.resourceString("Channel"));
         CF = cf;
         MDis = mdis;
@@ -36,12 +36,13 @@ public class ChannelDialog extends CloseFrame
         help.add(new MenuItem(Global.resourceString("Channels")));
         M.setHelpMenu(help);
         add("North", new MyLabel(Global.resourceString("Channel_") + n));
-        Panel pm = new MyPanel();
+        MyPanel pm = new MyPanel();
         pm.setLayout(new BorderLayout());
-        pm.add("Center", T = new MyTextArea("", 0, 0, TextArea.SCROLLBARS_VERTICAL_ONLY));
+        pm.add("Center", T = new MyTextArea("", 0, 0,
+                TextArea.SCROLLBARS_VERTICAL_ONLY));
         pm.add("South", Answer = new HistoryTextField(this, "Answer"));
         add("Center", pm);
-        Panel pb = new MyPanel();
+        MyPanel pb = new MyPanel();
         pb.add(new ButtonAction(this, Global.resourceString("Close")));
         add("South", new Panel3D(pb));
         Out = out;
@@ -51,6 +52,7 @@ public class ChannelDialog extends CloseFrame
         show();
     }
 
+    @Override
     public void doAction(String o) {
         if (Global.resourceString("Channels").equals(o)) {
             new Help("channels");
@@ -63,6 +65,7 @@ public class ChannelDialog extends CloseFrame
         } else super.doAction(o);
     }
 
+    @Override
     public boolean close() {
         return true;
     }
@@ -79,6 +82,7 @@ public class ChannelDialog extends CloseFrame
         doclose();
     }
 
+    @Override
     public void doclose() {
         MDis.CD = null;
         Global.notewindow(this, "channeldialog");

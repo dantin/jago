@@ -1,5 +1,6 @@
 package jagoclient.board;
 
+
 /**
  * Store a complete game position.
  * Contains methods for group determination and liberties.

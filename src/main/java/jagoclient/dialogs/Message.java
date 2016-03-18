@@ -11,8 +11,8 @@ import rene.viewer.Viewer;
 import java.awt.*;
 
 /**
- * This class is used to display messages from the go server.
- * The message can have several lines.
+ * This class is used to display messages from the go server. The message can
+ * have several lines.
  */
 
 public class Message extends CloseDialog {
@@ -20,19 +20,20 @@ public class Message extends CloseDialog {
 
     public Message(Frame f, String m) {
         super(f, Global.resourceString("Message"), false);
-        add("Center", T =
-                Global.getParameter("systemviewer", false) ?
-                        new SystemViewer() : new Viewer());
+        add("Center",
+                T = Global.getParameter("systemviewer", false) ? new SystemViewer()
+                        : new Viewer());
         T.setFont(Global.Monospaced);
-        Panel p = new MyPanel();
+        MyPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("OK")));
         add("South", new Panel3D(p));
         Global.setwindow(this, "message", 300, 150);
         validate();
-        show();
+        setVisible(true);
         T.setText(m);
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "message");
         if (Global.resourceString("OK").equals(o)) {
@@ -41,4 +42,3 @@ public class Message extends CloseDialog {
         } else super.doAction(o);
     }
 }
-

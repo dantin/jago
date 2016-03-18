@@ -9,6 +9,7 @@ public class MyPanel extends Panel {
         repaint();
     }
 
+    @Override
     public void paint(Graphics g) {
         super.paint(g);
         getToolkit().sync();

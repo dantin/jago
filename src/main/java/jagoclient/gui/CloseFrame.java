@@ -13,13 +13,12 @@ import java.io.InputStream;
 import java.util.Hashtable;
 
 /**
- * A Frame, which can be closed with the close button in the window.
- * Moreover, event handling is simplified with the DoActionListnener
- * interface. There is also a method for setting the icon of this
- * window.
+ * A Frame, which can be closed with the close button in the window. Moreover,
+ * event handling is simplified with the DoActionListnener interface. There is
+ * also a method for setting the icon of this window.
  */
-public class CloseFrame extends Frame
-        implements WindowListener, ActionListener, DoActionListener {
+public class CloseFrame extends Frame implements WindowListener,
+        ActionListener, DoActionListener {
     ListClass L;
 
     public CloseFrame(String s) {
@@ -111,7 +110,8 @@ public class CloseFrame extends Frame
             Object o = Icons.get(file);
             if (o == null) {
                 Image i;
-                InputStream in = getClass().getResourceAsStream("/jagoclient/gifs/" + file);
+                InputStream in = getClass().getResourceAsStream(
+                        "/jagoclient/gifs/" + file);
                 int pos = 0;
                 int n = in.available();
                 byte b[] = new byte[20000];

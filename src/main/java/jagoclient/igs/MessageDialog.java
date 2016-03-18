@@ -3,6 +3,7 @@ package jagoclient.igs;
 import jagoclient.Global;
 import jagoclient.gui.*;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -14,10 +15,9 @@ import java.io.PrintWriter;
  * This dialog may be opened by the MessageDistributor.
  */
 
-class MessageDialog extends CloseFrame
-        implements CloseListener, KeyListener {
+class MessageDialog extends CloseFrame implements CloseListener, KeyListener {
     PrintWriter Out;
-    TextField Answer;
+    JTextField Answer;
     TextArea T;
     ConnectionFrame CF;
     MessageDistributor MDis;
@@ -30,11 +30,11 @@ class MessageDialog extends CloseFrame
         cf.addCloseListener(this);
         CF = cf;
         MDis = mdis;
-        //CF.append("From "+user+": "+m);
-        Panel pm = new MyPanel();
+        // CF.append("From "+user+": "+m);
+        JPanel pm = new MyPanel();
         pm.setLayout(new BorderLayout());
-        pm.add("Center", T = new TextArea("", 0, 0, TextArea.SCROLLBARS_VERTICAL_ONLY));
-        T.setBackground(Global.gray.brighter());
+        pm.add("Center", T = new TextArea("", 0, 0,
+                TextArea.SCROLLBARS_VERTICAL_ONLY));
         T.setFont(Global.Monospaced);
         T.setEditable(false);
         UserChoice = new Choice();
@@ -42,17 +42,18 @@ class MessageDialog extends CloseFrame
         UserChoice.add(user);
         Answer = new HistoryTextField(this, Global.resourceString("Answer"));
         Answer.addKeyListener(new KeyAdapter() {
-                                  public void keyReleased(KeyEvent e) {
-                                      String s = Global.getFunctionKey(e.getKeyCode());
-                                      if (s.equals("")) return;
-                                      T.setText(s);
-                                  }
-                              }
-        );
-        Panel AnswerPanel = new SimplePanel(UserChoice, 1e-1, Answer, 9e-1);
+            @Override
+            public void keyReleased(KeyEvent e) {
+                String s = Global.getFunctionKey(e.getKeyCode());
+                if (s.equals("")) return;
+                T.setText(s);
+            }
+        });
+        SimplePanel AnswerPanel = new SimplePanel(UserChoice, 1e-1, Answer,
+                9e-1);
         pm.add("South", AnswerPanel);
         add("Center", pm);
-        Panel p = new MyPanel();
+        JPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Close")));
         p.add(new ButtonAction(this, Global.resourceString("Answer")));
         p.add(new ButtonAction(this, Global.resourceString("Send_as_Command")));
@@ -67,6 +68,7 @@ class MessageDialog extends CloseFrame
         Answer.addKeyListener(this);
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "messagedialog");
         if (Global.resourceString("Close").equals(o)) {
@@ -75,8 +77,10 @@ class MessageDialog extends CloseFrame
             String User = UserChoice.getSelectedItem();
             if (User != null && !Answer.getText().equals("")) {
                 Out.println("tell " + User + " " + Answer.getText());
-                CF.append(Global.resourceString("Answer_") + User + ": " + Answer.getText());
-                T.append("\n" + Global.resourceString("_____Answer_to_") + User + "\n");
+                CF.append(Global.resourceString("Answer_") + User + ": "
+                        + Answer.getText());
+                T.append("\n" + Global.resourceString("_____Answer_to_") + User
+                        + "\n");
                 T.append(Answer.getText());
                 Answer.setText("");
             }
@@ -88,14 +92,17 @@ class MessageDialog extends CloseFrame
         } else super.doAction(o);
     }
 
+    @Override
     public void windowOpened(WindowEvent e) {
         Answer.requestFocus();
     }
 
+    @Override
     public boolean close() {
         return true;
     }
 
+    @Override
     public void paint(Graphics g) {
         if (MDis.MD == null) {
             doclose();
@@ -109,7 +116,8 @@ class MessageDialog extends CloseFrame
         int n = UserChoice.getItemCount();
         String a = CF.reply();
         if (!a.equals("")) {
-            T.append("\n" + Global.resourceString("_____Auto_reply_to_") + user + "\n");
+            T.append("\n" + Global.resourceString("_____Auto_reply_to_") + user
+                    + "\n");
             T.append(a);
             CF.append(Global.resourceString("Auto_reply_sent_to_") + user);
             Out.println("tell " + user + " " + a);
@@ -124,6 +132,7 @@ class MessageDialog extends CloseFrame
         doclose();
     }
 
+    @Override
     public void doclose() {
         MDis.MD = null;
         CF.removeCloseListener(this);

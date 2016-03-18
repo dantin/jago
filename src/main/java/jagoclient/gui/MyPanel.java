@@ -2,17 +2,10 @@ package jagoclient.gui;
 
 import jagoclient.Global;
 
-import java.awt.*;
+import javax.swing.*;
 
-public class MyPanel extends Panel {
+public class MyPanel extends JPanel {
     public MyPanel() {
-        if (Global.ControlBackground != null)
-            setBackground(Global.ControlBackground);
-        repaint();
-    }
-
-    public void paint(Graphics g) {
-        super.paint(g);
-        getToolkit().sync();
+        setBackground(Global.ControlBackground);
     }
 }

@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 public class ActionTranslator implements ActionListener {
     String Name;
     DoActionListener C;
+    ActionEvent E;
 
     public ActionTranslator(DoActionListener c, String name) {
         Name = name;
@@ -17,6 +18,7 @@ public class ActionTranslator implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent e) {
+        E = e;
         C.doAction(Name);
     }
 

@@ -5,6 +5,7 @@ import jagoclient.gui.*;
 import rene.util.list.ListClass;
 import rene.util.list.ListElement;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -37,17 +38,18 @@ class SingleMessageFilter {
     }
 }
 
+
 /**
- * A message filter can be either positive or negative. It is used
- * to either block messages, or see messages, even when there source
- * is blocked by global flags.
+ * A message filter can be either positive or negative. It is used to either
+ * block messages, or see messages, even when there source is blocked by global
+ * flags.
  * <p>
- * The filter is determined by a start string, a string it must contain
- * or an end string. Filters are loaded at program start from filter.cfg.
- * This is done by a call to the load method.
+ * The filter is determined by a start string, a string it must contain or an
+ * end string. Filters are loaded at program start from filter.cfg. This is done
+ * by a call to the load method.
  * <p>
- * The MessageFilter class has a list of SingleMessageFilter to check
- * the message against.
+ * The MessageFilter class has a list of SingleMessageFilter to check the
+ * message against.
  */
 
 public class MessageFilter {
@@ -65,7 +67,8 @@ public class MessageFilter {
         while (e != null) {
             SingleMessageFilter f = (SingleMessageFilter) e.content();
             if (!f.positive() && f.matches(s)) {
-                if (f.BlockComplete) return BLOCK_COMPLETE;
+                if (f.BlockComplete)
+                    return BLOCK_COMPLETE;
                 else return BLOCK_POPUP;
             }
             e = e.next();
@@ -90,7 +93,7 @@ public class MessageFilter {
      */
     public void load() {
         try {
-            BufferedReader in = Global.getStream("filter.cfg");
+            BufferedReader in = Global.getStream(".filter.cfg");
             while (true) {
                 String name = in.readLine();
                 if (name == null || name.equals("")) break;
@@ -108,9 +111,8 @@ public class MessageFilter {
                 if (contains == null) break;
                 String blockcomplete = in.readLine();
                 if (blockcomplete == null) break;
-                F.append(new ListElement(
-                        new SingleMessageFilter(name, start, end, contains,
-                                blockcomplete.equals("true"), pos)));
+                F.append(new ListElement(new SingleMessageFilter(name, start,
+                        end, contains, blockcomplete.equals("true"), pos)));
             }
             in.close();
         } catch (Exception e) {
@@ -121,12 +123,14 @@ public class MessageFilter {
     public void save() {
         if (Global.isApplet()) return;
         try {
-            PrintWriter out = new PrintWriter(
-                    new FileOutputStream(Global.home() + "filter.cfg"));
+            PrintWriter out = new PrintWriter(new FileOutputStream(Global
+                    .home()
+                    + ".filter.cfg"));
             ListElement l = F.first();
             while (l != null) {
                 SingleMessageFilter p = (SingleMessageFilter) l.content();
-                if (p.positive()) out.println("+++++" + p.Name);
+                if (p.positive())
+                    out.println("+++++" + p.Name);
                 else out.println(p.Name);
                 out.println(p.Start);
                 out.println(p.End);
@@ -145,9 +149,10 @@ public class MessageFilter {
     }
 }
 
+
 class MessageFilterEdit extends CloseFrame {
     ListClass F;
-    List L;
+    java.awt.List L;
 
     public MessageFilterEdit(ListClass f) {
         super(Global.resourceString("Message_Filter"));
@@ -157,7 +162,7 @@ class MessageFilterEdit extends CloseFrame {
         m.add(new MenuItemAction(this, Global.resourceString("Close")));
         mb.add(m);
         F = f;
-        L = new List();
+        L = new java.awt.List();
         L.setFont(Global.SansSerif);
         add("Center", new Panel3D(L));
         ListElement e = F.first();
@@ -165,7 +170,7 @@ class MessageFilterEdit extends CloseFrame {
             L.add(((SingleMessageFilter) e.content()).Name);
             e = e.next();
         }
-        Panel p = new MyPanel();
+        JPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Edit")));
         p.add(new ButtonAction(this, Global.resourceString("New")));
         p.add(new ButtonAction(this, Global.resourceString("Delete")));
@@ -178,6 +183,7 @@ class MessageFilterEdit extends CloseFrame {
         setVisible(true);
     }
 
+    @Override
     public void doAction(String o) {
         if (Global.resourceString("Edit").equals(o)) {
             new SingleFilterEdit(this, F, selected());
@@ -191,6 +197,7 @@ class MessageFilterEdit extends CloseFrame {
         } else super.doAction(o);
     }
 
+    @Override
     public void doclose() {
         Global.notewindow(this, "filteredit");
         super.doclose();
@@ -233,10 +240,11 @@ class MessageFilterEdit extends CloseFrame {
     }
 }
 
+
 class SingleFilterEdit extends CloseDialog {
     SingleMessageFilter MF;
     ListClass F;
-    TextField N, S, E, C;
+    JTextField N, S, E, C;
     Checkbox BC;
     MessageFilterEdit MFE;
     boolean isnew;
@@ -250,14 +258,16 @@ class SingleFilterEdit extends CloseDialog {
         MFE = fr;
         if (MF == null) {
             isnew = true;
-            MF = new SingleMessageFilter(Global.resourceString("Name"), Global.resourceString("Starts_with"), Global.resourceString("Ends_With"),
+            MF = new SingleMessageFilter(Global.resourceString("Name"), Global
+                    .resourceString("Starts_with"), Global
+                    .resourceString("Ends_With"),
                     Global.resourceString("Contains"), false, false);
         } else isnew = false;
         CB = new Checkbox(Global.resourceString("Positive_Filter"));
         CB.setState(MF.Positive);
         CB.setFont(Global.SansSerif);
         add("North", CB);
-        Panel p = new MyPanel();
+        JPanel p = new MyPanel();
         p.setLayout(new GridLayout(0, 2));
         p.add(new MyLabel(Global.resourceString("Name")));
         p.add(N = new FormTextField(MF.Name));
@@ -271,7 +281,7 @@ class SingleFilterEdit extends CloseDialog {
         p.add(BC = new Checkbox());
         BC.setState(MF.BlockComplete);
         add("Center", p);
-        Panel bp = new MyPanel();
+        JPanel bp = new MyPanel();
         bp.add(new ButtonAction(this, Global.resourceString("OK")));
         bp.add(new ButtonAction(this, Global.resourceString("Cancel")));
         add("South", bp);
@@ -280,6 +290,7 @@ class SingleFilterEdit extends CloseDialog {
         show();
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "singlefilteredit");
         if (Global.resourceString("OK").equals(o) && !N.getText().equals("")) {

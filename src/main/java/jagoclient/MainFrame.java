@@ -7,6 +7,7 @@ import jagoclient.gui.*;
 import jagoclient.partner.Server;
 import jagoclient.sound.JagoSound;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.Locale;
 
@@ -18,13 +19,14 @@ class GetPort extends GetParameter {
     MainFrame GCF;
 
     public GetPort(MainFrame gcf, int port) {
-        super(gcf, Global.resourceString("Server_Port"),
-                Global.resourceString("Port"), gcf, true, "port");
+        super(gcf, Global.resourceString("Server_Port"), Global
+                .resourceString("Port"), gcf, true, "port");
         set("" + port);
         GCF = gcf;
-        show();
+        setVisible(true);
     }
 
+    @Override
     public boolean tell(Object o, String S) {
         int port = 6970;
         try {
@@ -36,6 +38,7 @@ class GetPort extends GetParameter {
     }
 }
 
+
 /**
  * Get some advanced options.
  */
@@ -45,40 +48,48 @@ class AdvancedOptionsEdit extends CloseDialog {
             WhoWindow, GamesWindow, KoRule;
 
     /**
-     * Initialize all dialog items.
-     * The main layout is a Nx1 grid with check boxes.
+     * Initialize all dialog items. The main layout is a Nx1 grid with check
+     * boxes.
      */
     public AdvancedOptionsEdit(Frame f) {
         super(f, Global.resourceString("Advanced_Options"), true);
         setLayout(new BorderLayout());
-        Panel p = new MyPanel();
+        JPanel p = new MyPanel();
         p.setLayout(new GridLayout(0, 1));
-        p.add(UseConfirmation = new Checkbox(Global.resourceString("Confirmations")));
+        p.add(UseConfirmation = new Checkbox(Global
+                .resourceString("Confirmations")));
         UseConfirmation.setState(Global.getParameter("confirmations", true));
         UseConfirmation.setFont(Global.SansSerif);
         p.add(KoRule = new Checkbox(Global.resourceString("Obey_Ko_Rule")));
         KoRule.setState(Global.getParameter("korule", true));
         KoRule.setFont(Global.SansSerif);
-        p.add(WhoWindow = new Checkbox(Global.resourceString("Show_Who_Window")));
+        p
+                .add(WhoWindow = new Checkbox(Global
+                        .resourceString("Show_Who_Window")));
         WhoWindow.setState(Global.getParameter("whowindow", true));
         WhoWindow.setFont(Global.SansSerif);
-        p.add(GamesWindow = new Checkbox(Global.resourceString("Show_Games_Window")));
+        p.add(GamesWindow = new Checkbox(Global
+                .resourceString("Show_Games_Window")));
         GamesWindow.setState(Global.getParameter("gameswindow", true));
         GamesWindow.setFont(Global.SansSerif);
-        p.add(Pack = new Checkbox(Global.resourceString("Pack_some_of_the_dialogs")));
+        p.add(Pack = new Checkbox(Global
+                .resourceString("Pack_some_of_the_dialogs")));
         Pack.setState(Global.getParameter("pack", true));
         Pack.setFont(Global.SansSerif);
-        p.add(SetIcon = new Checkbox(Global.resourceString("Set_own_icon__buggy_in_windows__")));
+        p.add(SetIcon = new Checkbox(Global
+                .resourceString("Set_own_icon__buggy_in_windows__")));
         SetIcon.setState(Global.getParameter("icons", false));
         SetIcon.setFont(Global.SansSerif);
-        p.add(UseSystemViewer = new Checkbox(Global.resourceString("Use_AWT_TextArea")));
+        p.add(UseSystemViewer = new Checkbox(Global
+                .resourceString("Use_AWT_TextArea")));
         UseSystemViewer.setState(Global.getParameter("systemviewer", false));
         UseSystemViewer.setFont(Global.SansSerif);
-        p.add(UseSystemLister = new Checkbox(Global.resourceString("Use_AWT_List")));
+        p.add(UseSystemLister = new Checkbox(Global
+                .resourceString("Use_AWT_List")));
         UseSystemLister.setState(Global.getParameter("systemlister", false));
         UseSystemLister.setFont(Global.SansSerif);
         add("Center", new Panel3D(p));
-        Panel ps = new MyPanel();
+        JPanel ps = new MyPanel();
         ps.add(new ButtonAction(this, Global.resourceString("OK")));
         ps.add(new ButtonAction(this, Global.resourceString("Cancel")));
         ps.add(new MyLabel(" "));
@@ -88,6 +99,7 @@ class AdvancedOptionsEdit extends CloseDialog {
         show();
     }
 
+    @Override
     public void doAction(String o) {
         if (o.equals(Global.resourceString("OK"))) {
             setVisible(false);
@@ -109,23 +121,26 @@ class AdvancedOptionsEdit extends CloseDialog {
     }
 }
 
+
 /**
  * Get the name for the partner client.
  */
 
 class YourNameQuestion extends GetParameter {
     public YourNameQuestion(MainFrame gcf) {
-        super(gcf, Global.resourceString("Name"),
-                Global.resourceString("Your_Name"), gcf, true, "yourname");
+        super(gcf, Global.resourceString("Name"), Global
+                .resourceString("Your_Name"), gcf, true, "yourname");
         set(Global.getParameter("yourname", "Your Name"));
         show();
     }
 
+    @Override
     public boolean tell(Object o, String S) {
         if (!S.equals("")) Global.setParameter("yourname", S);
         return true;
     }
 }
+
 
 /**
  * Get the languate locale
@@ -135,15 +150,16 @@ class GetLanguage extends GetParameter {
     public boolean done = false;
 
     public GetLanguage(MainFrame gcf) {
-        super(gcf, "Your Locale (leave empty for default)",
-                "Language", gcf, true, "language");
+        super(gcf, "Your Locale (leave empty for default)", "Language", gcf,
+                true, "language");
         String S = "Your Locale";
         String T = Global.resourceString(S);
         if (!S.equals(T)) Prompt.setText(T + " (" + S + ")");
         set(Locale.getDefault().toString());
-        show();
+        setVisible(true);
     }
 
+    @Override
     public boolean tell(Object o, String S) {
         Global.setParameter("language", S);
         done = true;
@@ -151,25 +167,27 @@ class GetLanguage extends GetParameter {
     }
 }
 
+
 /**
  * Get IP name of the relay server, if used.
  */
 
 class GetRelayServer extends CloseDialog {
-    TextField Server;
+    JTextField Server;
     IntField Port;
 
     public GetRelayServer(Frame F) {
         super(F, Global.resourceString("Relay_Server"), true);
-        Panel p = new MyPanel();
+        JPanel p = new MyPanel();
         p.setLayout(new GridLayout(0, 2));
         p.add(new MyLabel(Global.resourceString("Server")));
         p.add(Server = new GrayTextField());
         Server.setText(Global.getParameter("relayserver", "localhost"));
         p.add(new MyLabel(Global.resourceString("Port")));
-        p.add(Port = new IntField(this, Global.resourceString("Port"), Global.getParameter("relayport", 6971)));
+        p.add(Port = new IntField(this, Global.resourceString("Port"), Global
+                .getParameter("relayport", 6971)));
         add("Center", new Panel3D(p));
-        Panel bp = new MyPanel();
+        JPanel bp = new MyPanel();
         bp.add(new ButtonAction(this, Global.resourceString("OK")));
         bp.add(new ButtonAction(this, Global.resourceString("Cancel")));
         bp.add(new MyLabel(" "));
@@ -177,9 +195,10 @@ class GetRelayServer extends CloseDialog {
         add("South", new Panel3D(bp));
         Global.setpacked(this, "getrelay", 300, 200, F);
         validate();
-        show();
+        setVisible(true);
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "getrelay");
         if (Global.resourceString("OK").equals(o)) {
@@ -196,6 +215,7 @@ class GetRelayServer extends CloseDialog {
     }
 }
 
+
 /**
  * Get the background color.
  */
@@ -203,158 +223,193 @@ class GetRelayServer extends CloseDialog {
 class BackgroundColorEdit extends ColorEdit {
     public BackgroundColorEdit(Frame f, String s, Color c) {
         super(f, s, c, false);
-        show();
+        setVisible(true);
     }
 
-    public void addbutton(Panel p) {
+    @Override
+    public void addbutton(MyPanel p) {
         p.add(new ButtonAction(this, Global.resourceString("System")));
     }
 
+    @Override
     public void tell(Color C) {
-        Global.gray = C;
         Global.setParameter("color.background", C);
         Global.setParameter("color.control", C);
         Global.makeColors();
     }
 
+    @Override
     public void doAction(String o) {
         if (o.equals(Global.resourceString("System"))) {
             Global.removeParameter("color.control");
             Global.removeParameter("color.background");
-            Global.gray = SystemColor.window;
             Global.makeColors();
             super.doAction(Global.resourceString("OK"));
         } else super.doAction(o);
     }
 }
 
+
 /**
- * The MainFrame contains menus to edit some options, get help and
- * set some things. A card layout with the server and partner
- * connections is added to this frame later.
+ * The MainFrame contains menus to edit some options, get help and set some
+ * things. A card layout with the server and partner connections is added to
+ * this frame later.
  */
 
 public class MainFrame extends CloseFrame {
-    CheckboxMenuItem
-            StartPublicServer, TimerInTitle, BigTimer, ExtraInformation, ExtraSendField,
-            DoSound, SimpleSound, BeepOnly, Warning, RelayCheck, Automatic,
-            EveryMove, FineBoard, Navigation;
+    CheckboxMenuItem StartPublicServer, TimerInTitle, BigTimer,
+            ExtraInformation, ExtraSendField, DoSound, SimpleSound, BeepOnly,
+            Warning, RelayCheck, Automatic, EveryMove, FineBoard, Navigation;
     MenuItem StartServer;
     public Server S = null;
 
     public MainFrame(String c) {
-        super(c);
+        super(c + " " + Global.resourceString("Version"));
         seticon("ijago.gif");
-        boolean constrainedapplet = c.equals(
-                Global.resourceString("Jago_Applet"));
+        boolean constrainedapplet = c.equals(Global
+                .resourceString("Jago_Applet"));
         // Menu :
         MenuBar menu = new MenuBar();
         setMenuBar(menu);
         // Actions
         Menu local = new MyMenu(Global.resourceString("Actions"));
-        local.add(new MenuItemAction(this, Global.resourceString("Local_Board")));
-        local.addSeparator();
-        local.add(RelayCheck = new CheckboxMenuItemAction(this, Global.resourceString("Use_Relay")));
-        RelayCheck.setState(Global.getParameter("userelay", false));
-        local.add(new MenuItemAction(this, Global.resourceString("Relay_Server")));
+        local
+                .add(new MenuItemAction(this, Global.resourceString("Local_Board")));
         local.addSeparator();
         local.add(new MenuItemAction(this, Global.resourceString("Play_Go")));
-        local.addSeparator();
-        local.add(new MenuItemAction(this, Global.resourceString("Set_Language")));
-        local.add(new MenuItemAction(this, "Close and Use English", "CloseEnglish"));
         local.addSeparator();
         local.add(new MenuItemAction(this, Global.resourceString("Close")));
         menu.add(local);
         // Server Options
         Menu soptions = new MyMenu(Global.resourceString("Go_Server"));
         if (!Global.isApplet()) {
-            soptions.add(Automatic = new CheckboxMenuItemAction(this, Global.resourceString("Automatic_Login")));
+            soptions.add(Automatic = new CheckboxMenuItemAction(this, Global
+                    .resourceString("Automatic_Login")));
             Automatic.setState(Global.getParameter("automatic", true));
             soptions.addSeparator();
         }
         soptions.add(new MenuItemAction(this, Global.resourceString("Filter")));
-        soptions.add(new MenuItemAction(this, Global.resourceString("Function_Keys")));
+        soptions.add(new MenuItemAction(this, Global
+                .resourceString("Function_Keys")));
         menu.add(soptions);
         // Partner Options
         if (!constrainedapplet) {
             Menu poptions = new MyMenu(Global.resourceString("Partner"));
-            poptions.add(StartServer =
-                    new MenuItemAction(this, Global.resourceString("Start_Server")));
-            poptions.add(new MenuItemAction(this, Global.resourceString("Server_Port")));
-            poptions.add(new MenuItemAction(this, Global.resourceString("Your_Name")));
-            poptions.add(StartPublicServer =
-                    new CheckboxMenuItemAction(this, Global.resourceString("Public")));
-            StartPublicServer.setState(
-                    Global.getParameter("publicserver", true));
+            poptions.add(StartServer = new MenuItemAction(this, Global
+                    .resourceString("Start_Server")));
+            poptions.add(new MenuItemAction(this, Global
+                    .resourceString("Server_Port")));
+            poptions.add(new MenuItemAction(this, Global
+                    .resourceString("Your_Name")));
+            poptions.add(StartPublicServer = new CheckboxMenuItemAction(this,
+                    Global.resourceString("Public")));
+            StartPublicServer.setState(Global
+                    .getParameter("publicserver", true));
             menu.add(poptions);
         }
         // Options
         Menu options = new MyMenu(Global.resourceString("Options"));
         Menu bo = new MyMenu(Global.resourceString("Board_Options"));
-        bo.add(Navigation = new CheckboxMenuItemAction(this, Global.resourceString("Navigation_Tree")));
+        bo.add(Navigation = new CheckboxMenuItemAction(this, Global
+                .resourceString("Navigation_Tree")));
         Navigation.setState(Global.getParameter("shownavigationtree", true));
-        bo.add(TimerInTitle = new CheckboxMenuItemAction(this, Global.resourceString("Timer_in_Title")));
+        bo.add(TimerInTitle = new CheckboxMenuItemAction(this, Global
+                .resourceString("Timer_in_Title")));
         TimerInTitle.setState(Global.getParameter("timerintitle", true));
-        bo.add(BigTimer = new CheckboxMenuItemAction(this, Global.resourceString("Big_Timer")));
+        bo.add(BigTimer = new CheckboxMenuItemAction(this, Global
+                .resourceString("Big_Timer")));
         BigTimer.setState(Global.getParameter("bigtimer", true));
-        bo.add(ExtraInformation = new CheckboxMenuItemAction(this, Global.resourceString("Extra_Information")));
-        ExtraInformation.setState(Global.getParameter("extrainformation", true));
-        bo.add(ExtraSendField = new CheckboxMenuItemAction(this, Global.resourceString("Extra_Send_Field")));
+        bo.add(ExtraInformation = new CheckboxMenuItemAction(this, Global
+                .resourceString("Extra_Information")));
+        ExtraInformation
+                .setState(Global.getParameter("extrainformation", true));
+        bo.add(ExtraSendField = new CheckboxMenuItemAction(this, Global
+                .resourceString("Extra_Send_Field")));
         ExtraSendField.setState(Global.getParameter("extrasendfield", true));
-        bo.add(FineBoard = new CheckboxMenuItemAction(this, Global.resourceString("Fine_Board")));
+        bo.add(FineBoard = new CheckboxMenuItemAction(this, Global
+                .resourceString("Fine_Board")));
         FineBoard.setState(Global.getParameter("fineboard", true));
         options.add(bo);
-        options.add(new MenuItemAction(this, Global.resourceString("Advanced_Options")));
+        options.add(new MenuItemAction(this, Global
+                .resourceString("Advanced_Options")));
         options.addSeparator();
         Menu fonts = new MyMenu(Global.resourceString("Fonts"));
-        fonts.add(new MenuItemAction(this, Global.resourceString("Board_Font")));
-        fonts.add(new MenuItemAction(this, Global.resourceString("Fixed_Font")));
+        fonts
+                .add(new MenuItemAction(this, Global.resourceString("Board_Font")));
+        fonts
+                .add(new MenuItemAction(this, Global.resourceString("Fixed_Font")));
         fonts.add(new MenuItemAction(this, Global.resourceString("Big_Font")));
-        fonts.add(new MenuItemAction(this, Global.resourceString("Normal_Font")));
+        fonts
+                .add(new MenuItemAction(this, Global.resourceString("Normal_Font")));
         options.add(fonts);
-        options.add(new MenuItemAction(this, Global.resourceString("Background_Color")));
+        options.add(new MenuItemAction(this, Global
+                .resourceString("Background_Color")));
         options.addSeparator();
-        options.add(DoSound =
-                new CheckboxMenuItemAction(this, Global.resourceString("Sound_on")));
+        options.add(DoSound = new CheckboxMenuItemAction(this, Global
+                .resourceString("Sound_on")));
         DoSound.setState(!Global.getParameter("nosound", true));
-        options.add(BeepOnly = new CheckboxMenuItemAction(this, Global.resourceString("Beep_only")));
+        options.add(BeepOnly = new CheckboxMenuItemAction(this, Global
+                .resourceString("Beep_only")));
         BeepOnly.setState(Global.getParameter("beep", true));
         Menu sound = new MyMenu(Global.resourceString("Sound_Options"));
-        sound.add(SimpleSound =
-                new CheckboxMenuItemAction(this, Global.resourceString("Simple_sound")));
+        sound.add(SimpleSound = new CheckboxMenuItemAction(this, Global
+                .resourceString("Simple_sound")));
         SimpleSound.setState(Global.getParameter("simplesound", true));
-        sound.add(EveryMove =
-                new CheckboxMenuItemAction(this, Global.resourceString("Every_move")));
+        sound.add(EveryMove = new CheckboxMenuItemAction(this, Global
+                .resourceString("Every_move")));
         EveryMove.setState(Global.getParameter("sound.everymove", true));
-        sound.add(Warning =
-                new CheckboxMenuItemAction(this, Global.resourceString("Timeout_warning")));
+        sound.add(Warning = new CheckboxMenuItemAction(this, Global
+                .resourceString("Timeout_warning")));
         Warning.setState(Global.getParameter("warning", true));
-        sound.add(new MenuItemAction(this, Global.resourceString("Test_Sound")));
+        sound
+                .add(new MenuItemAction(this, Global.resourceString("Test_Sound")));
         options.add(sound);
+        options.addSeparator();
+        options.add(RelayCheck = new CheckboxMenuItemAction(this, Global
+                .resourceString("Use_Relay")));
+        RelayCheck.setState(Global.getParameter("userelay", false));
+        options.add(new MenuItemAction(this, Global
+                .resourceString("Relay_Server")));
+        options.addSeparator();
+        options.add(new MenuItemAction(this, Global
+                .resourceString("Set_Language")));
+        options.add(new MenuItemAction(this, "Close and Use English",
+                "CloseEnglish"));
         menu.add(options);
         // Help
         Menu help = new MyMenu(Global.resourceString("Help"));
         help.add(new MenuItemAction(this, Global.resourceString("About_Jago")));
         help.add(new MenuItemAction(this, Global.resourceString("Overview")));
         help.addSeparator();
-        help.add(new MenuItemAction(this, Global.resourceString("Using_Windows")));
-        help.add(new MenuItemAction(this, Global.resourceString("Configuring_Connections")));
-        help.add(new MenuItemAction(this, Global.resourceString("Partner_Connections")));
-        help.add(new MenuItemAction(this, Global.resourceString("About_Sounds")));
-        help.add(new MenuItemAction(this, Global.resourceString("About_Smart_Go_Format_SGF")));
-        help.add(new MenuItemAction(this, Global.resourceString("About_Filter")));
-        help.add(new MenuItemAction(this, Global.resourceString("About_Function_Keys")));
-        help.add(new MenuItemAction(this, Global.resourceString("Overcoming_Firewalls")));
-        help.add(new MenuItemAction(this, Global.resourceString("Play_Go_Help")));
+        help.add(new MenuItemAction(this, Global
+                .resourceString("Using_Windows")));
+        help.add(new MenuItemAction(this, Global
+                .resourceString("Configuring_Connections")));
+        help.add(new MenuItemAction(this, Global
+                .resourceString("Partner_Connections")));
+        help
+                .add(new MenuItemAction(this, Global.resourceString("About_Sounds")));
+        help.add(new MenuItemAction(this, Global
+                .resourceString("About_Smart_Go_Format_SGF")));
+        help
+                .add(new MenuItemAction(this, Global.resourceString("About_Filter")));
+        help.add(new MenuItemAction(this, Global
+                .resourceString("About_Function_Keys")));
+        help.add(new MenuItemAction(this, Global
+                .resourceString("Overcoming_Firewalls")));
+        help
+                .add(new MenuItemAction(this, Global.resourceString("Play_Go_Help")));
         help.addSeparator();
         help.add(new MenuItemAction(this, Global.resourceString("About_Help")));
         help.addSeparator();
-        help.add(new MenuItemAction(this, Global.resourceString("On_line_Version_Information")));
+        help.add(new MenuItemAction(this, Global
+                .resourceString("On_line_Version_Information")));
         menu.setHelpMenu(help);
         pack();
         Global.setwindow(this, "mainframe", 300, 300);
     }
 
+    @Override
     public boolean close() {
         if (Global.getParameter("confirmations", true)) {
             CloseMainQuestion CMQ = new CloseMainQuestion(this);
@@ -366,14 +421,16 @@ public class MainFrame extends CloseFrame {
         }
     }
 
+    @Override
     public void doclose() {
         Global.notewindow(this, "mainframe");
         super.doclose();
-        Global.writeparameter("go.cfg");
+        Global.writeparameter(".go.cfg");
         if (S != null) S.close();
         if (!Global.isApplet()) System.exit(0);
     }
 
+    @Override
     public void doAction(String o) {
         if ("CloseEnglish".equals(o)) {
             Global.setParameter("language", "en");
@@ -403,10 +460,10 @@ public class MainFrame extends CloseFrame {
         } else if (Global.resourceString("Play_Go_Help").equals(o)) {
             new Help("gmp");
         } else if (Global.resourceString("On_line_Version_Information").equals(o)) {
-            new Help();
+            new Help("version");
         } else if (Global.resourceString("Local_Board").equals(o)) {
-            GoFrame gf = new GoFrame(new Frame(),
-                    Global.resourceString("Local_Viewer"));
+            GoFrame gf = new GoFrame(new Frame(), Global
+                    .resourceString("Local_Viewer"));
         } else if (Global.resourceString("Play_Go").equals(o)) {
             new GMPConnection(this);
         } else if (Global.resourceString("Server_Port").equals(o)) {
@@ -415,21 +472,21 @@ public class MainFrame extends CloseFrame {
             GetLanguage d = new GetLanguage(this);
             if (d.done && close()) doclose();
         } else if (Global.resourceString("Board_Font").equals(o)) {
-            (new GetFontSize(
-                    "boardfontname", Global.getParameter("boardfontname", "SansSerif"),
-                    "boardfontsize", Global.getParameter("boardfontsize", 10), false)).show();
+            new GetFontSize("boardfontname", Global.getParameter(
+                    "boardfontname", "SansSerif"), "boardfontsize", Global
+                    .getParameter("boardfontsize", 10), false).show();
         } else if (Global.resourceString("Normal_Font").equals(o)) {
-            (new GetFontSize(
-                    "sansserif", Global.getParameter("sansserif", "SansSerif"),
-                    "ssfontsize", Global.getParameter("ssfontsize", 11), false)).show();
+            new GetFontSize("sansserif", Global.getParameter("sansserif",
+                    "SansSerif"), "ssfontsize", Global.getParameter("ssfontsize",
+                    11), false).show();
         } else if (Global.resourceString("Fixed_Font").equals(o)) {
-            (new GetFontSize(
-                    "monospaced", Global.getParameter("monospaced", "Monospaced"),
-                    "msfontsize", Global.getParameter("msfontsize", 11), false)).show();
+            new GetFontSize("monospaced", Global.getParameter("monospaced",
+                    "Monospaced"), "msfontsize", Global.getParameter("msfontsize",
+                    11), false).show();
         } else if (Global.resourceString("Big_Font").equals(o)) {
-            (new GetFontSize(
-                    "bigmonospaced", Global.getParameter("bigmonospaced", "BoldMonospaced"),
-                    "bigmsfontsize", Global.getParameter("bigmsfontsize", 22), false)).show();
+            new GetFontSize("bigmonospaced", Global.getParameter(
+                    "bigmonospaced", "BoldMonospaced"), "bigmsfontsize", Global
+                    .getParameter("bigmsfontsize", 22), false).show();
         } else if (Global.resourceString("Your_Name").equals(o)) {
             new YourNameQuestion(this);
         } else if (Global.resourceString("Filter").equals(o)) {
@@ -442,8 +499,8 @@ public class MainFrame extends CloseFrame {
             JagoSound.play("high", "wip", true);
         } else if (Global.resourceString("Start_Server").equals(o)) {
             if (Global.Busy) {
-                Dump.println("Server started on " +
-                        Global.getParameter("serverport", 6970));
+                Dump.println("Server started on "
+                        + Global.getParameter("serverport", 6970));
                 if (S == null)
                     S = new Server(Global.getParameter("serverport", 6970),
                             Global.getParameter("publicserver", true));
@@ -463,10 +520,11 @@ public class MainFrame extends CloseFrame {
         } else if (Global.resourceString("Advanced_Options").equals(o)) {
             new AdvancedOptionsEdit(this);
         } else if (Global.resourceString("Background_Color").equals(o)) {
-            new BackgroundColorEdit(this, "globalgray", Global.gray);
+            new BackgroundColorEdit(this, "globalgray", Color.gray);
         } else super.doAction(o);
     }
 
+    @Override
     public void itemAction(String o, boolean flag) {
         if (Global.resourceString("Public").equals(o)) {
             Global.setParameter("publicserver", flag);
@@ -500,4 +558,3 @@ public class MainFrame extends CloseFrame {
     }
 
 }
-

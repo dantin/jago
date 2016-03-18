@@ -23,6 +23,7 @@ class MenuItemActionTranslator implements ActionListener {
     }
 }
 
+
 public class MenuItemAction extends MyMenuItem {
     MenuItemActionTranslator MIT;
 

@@ -1,5 +1,6 @@
 package rene.gui;
 
+import rene.util.FileName;
 import rene.util.list.ListClass;
 import rene.util.list.ListElement;
 
@@ -20,6 +21,7 @@ public class HistoryTextField extends TextFieldAction
     ListClass H;
     PopupMenu M = null;
     boolean Trigger = false;
+    public int MaxLength = 48;
 
     public HistoryTextField(DoActionListener l, String name) {
         super(l, name);
@@ -47,7 +49,7 @@ public class HistoryTextField extends TextFieldAction
                         String t = (String) e.content();
                         if (!t.equals("")) {
                             MenuItem item = new MenuItemAction(this,
-                                    t, t);
+                                    FileName.chop(t, MaxLength), t);
                             M.add(item);
                         }
                         e = e.previous();
@@ -68,7 +70,7 @@ public class HistoryTextField extends TextFieldAction
     public void keyTyped(KeyEvent e) {
     }
 
-    String Last;
+    String Last = "";
 
     public void remember(String s) {
         if (s.equals(Last)) return;
@@ -116,9 +118,14 @@ public class HistoryTextField extends TextFieldAction
         H.append(new ListElement(""));
         while (Global.haveParameter("history." + name + "." + i)) {
             String s = Global.getParameter("history." + name + "." + i, "");
-            if (!s.equals("")) H.prepend(new ListElement(s));
+            if (!s.equals("") && filterHistory(s))
+                H.prepend(new ListElement(s));
             i++;
         }
+    }
+
+    public boolean filterHistory(String name) {
+        return true;
     }
 
     public ListClass getHistory() {
@@ -150,6 +157,6 @@ public class HistoryTextField extends TextFieldAction
         f.add("Center", t);
         f.add("South", new HistoryTextFieldChoice(t));
         f.pack();
-        f.show();
+        f.setVisible(true);
     }
 }

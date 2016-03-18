@@ -34,7 +34,6 @@ package rene.util;
  */
 
 import java.awt.*;
-import java.awt.image.DirectColorModel;
 import java.awt.image.ImageObserver;
 import java.awt.image.PixelGrabber;
 import java.io.ByteArrayOutputStream;
@@ -67,6 +66,7 @@ public class PngEncoder extends Object {
     protected int filter;
     protected int bytesPerPixel;
     protected int compressionLevel;
+    protected double DPI = 300;
 
     /**
      * Class constructor
@@ -134,11 +134,15 @@ public class PngEncoder extends Object {
      *
      * @param image A Java Image object which uses the DirectColorModel
      * @see Image
-     * @see DirectColorModel
+     * @see java.awt.image.DirectColorModel
      */
     public void setImage(Image image) {
         this.image = image;
         pngBytes = null;
+    }
+
+    public void setDPI(double dpi) {
+        DPI = dpi;
     }
 
     /**
@@ -156,8 +160,7 @@ public class PngEncoder extends Object {
         }
         width = image.getWidth(null);
         height = image.getHeight(null);
-        this.image = image;
-
+        
         /*
          * start with an array that is big enough to hold all the pixels
          * (plus filter bytes), and an extra 200 bytes for header info
@@ -172,6 +175,7 @@ public class PngEncoder extends Object {
         bytePos = writeBytes(pngIdBytes, 0);
         hdrPos = bytePos;
         writeHeader();
+        writePhys();
         dataPos = bytePos;
         if (writeImageData()) {
             writeEnd();
@@ -389,6 +393,24 @@ public class PngEncoder extends Object {
     }
 
     /**
+     * Write a PNG "pHYs" chunk into the pngBytes array.
+     */
+    protected void writePhys() {
+        int startPos;
+
+        startPos = bytePos = writeInt4(9, bytePos);
+        bytePos = writeString("pHYs", bytePos);
+        int dots = (int) (DPI * 39.37);
+        bytePos = writeInt4(dots, bytePos);
+        bytePos = writeInt4(dots, bytePos);
+        bytePos = writeByte(1, bytePos); // bit depth
+        crc.reset();
+        crc.update(pngBytes, startPos, bytePos - startPos);
+        crcValue = crc.getValue();
+        bytePos = writeInt4((int) crcValue, bytePos);
+    }
+
+    /**
      * Perform "sub" filtering on the given row.
      * Uses temporary array leftBytes to store the original values
      * of the previous pixels.  The array is 16 bytes long, which
@@ -470,11 +492,12 @@ public class PngEncoder extends Object {
         DeflaterOutputStream compBytes =
                 new DeflaterOutputStream(outBytes, scrunch);
         try {
-            while (rowsLeft > 0) {
-                nRows = Math.min(32767 / (width * (bytesPerPixel + 1)), rowsLeft);
-                // nRows = rowsLeft;
+            nRows = (64 * 32768 - 1) / (width * (bytesPerPixel + 1));
 
-                int[] pixels = new int[width * nRows];
+            int[] pixels = new int[width * nRows];
+
+            while (rowsLeft > 0) {
+                if (nRows >= rowsLeft) nRows = rowsLeft;
 
                 pg = new PixelGrabber(image, 0, startRow,
                         width, nRows, pixels, 0, width);

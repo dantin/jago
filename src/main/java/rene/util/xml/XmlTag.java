@@ -1,5 +1,6 @@
 package rene.util.xml;
 
+
 public class XmlTag {
     protected String Tag = "";
     String Param[];

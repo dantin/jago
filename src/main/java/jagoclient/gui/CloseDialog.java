@@ -2,18 +2,18 @@ package jagoclient.gui;
 
 import jagoclient.Global;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
 /**
- * A dialog, which can be closed by clicking on the close window
- * field (a cross on the top right corner in Windows 95). This
- * dialog does also simplify event processing by implementing
- * a DoActionListener. The "Close" resource is reserved to close
- * the dialog. The escape key will close the dialog too.
+ * A dialog, which can be closed by clicking on the close window field (a cross
+ * on the top right corner in Windows 95). This dialog does also simplify event
+ * processing by implementing a DoActionListener. The "Close" resource is
+ * reserved to close the dialog. The escape key will close the dialog too.
  */
-public class CloseDialog extends Dialog
-        implements WindowListener, ActionListener, DoActionListener, KeyListener {
+public class CloseDialog extends JDialog implements WindowListener,
+        ActionListener, DoActionListener, KeyListener {
     public CloseDialog(Frame f, String s, boolean modal) {
         super(f, "", modal);
         addWindowListener(this);
@@ -73,10 +73,8 @@ public class CloseDialog extends Dialog
     }
 
     public void center(Frame f) {
-        Dimension
-                si = f.getSize(),
-                d = getSize(),
-                dscreen = getToolkit().getScreenSize();
+        Dimension si = f.getSize(), d = getSize(), dscreen = getToolkit()
+                .getScreenSize();
         Point lo = f.getLocation();
         int x = lo.x + si.width / 2 - d.width / 2;
         int y = lo.y + si.height / 2 - d.height / 2;
@@ -100,4 +98,3 @@ public class CloseDialog extends Dialog
     public void keyTyped(KeyEvent e) {
     }
 }
-

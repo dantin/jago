@@ -9,6 +9,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.io.PrintWriter;
 
 class ClipboardCopy extends Thread {
@@ -23,6 +25,7 @@ class ClipboardCopy extends Thread {
         start();
     }
 
+    @Override
     public void run() {
         Clipboard clip = Cv.getToolkit().getSystemClipboard();
         StringSelection cont = new StringSelection(S);
@@ -30,8 +33,9 @@ class ClipboardCopy extends Thread {
     }
 }
 
-public class TextDisplay extends Canvas
-        implements ClipboardOwner {
+
+public class TextDisplay extends Canvas implements ClipboardOwner,
+        ComponentListener {
     ListClass L;
     Font F = null;
     FontMetrics FM;
@@ -41,7 +45,7 @@ public class TextDisplay extends Canvas
     int PageSize;
     ListElement TopLine;
     Image I;
-    Graphics IG;
+    Graphics2D IG;
     int W, H;
     public int Tabsize = 4;
     public int Offset;
@@ -63,29 +67,35 @@ public class TextDisplay extends Canvas
         PageSize = 10;
         HW = new int[1024];
         addKeyListener(v);
+        addComponentListener(this);
     }
 
     void init(Font f) {
         F = f;
         FM = getFontMetrics(F);
-        Leading = FM.getLeading() + Global.getParameter("fixedfont.spacing", 0);
+        Leading = FM.getLeading()
+                + Global.getParameter("fixedfont.spacing", -1);
         Height = FM.getHeight();
         Ascent = FM.getAscent();
         Descent = FM.getDescent();
         Widths = FM.getWidths();
-        if (Global.Background != null) Background = Global.Background;
+        if (Global.Background != null)
+            Background = Global.Background;
         else Background = SystemColor.window;
     }
 
+    @Override
     public Color getBackground() {
-        if (Global.Background != null) return Global.Background;
+        if (Global.Background != null)
+            return Global.Background;
         else return SystemColor.window;
     }
 
     int[] getwidth(char a[]) {
         try {
             for (int i = 0; i < a.length; i++) {
-                if (a[i] < 256) HW[i] = Widths[a[i]];
+                if (a[i] < 256)
+                    HW[i] = Widths[a[i]];
                 else HW[i] = FM.charWidth(a[i]);
             }
         } catch (Exception e) {
@@ -182,7 +192,10 @@ public class TextDisplay extends Canvas
         Dimension D = getSize();
         if (I == null || D.width != W || D.height != H) {
             I = createImage(W = D.width, H = D.height);
-            IG = I.getGraphics();
+            IG = (Graphics2D) I.getGraphics();
+            IG.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                    RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HBGR);
+
         }
         IG.setColor(Color.black);
         IG.clearRect(0, 0, W, H);
@@ -193,10 +206,12 @@ public class TextDisplay extends Canvas
         }
     }
 
+    @Override
     public synchronized void paint(Graphics g) {
         if (F == null) init(getFont());
         makeimage();
         ListElement e = TopLine;
+        antialias(true);
         int h = Leading + Ascent;
         int totalh = getSize().height - Descent;
         if (Background == null) Background = getBackground();
@@ -211,6 +226,20 @@ public class TextDisplay extends Canvas
             lines++;
         }
         g.drawImage(I, 0, 0, this);
+    }
+
+    /**
+     * Set Anti-Aliasing on or off, if in Java 1.2 or better and the Parameter
+     * "font.smooth" is switched on.
+     *
+     * @param flag
+     */
+    public void antialias(boolean flag) {
+        if (Global.getParameter("font.smooth", true)) {
+            IG.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                    flag ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON
+                            : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+        }
     }
 
     public void showLine(ListElement line) {
@@ -243,6 +272,7 @@ public class TextDisplay extends Canvas
         return e;
     }
 
+    @Override
     public void update(Graphics g) {
         paint(g);
     }
@@ -351,8 +381,8 @@ public class TextDisplay extends Canvas
                         ((Line) e.content()).length());
             e = e.next();
         }
-        return new TextPosition(e, TopLineCount + i,
-                ((Line) e.content()).getpos(x, 2));
+        return new TextPosition(e, TopLineCount + i, ((Line) e.content())
+                .getpos(x, 2));
     }
 
     public void unmark() {
@@ -443,12 +473,27 @@ public class TextDisplay extends Canvas
         TabWidth = t;
     }
 
+    @Override
     public boolean hasFocus() {
         return V.hasFocus();
     }
 
+    @Override
     public void setBackground(Color c) {
         Background = c;
         super.setBackground(c);
+    }
+
+    public void componentHidden(ComponentEvent e) {
+    }
+
+    public void componentMoved(ComponentEvent e) {
+    }
+
+    public void componentResized(ComponentEvent e) {
+        V.resized();
+    }
+
+    public void componentShown(ComponentEvent e) {
     }
 }

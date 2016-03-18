@@ -250,7 +250,7 @@ public class StringParser {
      * @param columns the maximal length of each line
      * @return a Vector with lines
      */
-    public Vector wraplines(int columns) {
+    public Vector<String> wraplines(int columns) {
         Vector v = new Vector(10, 10);
         String s;
         while (!Error) {

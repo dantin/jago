@@ -70,8 +70,7 @@ public class Question extends CloseDialog
      */
     public void tell(Question q, Object o, int f) {
         Result = f;
-        setVisible(false);
-        dispose();
+        doclose();
     }
 
     /**

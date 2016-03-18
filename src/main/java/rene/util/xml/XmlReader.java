@@ -10,11 +10,84 @@ public class XmlReader {
     BufferedReader In;
     SimpleStringBuffer buf = new SimpleStringBuffer(10000);
 
+    public XmlReader() {
+        In = null;
+    }
+
     public XmlReader(BufferedReader in) {
         In = in;
     }
 
     public XmlReader(InputStream in)
+            throws XmlReaderException {
+        try {    // read the file into a buffer
+            BufferedInputStream rin = new BufferedInputStream(in);
+            SimpleByteBuffer bb = new SimpleByteBuffer(10000);
+            while (true) {
+                int k = rin.read();
+                if (k < 0) break;
+                bb.append((byte) k);
+            }
+            rin.close();
+            byte b[] = bb.getByteArray();
+
+            // Try to open an ASCII stream, or a default stream
+            ByteArrayInputStream bin = new ByteArrayInputStream(b);
+            XmlReader R = null;
+            try {
+                R = new XmlReader(new BufferedReader(new InputStreamReader(bin, "ASCII")));
+            } catch (UnsupportedEncodingException ex) {
+                R = new XmlReader(new BufferedReader(new InputStreamReader(bin)));
+            }
+
+            // Determine the encoding
+            String Encoding = null;
+            while (true) {
+                while (true) {
+                    int c = R.read();
+                    if (c == -1) throw new Exception("<?xml> tag not found");
+                    if (c == '<') break;
+                }
+                if (R.found("?xml")) {
+                    String s = R.scanFor("?>");
+                    if (s == null) throw new Exception("<?xml> tag error");
+                    int n = s.indexOf("encoding=\"");
+                    if (n >= 0) {
+                        n += "encoding=\"".length();
+                        s = s.substring(n);
+                        int m = s.indexOf('\"');
+                        if (m < 0) throw new Exception("Closing bracket missing");
+                        Encoding = s.substring(0, m).toUpperCase();
+                        if (Encoding.equals("UTF-8")) Encoding = "UTF8";
+                        // for IE5 !
+                        break;
+                    }
+                    break;
+                }
+            }
+
+            // Open a stream with this encoding
+            bin = new ByteArrayInputStream(b);
+            if (Encoding == null)
+                In = new BufferedReader(new InputStreamReader(bin));
+            else
+                try {
+                    In = new BufferedReader(new InputStreamReader(
+                            bin, Encoding));
+                } catch (UnsupportedEncodingException e) {
+                    try {
+                        In = new BufferedReader(new InputStreamReader(
+                                bin, "ASCII"));
+                    } catch (UnsupportedEncodingException ex) {
+                        In = new BufferedReader(new InputStreamReader(bin));
+                    }
+                }
+        } catch (Exception e) {
+            throw new XmlReaderException(e.toString());
+        }
+    }
+
+    public void init(InputStream in)
             throws XmlReaderException {
         try {    // read the file into a buffer
             BufferedInputStream rin = new BufferedInputStream(in);

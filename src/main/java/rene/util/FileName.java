@@ -41,6 +41,19 @@ public class FileName {
         return "";
     }
 
+    static public String pathAndSeparator(String filename) {
+        char a[] = filename.toCharArray();
+        int i = a.length - 1;
+        char fs = File.separatorChar;
+        while (i > 0) {
+            if (a[i] == fs || a[i] == '/') {
+                return new String(a, 0, i + 1);
+            }
+            i--;
+        }
+        return "";
+    }
+
     static public String filename(String filename) {
         char a[] = filename.toCharArray();
         int i = a.length - 1;
@@ -70,13 +83,32 @@ public class FileName {
         return "";
     }
 
-    static public String chop(String filename)
+    static public String chop(String filename, int chop)
     // chop the filename to 32 characters
     {
-        if (filename.length() > ChopLength) {
-            filename = "..." + filename.substring(filename.length() - ChopLength);
+        if (filename.length() > chop) {
+            filename = "... " + filename.substring(filename.length() - chop);
         }
         return filename;
+    }
+
+    static public String chop(String filename) {
+        return chop(filename, ChopLength);
+    }
+
+    static public String chop(int start, String filename, int chop)
+    // chop the filename.substring(start) to 32 characters
+    {
+        if (filename.length() > start + chop) {
+            filename = filename.substring(0, start) +
+                    " ... " +
+                    filename.substring(filename.length() - chop);
+        }
+        return filename;
+    }
+
+    static public String chop(int start, String filename) {
+        return chop(start, filename, ChopLength);
     }
 
     static public String relative(String dir, String filename) {
@@ -98,4 +130,38 @@ public class FileName {
         }
     }
 
+    static public String toURL(String filename) {
+        int n = filename.indexOf(' ');
+        if (n >= 0)
+            return filename.substring(0, n) + "%20" + toURL(filename.substring(n + 1));
+        else
+            return filename;
+    }
+
+    static boolean match(char filename[], int n, char filter[], int m) {
+        if (filter == null) return true;
+        if (m >= filter.length) return n >= filename.length;
+        if (n >= filename.length) return m == filter.length - 1 && filter[m] == '*';
+        if (filter[m] == '?') {
+            return match(filename, n + 1, filter, m + 1);
+        }
+        if (filter[m] == '*') {
+            if (m == filter.length - 1) return true;
+            for (int i = n; i < filename.length; i++) {
+                if (match(filename, i, filter, m + 1)) return true;
+            }
+            return false;
+        }
+        if (filter[m] == filename[n]) return match(filename, n + 1, filter, m + 1);
+        return false;
+    }
+
+    public static boolean match(String filename, String filter) {
+        char fn[] = filename.toCharArray(), f[] = filter.toCharArray();
+        return match(fn, 0, f, 0);
+    }
+
+    public static void main(String args[]) {
+        System.out.println("-" + toURL(" test test test ") + "-");
+    }
 }

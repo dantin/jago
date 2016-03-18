@@ -4,9 +4,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * This is a callback class to act as an ActionListener, which calls
- * back a DoActionListener on any action passing the string name to
- * its doAction method.
+ * This is a callback class to act as an ActionListener, which calls back a
+ * DoActionListener on any action passing the string name to its doAction
+ * method.
  *
  * @see DoActionListener
  * @see TextFieldAction
@@ -14,8 +14,7 @@ import java.awt.event.ActionListener;
  * @see CloseDialog#doAction
  */
 
-class TextFieldActionListener
-        implements ActionListener {
+class TextFieldActionListener implements ActionListener {
     DoActionListener C;
     String Name;
 
@@ -28,4 +27,3 @@ class TextFieldActionListener
         C.doAction(Name);
     }
 }
-

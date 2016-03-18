@@ -5,8 +5,8 @@ import jagoclient.Global;
 import java.awt.*;
 
 /**
- * A GoFrame for local boards (not connected).
- * <b>Note:</b> This will exit the program, when closed.
+ * A GoFrame for local boards (not connected). <b>Note:</b> This will exit the
+ * program, when closed.
  */
 
 public class LocalGoFrame extends GoFrame {
@@ -14,10 +14,10 @@ public class LocalGoFrame extends GoFrame {
         super(f, s);
     }
 
+    @Override
     public void doclose() {
         super.doclose();
-        Global.writeparameter("go.cfg");
+        Global.writeparameter(".go.cfg");
         if (!Global.isApplet()) System.exit(0);
     }
 }
-

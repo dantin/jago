@@ -3,12 +3,13 @@ package jagoclient.dialogs;
 import jagoclient.Global;
 import jagoclient.gui.*;
 
+import javax.swing.*;
 import java.awt.*;
 
 /**
- * A general dialog to get a string parameter. Contains a
- * simple text field. The modal flag is handled as in the
- * Question class. Again, show has to be called externally.
+ * A general dialog to get a string parameter. Contains a simple text field. The
+ * modal flag is handled as in the Question class. Again, show has to be called
+ * externally.
  *
  * @see Question
  */
@@ -17,9 +18,9 @@ public class GetParameter extends CloseDialog {
     public boolean Result;
     Object O;
     Frame F;
-    TextField T;
+    JTextField T;
     String Helpfile;
-    protected Label Prompt;
+    protected MyLabel Prompt;
 
     public GetParameter(Frame f, String c, String title, Object o,
                         boolean modalflag) {
@@ -31,12 +32,14 @@ public class GetParameter extends CloseDialog {
         super(f, title, modalflag);
         F = f;
         Helpfile = help;
-        Panel n = new MyPanel();
+
+        JPanel n = new MyPanel();
         n.setLayout(new BorderLayout());
         n.add("North", Prompt = new MyLabel(c));
         n.add("Center", T = new TextFieldAction(this, "Input", 25));
         add("Center", new Panel3D(n));
-        Panel p = new MyPanel();
+
+        JPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("OK")));
         p.add(new ButtonAction(this, Global.resourceString("Cancel")));
         if (!help.equals("")) {
@@ -44,9 +47,13 @@ public class GetParameter extends CloseDialog {
             p.add(new ButtonAction(this, Global.resourceString("Help")));
         }
         add("South", new Panel3D(p));
+
         O = o;
-        if (modalflag) Global.setpacked(this, "getparameter", 300, 150, f);
+
+        if (modalflag)
+            Global.setpacked(this, "getparameter", 300, 150, f);
         else Global.setpacked(this, "getparameter", 300, 150);
+
         validate();
         T.addKeyListener(this);
     }
@@ -61,14 +68,13 @@ public class GetParameter extends CloseDialog {
         super(f, title, modalflag);
         F = f;
         Helpfile = help;
-        Panel n = new MyPanel();
+        JPanel n = new MyPanel();
         n.setLayout(new BorderLayout());
         n.add("North", new MyLabel(c));
-        n.add("Center", T = new TextFieldAction(this, "Input", 25));
+        n.add("Center", T = new JPasswordField("", 25));
         add("Center", new Panel3D(n));
         add("North", new MyLabel(c));
-        T.setEchoChar(echo);
-        Panel p = new MyPanel();
+        JPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("OK")));
         p.add(new ButtonAction(this, Global.resourceString("Cancel")));
         if (!help.equals("")) {
@@ -76,13 +82,15 @@ public class GetParameter extends CloseDialog {
             p.add(new ButtonAction(this, Global.resourceString("Help")));
         }
         add("South", new Panel3D(p));
-        if (modalflag) Global.setpacked(this, "getparameter", 300, 150, f);
+        if (modalflag)
+            Global.setpacked(this, "getparameter", 300, 150, f);
         else Global.setpacked(this, "getparameter", 300, 150);
         validate();
         T.addKeyListener(this);
         O = o;
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "getparameter");
         if (Global.resourceString("Cancel").equals(o)) {
@@ -100,8 +108,8 @@ public class GetParameter extends CloseDialog {
     }
 
     /**
-     * This is called, when the dialog is finished with a valid
-     * entry (User pressed OK).
+     * This is called, when the dialog is finished with a valid entry (User
+     * pressed OK).
      */
     public boolean tell(Object o, String S) {
         return true;
@@ -111,6 +119,7 @@ public class GetParameter extends CloseDialog {
         T.setText(s);
     }
 
+    @Override
     public boolean close() {
         return true;
     }

@@ -3,16 +3,16 @@ package jagoclient.partner;
 import jagoclient.Global;
 import jagoclient.gui.*;
 
-import java.awt.*;
+import javax.swing.*;
 
 /**
- * Displays a send dialog, when the partner presses "Send" in the
- * GoFrame. The message is appended to the PartnerFrame.
+ * Displays a send dialog, when the partner presses "Send" in the GoFrame. The
+ * message is appended to the PartnerFrame.
  */
 
 public class PartnerSendQuestion extends CloseDialog {
     PartnerGoFrame F;
-    TextField T;
+    JTextField T;
     PartnerFrame PF;
 
     public PartnerSendQuestion(PartnerGoFrame f, PartnerFrame pf) {
@@ -21,7 +21,7 @@ public class PartnerSendQuestion extends CloseDialog {
         PF = pf;
         add("North", new MyLabel(Global.resourceString("Message_")));
         add("Center", T = new GrayTextField(25));
-        Panel p = new MyPanel();
+        JPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Say")));
         p.add(new ButtonAction(this, Global.resourceString("Cancel")));
         add("South", new Panel3D(p));
@@ -30,6 +30,7 @@ public class PartnerSendQuestion extends CloseDialog {
         show();
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "partnersend");
         if (Global.resourceString("Say").equals(o)) {
@@ -39,7 +40,8 @@ public class PartnerSendQuestion extends CloseDialog {
             }
             setVisible(false);
             dispose();
-        } else if (Global.resourceString(Global.resourceString("Cancel")).equals(o)) {
+        } else if (Global.resourceString(Global.resourceString("Cancel")).equals(
+                o)) {
             setVisible(false);
             dispose();
         } else super.doAction(o);

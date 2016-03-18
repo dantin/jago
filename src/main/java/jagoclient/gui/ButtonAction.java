@@ -1,8 +1,6 @@
 package jagoclient.gui;
 
-import jagoclient.Global;
-
-import java.awt.*;
+import javax.swing.*;
 
 /**
  * Similar to ChoiceAction but for buttons.
@@ -10,7 +8,7 @@ import java.awt.*;
  * @see jagoclient.gui.ChoiceAction
  */
 
-public class ButtonAction extends Button {
+public class ButtonAction extends JButton {
     DoActionListener C;
     String Name;
     ActionTranslator AT;
@@ -20,7 +18,7 @@ public class ButtonAction extends Button {
         C = c;
         Name = name;
         addActionListener(AT = new ActionTranslator(c, name));
-        setFont(Global.SansSerif);
+        // setFont(Global.SansSerif);
     }
 
     public ButtonAction(DoActionListener c, String s) {

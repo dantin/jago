@@ -1,7 +1,5 @@
 package jagoclient.gui;
 
-import jagoclient.Global;
-
 import java.awt.*;
 
 /**
@@ -11,6 +9,6 @@ import java.awt.*;
 public class MyMenu extends Menu {
     public MyMenu(String l) {
         super(l);
-        setFont(Global.SansSerif);
+        // setFont(Global.SansSerif);
     }
 }

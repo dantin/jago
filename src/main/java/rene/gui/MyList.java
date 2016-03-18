@@ -1,11 +1,10 @@
 package rene.gui;
 
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-public class MyList extends List
+public class MyList extends java.awt.List
         implements KeyListener {
     public MyList(int n) {
         super(n);

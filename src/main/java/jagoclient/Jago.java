@@ -4,14 +4,12 @@ import java.applet.Applet;
 import java.awt.*;
 
 /**
- * An applet to start a Jago frame. Does about the same things
- * that Go.main does, only applet specific. Basically, it will
- * create a MainFrame and set a Go applet into it. Then it will
- * display the MainFrame.
+ * An applet to start a Jago frame. Does about the same things that Go.main
+ * does, only applet specific. Basically, it will create a MainFrame and set a
+ * Go applet into it. Then it will display the MainFrame.
  * <p>
- * When this applet is on the go server, it should contain a
- * "server" applet parameter pointing to the server and a "port"
- * paramter for the server port.
+ * When this applet is on the go server, it should contain a "server" applet
+ * parameter pointing to the server and a "port" paramter for the server port.
  *
  * @see Go
  */
@@ -21,12 +19,13 @@ public class Jago extends Applet {
     Go go;
     boolean Started = false;
 
+    @Override
     synchronized public void init() {
         if (Started) return; // the applet need only start once
         Started = true;
         // intialize Global things
         Global.url(getCodeBase());
-        Global.readparameter("go.cfg");
+        Global.readparameter(".go.cfg");
         Global.createfonts();
         Global.frame(new Frame());
         Global.loadmessagefilter();
@@ -45,13 +44,13 @@ public class Jago extends Applet {
         String MoveStyle = getParameter("movestyle");
         if (MoveStyle == null) MoveStyle = "";
         // create a MainFrame
-        F = new MainFrame(Server.equals("") ?
-                Global.resourceString("Jago") :
-                Global.resourceString("Jago_Applet"));
+        F = new MainFrame(Server.equals("") ? Global.resourceString("Jago")
+                : Global.resourceString("Jago_Applet"));
         // add a Go applet to the frame
-        if (Server.equals("")) F.add("Center", go = new Go());
+        if (Server.equals(""))
+            F.add("Center", go = new Go());
         else F.add("Center", go = new Go(Server, port, MoveStyle, Encoding));
-        go.F = F;
+        Go.F = F;
         go.init();
         go.start();
         // display the frame

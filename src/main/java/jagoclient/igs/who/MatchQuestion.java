@@ -4,6 +4,7 @@ import jagoclient.Global;
 import jagoclient.gui.*;
 import jagoclient.igs.ConnectionFrame;
 
+import javax.swing.*;
 import java.awt.*;
 
 /**
@@ -12,8 +13,8 @@ import java.awt.*;
 
 public class MatchQuestion extends CloseDialog {
     ConnectionFrame F;
-    TextField T;
-    TextField User;
+    JTextField T;
+    JTextField User;
     IntField BoardSize, TotalTime, ExtraTime;
     Choice ColorChoice;
 
@@ -23,7 +24,7 @@ public class MatchQuestion extends CloseDialog {
     public MatchQuestion(Frame fr, ConnectionFrame f, String user) {
         super(fr, Global.resourceString("Match"), false);
         F = f;
-        Panel pp = new MyPanel();
+        MyPanel pp = new MyPanel();
         pp.setLayout(new GridLayout(0, 2));
         pp.add(new MyLabel(Global.resourceString("Opponent")));
         pp.add(User = new GrayTextField(user));
@@ -36,11 +37,13 @@ public class MatchQuestion extends CloseDialog {
         ColorChoice.add(Global.resourceString("White"));
         ColorChoice.select(0);
         pp.add(new MyLabel(Global.resourceString("Time__min_")));
-        pp.add(TotalTime = new IntField(this, "TotalTime", Global.getParameter("totaltime", 10)));
+        pp.add(TotalTime = new IntField(this, "TotalTime", Global.getParameter(
+                "totaltime", 10)));
         pp.add(new MyLabel(Global.resourceString("Extra_Time")));
-        pp.add(ExtraTime = new IntField(this, "ExtraTime", Global.getParameter("extratime", 10)));
+        pp.add(ExtraTime = new IntField(this, "ExtraTime", Global.getParameter(
+                "extratime", 10)));
         add("Center", new Panel3D(pp));
-        Panel p = new MyPanel();
+        MyPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Match")));
         p.add(new ButtonAction(this, Global.resourceString("Cancel")));
         add("South", new Panel3D(p));
@@ -49,15 +52,16 @@ public class MatchQuestion extends CloseDialog {
         show();
     }
 
+    @Override
     public void doAction(String o) {
         Global.setParameter("matchwidth", getSize().width);
         Global.setParameter("matchheight", getSize().height);
         if (Global.resourceString("Match").equals(o)) {
             String s = "b";
             if (ColorChoice.getSelectedIndex() == 1) s = "w";
-            F.out("match " + User.getText() + " " + s + " " + BoardSize.value(5, 29) + " " +
-                    TotalTime.value(0, 6000) + " " +
-                    ExtraTime.value(0, 6000));
+            F.out("match " + User.getText() + " " + s + " "
+                    + BoardSize.value(5, 29) + " " + TotalTime.value(0, 6000) + " "
+                    + ExtraTime.value(0, 6000));
             Global.setParameter("totaltime", TotalTime.value(0, 6000));
             Global.setParameter("extratime", ExtraTime.value(0, 6000));
             setVisible(false);

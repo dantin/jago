@@ -216,17 +216,6 @@ public class Lister extends Viewer
     }
 
     public void mousePressed(MouseEvent e) {
-        requestFocus();
-        ListElement le = TD.getline(e.getY());
-        if (le == null) return;
-        Line l = (Line) le.content();
-        if (!Multiple && Chosen != null) {
-            ((Line) Chosen.content()).chosen(false);
-        }
-        Chosen = le;
-        l.chosen(!l.chosen());
-        TD.paint(TD.getGraphics());
-        if (Multiple) return;
         if (e.getClickCount() >= 2 || e.isControlDown()) {
             if (e.isControlDown()) {
                 Enumeration en = IL.elements();
@@ -244,14 +233,24 @@ public class Lister extends Viewer
                         new ActionEvent(this, 0, getSelectedItem()));
             }
             return;
-        } else {
-            Enumeration en = IL.elements();
-            while (en.hasMoreElements()) {
-                ItemListener li = (ItemListener) en.nextElement();
-                li.itemStateChanged(
-                        new ItemEvent(this, 0, getSelectedItem(),
-                                ItemEvent.ITEM_STATE_CHANGED));
-            }
+        }
+        requestFocus();
+        ListElement le = TD.getline(e.getY());
+        if (le == null) return;
+        Line l = (Line) le.content();
+        if (!Multiple && Chosen != null) {
+            ((Line) Chosen.content()).chosen(false);
+        }
+        Chosen = le;
+        l.chosen(!l.chosen());
+        TD.paint(TD.getGraphics());
+        if (Multiple) return;
+        Enumeration en = IL.elements();
+        while (en.hasMoreElements()) {
+            ItemListener li = (ItemListener) en.nextElement();
+            li.itemStateChanged(
+                    new ItemEvent(this, 0, getSelectedItem(),
+                            ItemEvent.ITEM_STATE_CHANGED));
         }
         if (e.isPopupTrigger() || e.isMetaDown() && PM != null) {
             PM.show(e.getComponent(), e.getX(), e.getY());

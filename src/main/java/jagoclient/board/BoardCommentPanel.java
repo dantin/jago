@@ -1,12 +1,13 @@
 package jagoclient.board;
 
+import javax.swing.*;
 import java.awt.*;
 
 /**
  * This panel contains two panels aside. The left panel is kept square.
  */
 
-class BoardCommentPanel extends Panel {
+class BoardCommentPanel extends JPanel {
     Component C1, C2;
     Board B;
 
@@ -23,11 +24,9 @@ class BoardCommentPanel extends Panel {
         C1.doLayout();
         C1.setSize(B.getSize().height, getSize().height);
         C1.setLocation(0, 0);
-        C2.setSize(getSize().width - B.getSize().height,
-                getSize().height);
+        C2.setSize(getSize().width - B.getSize().height, getSize().height);
         C2.setLocation(B.getSize().height, 0);
         C1.doLayout();
         C2.doLayout();
     }
 }
-

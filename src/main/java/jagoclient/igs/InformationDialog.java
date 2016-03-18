@@ -3,6 +3,7 @@ package jagoclient.igs;
 import jagoclient.Global;
 import jagoclient.gui.*;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.PrintWriter;
 
@@ -12,27 +13,26 @@ import java.io.PrintWriter;
 
 public class InformationDialog extends CloseDialog {
     PrintWriter Out;
-    TextField Answer;
+    JTextField Answer;
     TextArea T;
     ConnectionFrame CF;
     InformationDistributor ID;
 
-    public InformationDialog(ConnectionFrame cf, String m,
-                             PrintWriter out, InformationDistributor id) {
+    public InformationDialog(ConnectionFrame cf, String m, PrintWriter out,
+                             InformationDistributor id) {
         super(Global.frame(), Global.resourceString("_Information_"), false);
         CF = cf;
         ID = id;
         add("North", new MyLabel(Global.resourceString("Information")));
-        Panel pm = new MyPanel();
+        JPanel pm = new MyPanel();
         pm.setLayout(new BorderLayout());
         pm.add("Center", T = new TextArea());
-        T.setBackground(Global.gray.brighter());
         T.setEditable(false);
         T.setFont(Global.Monospaced);
         T.setText(m);
         pm.add("South", Answer = new TextFieldAction(this, "Answer"));
         add("Center", pm);
-        Panel p = new MyPanel();
+        JPanel p = new MyPanel();
         p.add(new ButtonAction(this, Global.resourceString("Close")));
         p.add(new ButtonAction(this, Global.resourceString("Send")));
         add("South", p);
@@ -43,6 +43,7 @@ public class InformationDialog extends CloseDialog {
         show();
     }
 
+    @Override
     public void doAction(String o) {
         Global.notewindow(this, "info");
         if (Global.resourceString("Close").equals(o)) {
@@ -61,11 +62,13 @@ public class InformationDialog extends CloseDialog {
         T.append(s);
     }
 
+    @Override
     public boolean close() {
         ID.infodialog = null;
         return true;
     }
 
+    @Override
     public void paint(Graphics g) {
         if (ID.infodialog == null) {
             setVisible(false);

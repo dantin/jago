@@ -18,6 +18,7 @@ public class BigLabel extends Panel {
         FM = getFontMetrics(f);
     }
 
+    @Override
     public void paint(Graphics g) {
         Dimension d = getSize();
         int w = d.width, h = d.height;
@@ -31,14 +32,14 @@ public class BigLabel extends Panel {
             FM = GI.getFontMetrics();
             Offset = FM.charWidth('m') / 2;
         }
-        GI.setColor(Global.gray);
+        GI.setColor(Global.ControlBackground);
         GI.fillRect(0, 0, W, H);
         GI.setColor(Color.black);
-        drawString(GI,
-                Offset, (H + FM.getAscent() - FM.getDescent()) / 2, FM);
+        drawString(GI, Offset, (H + FM.getAscent() - FM.getDescent()) / 2, FM);
         g.drawImage(I, 0, 0, W, H, this);
     }
 
+    @Override
     public void update(Graphics g) {
         paint(g);
     }
@@ -46,10 +47,13 @@ public class BigLabel extends Panel {
     public void drawString(Graphics g, int x, int y, FontMetrics fm) {
     }
 
+    @Override
     public Dimension getPreferredSize() {
-        return new Dimension(getSize().width, (FM.getAscent() + FM.getDescent()) * 3 / 2);
+        return new Dimension(getSize().width,
+                (FM.getAscent() + FM.getDescent()) * 3 / 2);
     }
 
+    @Override
     public Dimension getMinimumSize() {
         return getPreferredSize();
     }
